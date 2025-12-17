@@ -1,0 +1,29 @@
+{
+  "name": "project-3-course-enrollment-and-classroom-scheduling-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "postcss.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tailwindcss -i ./src/main/resources/static/css/input.css -o ./src/main/resources/static/css/output.css --watch",
+    "build": "tailwindcss -i ./src/main/resources/static/css/input.css -o ./src/main/resources/static/css/output.css --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chumdararith-LOU/Project-3-Course-Enrollment-and-Classroom-Scheduling-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Chumdararith-LOU/Project-3-Course-Enrollment-and-Classroom-Scheduling-System/issues"
+  },
+  "homepage": "https://github.com/Chumdararith-LOU/Project-3-Course-Enrollment-and-Classroom-Scheduling-System#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.4.23",
+    "flowbite": "^4.0.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19"
+  }
+}
