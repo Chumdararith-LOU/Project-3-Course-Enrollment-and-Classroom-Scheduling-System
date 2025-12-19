@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link th:href="@{/css/output.css}" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <title>Attendance Management</title>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight">Course Management</h1>
+          <p class="text-sm text-slate-400 mt-1">Lecturer Portal</p>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 px-4 py-6 space-y-2">
+          <a
+            th:href="@{/lecturer/dashboard(lecturerId=${lecturerId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            th:href="@{/lecturer/courses(lecturerId=${lecturerId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            My Courses
+          </a>
+          <a
+            th:href="@{/lecturer/schedule(lecturerId=${lecturerId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Schedule
+          </a>
+          <a
+            th:href="@{/lecturer/attendance(lecturerId=${lecturerId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Attendance
+          </a>
+          <a
+            th:href="@{/lecturer/reports(lecturerId=${lecturerId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Reports
+          </a>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="px-4 py-6 border-t border-slate-700">
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center"
+            >
+              <span class="text-sm font-semibold">L</span>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium">Lecturer</p>
+              <p class="text-xs text-slate-400">
+                ID: <span th:text="${lecturerId}">1</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Top Bar -->
+    <div class="ml-64 bg-white border-b border-slate-200">
+      <div class="px-8 py-4 flex justify-between items-center">
+        <div>
+          <a
+            th:href="@{/lecturer/courses(lecturerId=${lecturerId})}"
+            class="text-sm text-blue-600 hover:text-blue-800 mb-2 inline-flex items-center font-medium"
+          >
+            <svg
+              class="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to Courses
+          </a>
+          <h2 class="text-2xl font-bold text-slate-900 mt-1">
+            Attendance Management
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">
+            Mark and view attendance records for your classes
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ml-64 px-8 py-8">
+      <div
+        class="bg-white shadow-sm rounded-xl border border-slate-200 p-6 mb-6"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Schedule ID</p>
+            <p
+              class="mt-1 text-lg font-semibold text-gray-900"
+              th:text="${scheduleId ?: 'N/A'}"
+            >
+              -
+            </p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Date</p>
+            <p
+              class="mt-1 text-lg font-semibold text-gray-900"
+              th:text="${#temporals.format(#temporals.createNow(), 'MMM dd, yyyy')}"
+            >
+              Dec 19, 2025
+            </p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Total Records</p>
+            <p
+              class="mt-1 text-lg font-semibold text-gray-900"
+              th:text="${attendanceRecords != null ? attendanceRecords.size() : 0}"
+            >
+              0
+            </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              class="mt-4 w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+            >
+              <svg
+                class="-ml-1 mr-2 h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Mark Attendance
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        th:if="${attendanceRecords == null or attendanceRecords.isEmpty()}"
+        class="text-center py-12 bg-white rounded-xl shadow-sm border border-slate-200"
+      >
+        <svg
+          class="mx-auto h-12 w-12 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">
+          No attendance records
+        </h3>
+        <p class="mt-1 text-sm text-gray-500">
+          No attendance has been recorded for this schedule yet.
+        </p>
+        <div class="mt-6">
+          <button
+            type="button"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            <svg
+              class="-ml-1 mr-2 h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            Record New Attendance
+          </button>
+        </div>
+      </div>
+
+      <div
+        th:if="${attendanceRecords != null and !attendanceRecords.isEmpty()}"
+        class="bg-white shadow-sm overflow-hidden rounded-xl border border-slate-200"
+      >
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">
+            Attendance Records
+          </h3>
+          <p class="mt-1 text-sm text-gray-500">
+            A list of all attendance records for this class session
+          </p>
+        </div>
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Date
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Student
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Status
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Recorded At
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Notes
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr
+              th:each="record : ${attendanceRecords}"
+              class="hover:bg-gray-50"
+            >
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                th:text="${record.attendanceDate != null ? #temporals.format(record.attendanceDate, 'MMM dd, yyyy') : 'N/A'}"
+              >
+                Dec 19, 2025
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-8 w-8">
+                    <div
+                      class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center"
+                    >
+                      <span class="text-gray-600 text-xs font-semibold">S</span>
+                    </div>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">
+                      Student Name
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  th:classappend="${
+                                    record.status == 'PRESENT' ? 'bg-green-100 text-green-800' :
+                                    record.status == 'ABSENT' ? 'bg-red-100 text-red-800' :
+                                    record.status == 'LATE' ? 'bg-yellow-100 text-yellow-800' :
+                                    record.status == 'EXCUSED' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }"
+                >
+                  <span th:text="${record.status}">PRESENT</span>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span>-</span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                <span th:text="${record.notes ?: '-'}">-</span>
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+              >
+                <button
+                  type="button"
+                  class="text-indigo-600 hover:text-indigo-900 mr-3"
+                >
+                  Edit
+                </button>
+                <button type="button" class="text-red-600 hover:text-red-900">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        class="mt-6 bg-white shadow-sm rounded-xl border border-slate-200 p-6"
+      >
+        <h4 class="text-sm font-medium text-gray-900 mb-3">
+          Attendance Status Legend
+        </h4>
+        <div class="flex flex-wrap gap-4">
+          <div class="flex items-center">
+            <span
+              class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 mr-2"
+              >PRESENT</span
+            >
+            <span class="text-sm text-gray-600">Student attended</span>
+          </div>
+          <div class="flex items-center">
+            <span
+              class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 mr-2"
+              >ABSENT</span
+            >
+            <span class="text-sm text-gray-600">Student did not attend</span>
+          </div>
+          <div class="flex items-center">
+            <span
+              class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 mr-2"
+              >LATE</span
+            >
+            <span class="text-sm text-gray-600">Student arrived late</span>
+          </div>
+          <div class="flex items-center">
+            <span
+              class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 mr-2"
+              >EXCUSED</span
+            >
+            <span class="text-sm text-gray-600">Absence excused</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
