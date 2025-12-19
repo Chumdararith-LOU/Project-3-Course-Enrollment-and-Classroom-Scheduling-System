@@ -11,7 +11,7 @@ import com.cource.service.LecturerService;
 
 import java.util.List;
 
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,7 +55,6 @@ public class LecturerController {
             @RequestParam String status,
             Authentication authentication) {
 
-        long lecturerId = ((User) authentication.getPrincipal()).getId();
         lecturerService.recordAttendance((com.cource.dto.attendance.AttendanceRequestDTO) attendanceRequestDTO,
                 studentId, status);
         return ResponseEntity.ok("Attendance recorded successfully.");
