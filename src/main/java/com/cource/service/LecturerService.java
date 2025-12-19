@@ -11,9 +11,9 @@ import com.cource.entity.User;
 public interface LecturerService {
     List<Course> getCoursesByLecturerId(long lecturerId);
 
-    List<ClassSchedule> getClassSchedulesByLecturerId(long coursesId, long lecturerId);
+    List<ClassSchedule> getClassSchedulesByLecturerId(long offeringId, long lecturerId);
 
-    List<User> getEnrolledStudents(long courseId, long lecturerId);
+    List<User> getEnrolledStudents(long offeringId, long lecturerId);
 
     void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status);
 
