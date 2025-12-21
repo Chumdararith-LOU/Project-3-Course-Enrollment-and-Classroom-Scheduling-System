@@ -1,8 +1,11 @@
 package com.cource.controller;
 
 import com.cource.dto.course.CourseRequestDTO;
+import com.cource.entity.User;
 import com.cource.repository.AcademicTermRepository;
+import com.cource.repository.UserRepository;
 import com.cource.service.CourseService;
+import com.cource.service.LecturerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -12,9 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import com.cource.service.LecturerService;
-
-
 @Controller
 @RequestMapping("/lecturer")
 @RequiredArgsConstructor
@@ -23,6 +23,33 @@ public class LecturerViewController {
     private final LecturerService lecturerService;
     private final CourseService courseService;
     private final AcademicTermRepository termRepository;
+    private final UserRepository userRepository;
+
+    @GetMapping("/dashboard")
+    public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) {
+            lecturerId = getCurrentLecturerId();
+        }
+
+        if (lecturerId != null) {
+            model.addAttribute("lecturerId", lecturerId);
+            model.addAttribute("stats", lecturerService.getDashboardStats(lecturerId));
+        }
+        return "lecturer/dashboard";
+    }
+
+    @GetMapping("/courses")
+    public String courses(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) {
+            lecturerId = getCurrentLecturerId();
+        }
+
+        if (lecturerId != null) {
+            model.addAttribute("lecturerId", lecturerId);
+            model.addAttribute("courses", courseService.getCoursesByLecturerId(lecturerId));
+        }
+        return "lecturer/courses";
+    }
 
     @GetMapping("/courses/create")
     public String showCreateCourseForm(Model model) {
@@ -31,8 +58,7 @@ public class LecturerViewController {
         }
 
         model.addAttribute("terms", termRepository.findByActiveTrue());
-
-        return "views/lecturer/create_course";
+        return "lecturer/create_course";
     }
 
     @PostMapping("/courses/create")
@@ -41,7 +67,7 @@ public class LecturerViewController {
                                Model model) {
         if (result.hasErrors()) {
             model.addAttribute("terms", termRepository.findByActiveTrue());
-            return "views/lecturer/create_course";
+            return "lecturer/create_course";
         }
 
         try {
@@ -49,30 +75,13 @@ public class LecturerViewController {
             String email = auth.getName();
 
             courseService.createCourse(courseRequest, email);
-            return "redirect:/lecturer/courses?success=true";
+            return "redirect:/lecturer/courses";
 
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("terms", termRepository.findByActiveTrue());
-            return "views/lecturer/create_course";
+            return "lecturer/create_course";
         }
-    }
-
-    @GetMapping("/dashboard")
-    public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
-        if (lecturerId != null) {
-            model.addAttribute("lecturerId", lecturerId);
-        }
-        return "views/lecturer/dashboard";
-    }
-
-    @GetMapping("/courses")
-    public String courses(@RequestParam(required = false) Long lecturerId, Model model) {
-        if (lecturerId != null) {
-            model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("courses", courseService.getCoursesByLecturerId(lecturerId));
-        }
-        return "views/lecturer/courses";
     }
 
     @GetMapping("/students")
@@ -80,12 +89,16 @@ public class LecturerViewController {
             @RequestParam(required = false) Long offeringId,
             @RequestParam(required = false) Long lecturerId,
             Model model) {
+        if (lecturerId == null) {
+            lecturerId = getCurrentLecturerId();
+        }
+
         if (offeringId != null && lecturerId != null) {
             model.addAttribute("offeringId", offeringId);
             model.addAttribute("lecturerId", lecturerId);
             model.addAttribute("students", lecturerService.getEnrolledStudents(offeringId, lecturerId));
         }
-        return "views/lecturer/students";
+        return "lecturer/students";
     }
 
     @GetMapping("/attendance")
@@ -93,27 +106,49 @@ public class LecturerViewController {
             @RequestParam(required = false) Long scheduleId,
             @RequestParam(required = false) Long lecturerId,
             Model model) {
+        if (lecturerId == null) {
+            lecturerId = getCurrentLecturerId();
+        }
+
         if (scheduleId != null && lecturerId != null) {
             model.addAttribute("scheduleId", scheduleId);
             model.addAttribute("lecturerId", lecturerId);
             model.addAttribute("attendanceRecords", lecturerService.getAttendanceRecords(scheduleId, lecturerId));
         }
-        return "views/lecturer/attendance";
+        return "lecturer/attendance";
     }
 
     @GetMapping("/schedule")
     public String schedule(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) {
+            lecturerId = getCurrentLecturerId();
+        }
+
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
         }
-        return "views/lecturer/schedule";
+        return "lecturer/schedule";
     }
 
     @GetMapping("/reports")
     public String reports(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) {
+            lecturerId = getCurrentLecturerId();
+        }
+
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
         }
-        return "views/lecturer/reports";
+        return "lecturer/reports";
+    }
+
+    private Long getCurrentLecturerId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            return userRepository.findByEmail(auth.getName())
+                    .map(User::getId)
+                    .orElse(null);
+        }
+        return null;
     }
 }

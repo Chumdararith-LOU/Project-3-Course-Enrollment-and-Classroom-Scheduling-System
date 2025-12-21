@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface CourseLecturerRepository extends JpaRepository<CourseLecturer, Long> {
-    Optional<CourseLecturer> findByLecturerId(Long lecturerId);
+    List<CourseLecturer> findByLecturerId(Long lecturerId);
     List<CourseLecturer> findByOfferingIdAndPrimaryTrue(Long offeringId);
 
     @Query("SELECT CASE WHEN COUNT(cl) > 0 THEN true ELSE false END FROM CourseLecturer cl WHERE cl.offering.id = :offeringId AND cl.lecturer.id = :lecturerId")

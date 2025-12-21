@@ -9,7 +9,8 @@ public class CourseRequestDTO {
     private String title;
 
     @NotBlank(message = "Course code is required")
-    @Pattern(regexp = "^[A-Z]{2,4}\\d{2,4}$", message = "Course code must be format ABC100 (2-4 letters, 3-4 digits)")
+    @Pattern(regexp = "^[A-Z]{2,4}\\d{2,4}[A-Z]{2,4}$",
+            message = "Course code must follow format: 2-4 letters, 2-4 numbers, 2-4 letters (e.g., GIC25WAD)")
     private String courseCode;
 
     @NotBlank(message = "Description is required")
@@ -18,7 +19,7 @@ public class CourseRequestDTO {
 
     @Min(value = 1, message = "Credits must be at least 1")
     @Max(value = 6, message = "Credits cannot exceed 6")
-    private int credits;
+    private int credits = 3;
 
     @NotNull(message = "Please select an academic term")
     private Long termId;
