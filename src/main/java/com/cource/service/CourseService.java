@@ -1,5 +1,9 @@
 package com.cource.service;
 
-public class CourseService {
-    
+import com.cource.dto.course.CourseResponseDTO;
+
+import java.util.List;
+
+public interface CourseService {
+    List<CourseResponseDTO> getCatalogForStudent(Long studentId);
 }

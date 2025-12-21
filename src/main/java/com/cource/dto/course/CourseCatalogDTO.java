@@ -1,6 +1,7 @@
 package com.cource.dto.course;
 
-public class CourseResponseDTO {
+
+public class CourseCatalogDTO {
     private Long id;
     private String code;
     private String title;
@@ -13,17 +14,6 @@ public class CourseResponseDTO {
     private boolean enrolledStatus;
     private String schedule;
     private String location;
-
-    // Constructors
-    public CourseResponseDTO() {}
-
-    public CourseResponseDTO(Long id, String code, String title, String description, int credits) {
-        this.id = id;
-        this.code = code;
-        this.title = title;
-        this.description = description;
-        this.credits = credits;
-    }
 
     public Long getId() {
         return id;

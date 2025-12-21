@@ -1,5 +1,5 @@
 package com.cource.service;
 
-public class EnrollmentService {
-    
+public interface EnrollmentService {
+    long getEnrolledCourseCount(Long studentId);
 }
