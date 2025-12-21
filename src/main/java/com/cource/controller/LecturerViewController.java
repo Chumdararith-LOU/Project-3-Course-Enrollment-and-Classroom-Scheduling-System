@@ -44,13 +44,11 @@ public class LecturerViewController {
                                BindingResult result,
                                Model model) {
         if (result.hasErrors()) {
-            // Reload terms if validation fails so dropdown isn't empty
             model.addAttribute("terms", termRepository.findByIsActiveTrue());
             return "views/lecturer/create_course";
         }
 
         try {
-            // Get current logged-in lecturer's email
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();
 
@@ -66,19 +64,12 @@ public class LecturerViewController {
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
-            // You can fetch dashboard data here if needed
-            // model.addAttribute("courses",
-            // lecturerService.getCoursesByLecturerId(lecturerId));
         }
         return "views/lecturer/dashboard";
     }
 
-    /**
-     * Render courses page
-     */
     @GetMapping("/courses")
     public String courses(@RequestParam(required = false) Long lecturerId, Model model) {
         // TODO: After enabling security, get lecturerId from Authentication
@@ -89,9 +80,6 @@ public class LecturerViewController {
         return "views/lecturer/courses";
     }
 
-    /**
-     * Render students page
-     */
     @GetMapping("/students")
     public String students(
             @RequestParam(required = false) Long offeringId,
@@ -106,9 +94,6 @@ public class LecturerViewController {
         return "views/lecturer/students";
     }
 
-    /**
-     * Render attendance page
-     */
     @GetMapping("/attendance")
     public String attendance(
             @RequestParam(required = false) Long scheduleId,
@@ -123,31 +108,18 @@ public class LecturerViewController {
         return "views/lecturer/attendance";
     }
 
-    /**
-     * Render schedule page
-     */
     @GetMapping("/schedule")
     public String schedule(@RequestParam(required = false) Long lecturerId, Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
-            // TODO: Fetch schedules from service when implemented
-            // model.addAttribute("schedules", lecturerService.getSchedules(lecturerId));
         }
         return "views/lecturer/schedule";
     }
 
-    /**
-     * Render reports page
-     */
     @GetMapping("/reports")
     public String reports(@RequestParam(required = false) Long lecturerId, Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
-            // TODO: Fetch reports data from service when implemented
-            // model.addAttribute("courseReports",
-            // lecturerService.getCourseReports(lecturerId));
         }
         return "views/lecturer/reports";
     }

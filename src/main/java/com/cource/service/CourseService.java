@@ -6,9 +6,8 @@ import com.cource.dto.course.CourseResponseDTO;
 import java.util.List;
 
 public interface CourseService {
-    void createCourse(CourseRequestDTO dto, String lecturerEmail);
-
-    // Existing methods (ensure these match what you need)
     List<CourseResponseDTO> getCatalogForStudent(Long studentId);
+
+    void createCourse(CourseRequestDTO dto, String lecturerEmail);
     List<CourseResponseDTO> getCoursesByLecturerId(Long lecturerId);
 }
