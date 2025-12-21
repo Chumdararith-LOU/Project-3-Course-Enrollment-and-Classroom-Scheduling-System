@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>My Courses</title>
@@ -11,63 +11,27 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
+
 <div class="flex h-screen overflow-hidden">
-    <aside class="w-64 bg-[#1e293b] text-white flex flex-col flex-shrink-0">
-        <div class="flex items-center gap-3 px-6 py-6 border-b border-slate-700">
-            <div class="bg-yellow-400 text-slate-900 p-1.5 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg></div>
-            <div><h1 class="font-bold text-lg serif tracking-wide text-white">AcademiX</h1><p class="text-[10px] text-slate-400 uppercase tracking-wider">Student Portal</p></div>
-        </div>
-        <nav class="flex-1 px-3 py-6 space-y-1">
-            <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                <span class="font-medium text-sm">Dashboard</span>
-            </a>
-            <a href="catalog.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                <span class="font-medium text-sm">Course Catalog</span>
-            </a>
-            <a href="my-courses.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-600/20 text-blue-400 border-l-4 border-blue-500 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                <span class="font-medium text-sm">My Courses</span>
-            </a>
-            <a href="schedule.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <span class="font-medium text-sm">Schedule</span>
-            </a>
-            <a href="grades.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-                <span class="font-medium text-sm">Grades</span>
-            </a>
-            <a href="attendance.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span class="font-medium text-sm">Attendance</span>
-            </a>
-        </nav>
-        <div class="p-4 border-t border-slate-700">
-            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-sm">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span>Settings</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-sm">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                <span>Sign Out</span>
-            </a>
-        </div>
-    </aside>
+
+    <div th:replace="~{fragments/student-sidebar :: sidebar(currentPage='my-courses')}"></div>
 
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
         <header class="bg-white border-b border-gray-100 h-16 flex items-center justify-between px-8 z-10 shrink-0">
-            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-serif">Emily</span></h2>
+            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-serif" th:text="${user.firstName}">Student</span></h2>
             <div class="flex items-center gap-6">
                 <div class="relative cursor-pointer">
-                    <span class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white">3</span>
+                    <span class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white"
+                          th:text="${notificationCount} ?: '0'">3</span>
                     <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                 </div>
                 <div class="flex items-center gap-3 border-l border-gray-100 pl-6">
-                    <div class="w-9 h-9 bg-[#1e293b] text-white rounded-full flex items-center justify-center font-medium text-sm tracking-wide">ED</div>
+                    <div class="w-9 h-9 bg-[#1e293b] text-white rounded-full flex items-center justify-center font-medium text-sm tracking-wide"
+                         th:text="${#strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1)}">ED</div>
                     <div class="hidden sm:block">
-                        <p class="text-sm font-medium text-gray-900 leading-tight">Emily Davis</p>
-                        <p class="text-[11px] text-gray-500">student@university.edu</p>
+                        <p class="text-sm font-medium text-gray-900 leading-tight" th:text="${user.firstName + ' ' + user.lastName}">Name</p>
+                        <p class="text-[11px] text-gray-500" th:text="${user.email}">email</p>
                     </div>
                 </div>
             </div>
@@ -76,50 +40,82 @@
         <div class="flex-1 overflow-y-auto p-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-[#1e293b] serif mb-1">My Courses</h1>
-                <p class="text-gray-500 text-sm">View and manage your enrolled courses</p>
+                <p class="text-gray-500 text-sm">Manage your enrolled classes for Spring 2025</p>
             </div>
 
-            <div class="mb-6 flex gap-2">
-                <button class="bg-gray-100 px-4 py-1.5 rounded-lg text-xs font-semibold text-gray-800">Active (2)</button>
-                <button class="text-gray-500 px-4 py-1.5 text-xs font-medium hover:text-gray-800">Completed (1)</button>
+            <!-- Course Status Tabs -->
+            <div class="mb-6 flex gap-2 border-b border-gray-200 pb-4">
+                <button class="bg-[#1e293b] text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                    Active (<span th:text="${#lists.size(courses.?[enrolledStatus])}">0</span>)
+                </button>
+                <button class="text-gray-500 px-4 py-1.5 text-xs font-medium hover:text-gray-800 transition-colors">
+                    Completed (0)
+                </button>
             </div>
 
-            <div class="space-y-6">
-                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="flex gap-2 mb-2">
-                                <span class="border border-gray-200 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">CS101</span>
-                                <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">3 Credits</span>
+            <div class="space-y-4">
+
+                <div th:each="course : ${courses}" th:if="${course.enrolledStatus}"
+                     class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
+
+                    <div class="flex items-start gap-4">
+                        <div class="bg-blue-50 text-blue-700 w-16 h-16 rounded-lg flex items-center justify-center font-bold text-sm border border-blue-100 shrink-0"
+                             th:text="${course.code}">CODE</div>
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-2">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900 font-serif" th:text="${course.title}">Course Title</h3>
+                                    <p class="text-sm text-gray-500" th:text="${course.lecturer} + ' • ' + ${course.credits} + ' Credits'">Lecturer info</p>
+                                </div>
+                                <span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full border border-green-200">
+                                    Enrolled
+                                </span>
                             </div>
-                            <h3 class="text-xl font-serif font-bold text-gray-900 mb-1">Introduction to Computer Science</h3>
-                            <p class="text-xs text-gray-500 font-medium mb-3">Spring 2025 • Dr. Michael Chen</p>
-                            <div class="flex items-center gap-6 text-xs text-gray-500 mt-4">
-                                <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> MON 09:00 - 10:30</span>
-                                <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> Science Building 101</span>
+
+                            <div class="flex flex-wrap gap-3 text-xs font-medium text-gray-600">
+                                <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span th:text="${course.schedule}">Time</span>
+                                </span>
+                                <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <span th:text="${course.location}">Location</span>
+                                </span>
+                                <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <span th:text="${course.enrolled} + '/' + ${course.capacity} + ' students'">15/30 students</span>
+                                </span>
                             </div>
                         </div>
-                        <button class="text-red-500 border border-red-200 px-3 py-1.5 rounded text-xs hover:bg-red-50 transition-colors">Drop Course</button>
+                    </div>
+
+                    <div class="flex items-center gap-3 shrink-0">
+                        <a th:href="@{/student/course/{id}/materials(id=${course.id})}"
+                           class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors">
+                            View Materials
+                        </a>
+                        <form th:action="@{/enrollment/drop}" method="post" class="inline">
+                            <input type="hidden" name="offeringId" th:value="${course.id}" />
+                            <button type="submit"
+                                    class="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 hover:border-red-300 rounded-lg transition-colors"
+                                    onclick="return confirm('Are you sure you want to drop this course?')">
+                                Drop
+                            </button>
+                        </form>
                     </div>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="flex gap-2 mb-2">
-                                <span class="border border-gray-200 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">CS201</span>
-                                <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">4 Credits</span>
-                            </div>
-                            <h3 class="text-xl font-serif font-bold text-gray-900 mb-1">Data Structures and Algorithms</h3>
-                            <p class="text-xs text-gray-500 font-medium mb-3">Spring 2025 • Dr. Michael Chen</p>
-                            <div class="flex items-center gap-6 text-xs text-gray-500 mt-4">
-                                <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> TUE 11:00 - 12:30</span>
-                                <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> Science Building 201</span>
-                            </div>
-                        </div>
-                        <button class="text-red-500 border border-red-200 px-3 py-1.5 rounded text-xs hover:bg-red-50 transition-colors">Drop Course</button>
+                <div th:if="${#lists.isEmpty(courses.?[enrolledStatus])}" class="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+                    <div class="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
+                    <h3 class="text-lg font-medium text-gray-900">You haven't enrolled yet</h3>
+                    <p class="text-gray-500 text-sm mb-6">Browse the catalog to find classes.</p>
+                    <a th:href="@{/student/catalog}" class="inline-block px-6 py-2.5 bg-[#1e293b] text-white font-medium rounded-lg hover:bg-slate-700 transition-colors shadow-sm">
+                        Go to Catalog
+                    </a>
                 </div>
+
             </div>
         </div>
     </main>

@@ -63,6 +63,13 @@ public class StudentController {
 
     @GetMapping("/my-courses")
     public String myCourses(Model model) {
+        Long userId = getCurrentUserId();
+        UserResponseDTO user = userService.getUserById(userId);
+        model.addAttribute("user", user);
+
+        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
+        model.addAttribute("courses", courses);
+
         model.addAttribute("currentPage", "my-courses");
         return "student/my-courses";
     }
