@@ -1,30 +1,69 @@
 package com.cource.controller;
 
+import com.cource.dto.course.CourseRequestDTO;
+import com.cource.repository.AcademicTermRepository;
+import com.cource.service.CourseService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import com.cource.service.LecturerService;
 
-/**
- * Controller for rendering Lecturer HTML views (Thymeleaf templates)
- * Separate from REST API endpoints in LecturerController
- */
+
 @Controller
 @RequestMapping("/lecturer")
+@RequiredArgsConstructor
 public class LecturerViewController {
 
     private final LecturerService lecturerService;
+    private final CourseService courseService;
+    private final AcademicTermRepository termRepository;
 
     public LecturerViewController(LecturerService lecturerService) {
         this.lecturerService = lecturerService;
     }
 
-    /**
-     * Render lecturer dashboard page
-     */
+    @GetMapping("/courses/create")
+    public String showCreateCourseForm(Model model) {
+        if (!model.containsAttribute("courseRequest")) {
+            model.addAttribute("courseRequest", new CourseRequestDTO());
+        }
+
+        model.addAttribute("terms", termRepository.findByIsActiveTrue());
+
+        return "views/lecturer/create_course";
+    }
+
+    @PostMapping("/courses/create")
+    public String createCourse(@Valid @ModelAttribute("courseRequest") CourseRequestDTO courseRequest,
+                               BindingResult result,
+                               Model model) {
+        if (result.hasErrors()) {
+            // Reload terms if validation fails so dropdown isn't empty
+            model.addAttribute("terms", termRepository.findByIsActiveTrue());
+            return "views/lecturer/create_course";
+        }
+
+        try {
+            // Get current logged-in lecturer's email
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+
+            courseService.createCourse(courseRequest, email);
+            return "redirect:/lecturer/courses?success=true";
+
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("terms", termRepository.findByIsActiveTrue());
+            return "views/lecturer/create_course";
+        }
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
         // TODO: After enabling security, get lecturerId from Authentication
