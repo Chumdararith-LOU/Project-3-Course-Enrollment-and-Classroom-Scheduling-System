@@ -1,6 +1,5 @@
 package com.cource.controller;
 
-import com.cource.dto.course.CourseCatalogDTO;
 import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.user.UserResponseDTO;
 import com.cource.service.CourseService;
@@ -11,8 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -33,27 +33,31 @@ public class StudentController {
         Long userId = getCurrentUserId();
 
         UserResponseDTO user = userService.getUserById(userId);
+        model.addAttribute("user", user);
 
         long enrolledCount = enrollmentService.getEnrolledCourseCount(userId);
-
-        model.addAttribute("user", user);
         model.addAttribute("enrolledCount", enrolledCount);
+
+        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
+        model.addAttribute("courses", courses);
 
         model.addAttribute("todaysClasses", java.util.Collections.emptyList());
 
         model.addAttribute("currentPage", "dashboard");
-
         return "student/dashboard";
     }
 
     @GetMapping("/catalog")
     public String courseCatalog(Model model) {
         Long userId = getCurrentUserId();
+
+        UserResponseDTO user = userService.getUserById(userId);
+        model.addAttribute("user", user);
+
         List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
-
         model.addAttribute("courses", courses);
-        model.addAttribute("currentPage", "catalog");
 
+        model.addAttribute("currentPage", "catalog");
         return "student/catalog";
     }
 
@@ -63,4 +67,21 @@ public class StudentController {
         return "student/my-courses";
     }
 
+    @GetMapping("/schedule")
+    public String schedule(Model model) {
+        model.addAttribute("currentPage", "schedule");
+        return "student/schedule";
+    }
+
+    @GetMapping("/grades")
+    public String grades(Model model) {
+        model.addAttribute("currentPage", "grades");
+        return "student/grades";
+    }
+
+    @GetMapping("/attendance")
+    public String attendance(Model model) {
+        model.addAttribute("currentPage", "attendance");
+        return "student/attendance";
+    }
 }
