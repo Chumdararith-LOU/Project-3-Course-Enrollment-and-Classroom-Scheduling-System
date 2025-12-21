@@ -96,8 +96,19 @@ public class CourseServiceImpl implements CourseService {
         course.setTitle(dto.getTitle());
         course.setDescription(dto.getDescription());
         course.setCredits(dto.getCredits());
-
         courseRepository.save(course);
+
+        CourseOffering offering = new CourseOffering();
+        offering.setCourse(course);
+        offering.setTerm(term);
+        offering.setCapacity(dto.getCapacity());
+        courseOfferingRepository.save(offering);
+
+        CourseLecturer courseLecturer = new CourseLecturer();
+        courseLecturer.setOffering(offering);
+        courseLecturer.setLecturer(lecturer);
+        courseLecturer.setPrimary(true); // This makes them show up in the catalog
+        courseLecturerRepository.save(courseLecturer);
     }
 
     @Override
