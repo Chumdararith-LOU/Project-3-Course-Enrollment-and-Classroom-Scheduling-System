@@ -1,18 +1,10 @@
 package com.cource.service.impl;
 
 import com.cource.dto.course.CourseRequestDTO;
-import com.cource.entity.AcademicTerm;
-import com.cource.entity.Course;
-import com.cource.entity.User;
+import com.cource.dto.course.CourseResponseDTO;
+import com.cource.entity.*;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
-import com.cource.repository.AcademicTermRepository;
-import com.cource.repository.CourseRepository;
-import com.cource.repository.UserRepository;
-import com.cource.dto.course.CourseResponseDTO;
-import com.cource.entity.ClassSchedule;
-import com.cource.entity.CourseLecturer;
-import com.cource.entity.CourseOffering;
 import com.cource.repository.*;
 import com.cource.service.CourseService;
 import lombok.RequiredArgsConstructor;
@@ -22,17 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
 
+    // Repositories for Student Features
     private final CourseOfferingRepository courseOfferingRepository;
     private final CourseLecturerRepository courseLecturerRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
 
+    // Repositories for Lecturer Features
     private final CourseRepository courseRepository;
     private final AcademicTermRepository termRepository;
     private final UserRepository userRepository;
@@ -47,23 +40,24 @@ public class CourseServiceImpl implements CourseService {
             CourseResponseDTO dto = new CourseResponseDTO();
 
             Course course = offering.getCourse();
-            dto.setId(offering.getId()); // IMPORTANT: Enrollment uses Offering ID, not Course ID
+            dto.setId(offering.getId());
             dto.setCode(course.getCourseCode());
             dto.setTitle(course.getTitle());
             dto.setDescription(course.getDescription());
             dto.setCredits(course.getCredits());
             dto.setCapacity(offering.getCapacity());
 
-            Optional<CourseLecturer> lecturer = courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId());
-            if (lecturer.isPresent()) {
-                dto.setLecturer(lecturer.get().getLecturer().getFullName());
+            List<CourseLecturer> lecturers = courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId());
+
+            if (!lecturers.isEmpty()) {
+                dto.setLecturer(lecturers.get(0).getLecturer().getFullName());
             } else {
                 dto.setLecturer("TBA");
             }
 
             List<ClassSchedule> schedules = classScheduleRepository.findByOfferingId(offering.getId());
             if (!schedules.isEmpty()) {
-                ClassSchedule s = schedules.get(0); // Take the first one
+                ClassSchedule s = schedules.get(0);
                 String timeStr = s.getDayOfWeek() + " " + s.getStartTime() + "-" + s.getEndTime();
                 dto.setSchedule(timeStr);
                 dto.setLocation(s.getRoom().getBuilding() + " - " + s.getRoom().getRoomNumber());
@@ -72,11 +66,9 @@ public class CourseServiceImpl implements CourseService {
                 dto.setLocation("TBA");
             }
 
-            // 5. Calculate Enrollment Stats
             int currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ENROLLED");
             dto.setEnrolled(currentEnrolled);
 
-            // 6. Check if THIS student is enrolled
             boolean isEnrolled = enrollmentRepository.existsByStudentIdAndOfferingId(studentId, offering.getId());
             dto.setEnrolledStatus(isEnrolled);
 
@@ -106,7 +98,6 @@ public class CourseServiceImpl implements CourseService {
         course.setCredits(dto.getCredits());
 
         courseRepository.save(course);
-
     }
 
     @Override

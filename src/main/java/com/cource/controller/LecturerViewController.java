@@ -24,17 +24,13 @@ public class LecturerViewController {
     private final CourseService courseService;
     private final AcademicTermRepository termRepository;
 
-    public LecturerViewController(LecturerService lecturerService) {
-        this.lecturerService = lecturerService;
-    }
-
     @GetMapping("/courses/create")
     public String showCreateCourseForm(Model model) {
         if (!model.containsAttribute("courseRequest")) {
             model.addAttribute("courseRequest", new CourseRequestDTO());
         }
 
-        model.addAttribute("terms", termRepository.findByIsActiveTrue());
+        model.addAttribute("terms", termRepository.findByActiveTrue());
 
         return "views/lecturer/create_course";
     }
@@ -44,7 +40,7 @@ public class LecturerViewController {
                                BindingResult result,
                                Model model) {
         if (result.hasErrors()) {
-            model.addAttribute("terms", termRepository.findByIsActiveTrue());
+            model.addAttribute("terms", termRepository.findByActiveTrue());
             return "views/lecturer/create_course";
         }
 
@@ -57,7 +53,7 @@ public class LecturerViewController {
 
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("terms", termRepository.findByIsActiveTrue());
+            model.addAttribute("terms", termRepository.findByActiveTrue());
             return "views/lecturer/create_course";
         }
     }
@@ -72,10 +68,9 @@ public class LecturerViewController {
 
     @GetMapping("/courses")
     public String courses(@RequestParam(required = false) Long lecturerId, Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("courses", lecturerService.getCoursesByLecturerId(lecturerId));
+            model.addAttribute("courses", courseService.getCoursesByLecturerId(lecturerId));
         }
         return "views/lecturer/courses";
     }
@@ -85,7 +80,6 @@ public class LecturerViewController {
             @RequestParam(required = false) Long offeringId,
             @RequestParam(required = false) Long lecturerId,
             Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (offeringId != null && lecturerId != null) {
             model.addAttribute("offeringId", offeringId);
             model.addAttribute("lecturerId", lecturerId);
@@ -99,7 +93,6 @@ public class LecturerViewController {
             @RequestParam(required = false) Long scheduleId,
             @RequestParam(required = false) Long lecturerId,
             Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (scheduleId != null && lecturerId != null) {
             model.addAttribute("scheduleId", scheduleId);
             model.addAttribute("lecturerId", lecturerId);

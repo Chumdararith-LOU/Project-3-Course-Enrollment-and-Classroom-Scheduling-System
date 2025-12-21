@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AcademicTermRepository extends JpaRepository<AcademicTerm, Long> {
-    List<AcademicTerm> findByIsActiveTrue();
+    List<AcademicTerm> findByActiveTrue();
 }
