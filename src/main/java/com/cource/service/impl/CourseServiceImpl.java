@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,37 +30,66 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional(readOnly = true)
     public List<CourseResponseDTO> getCatalogForStudent(Long studentId) {
-        return courseOfferingRepository.findAllActiveOfferings()
-                .stream()
-                .map(offering -> {
-                    CourseResponseDTO dto = mapToDTO(offering);
-                    boolean isEnrolled = enrollmentRepository.existsByStudentIdAndOfferingId(studentId, offering.getId());
-                    dto.setEnrolledStatus(isEnrolled);
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<CourseOffering> offerings = courseOfferingRepository.findAllActiveOfferings();
+        List<CourseResponseDTO> catalog = new ArrayList<>();
+
+        for (CourseOffering offering : offerings) {
+            CourseResponseDTO dto = mapToDTO(offering);
+
+            // Check enrollment status for this specific student
+            boolean isEnrolled = enrollmentRepository.existsByStudentIdAndOfferingId(studentId, offering.getId());
+            dto.setEnrolledStatus(isEnrolled);
+
+            catalog.add(dto);
+        }
+
+        return catalog;
     }
 
     @Override
     @Transactional
     public void createCourse(CourseRequestDTO dto, String lecturerEmail) {
-        validateCourseCodeUniqueness(dto.getCourseCode());
+        if (courseRepository.existsByCourseCode(dto.getCourseCode())) {
+            throw new ConflictException("Course code " + dto.getCourseCode() + " already exists");
+        }
 
-        AcademicTerm term = fetchAcademicTerm(dto.getTermId());
-        User lecturer = fetchLecturerByEmail(lecturerEmail);
+        AcademicTerm term = termRepository.findById(dto.getTermId())
+                .orElseThrow(() -> new ResourceNotFoundException("Academic Term not found"));
 
-        Course course = createAndSaveCourse(dto);
-        CourseOffering offering = createAndSaveCourseOffering(dto, course, term);
-        assignLecturerToOffering(lecturer, offering);
+        User lecturer = userRepository.findByEmail(lecturerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
+
+        Course course = new Course();
+        course.setCourseCode(dto.getCourseCode());
+        course.setTitle(dto.getTitle());
+        course.setDescription(dto.getDescription());
+        course.setCredits(dto.getCredits());
+        courseRepository.save(course);
+
+        // Create Offering
+        CourseOffering offering = new CourseOffering();
+        offering.setCourse(course);
+        offering.setTerm(term);
+        offering.setCapacity(dto.getCapacity());
+        courseOfferingRepository.save(offering);
+
+        // Link Lecturer
+        CourseLecturer courseLecturer = new CourseLecturer();
+        courseLecturer.setOffering(offering);
+        courseLecturer.setLecturer(lecturer);
+        courseLecturer.setPrimary(true);
+        courseLecturerRepository.save(courseLecturer);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CourseResponseDTO> getCoursesByLecturerId(Long lecturerId) {
-        return courseLecturerRepository.findByLecturerId(lecturerId)
-                .stream()
-                .map(assignment -> mapToDTO(assignment.getOffering()))
-                .collect(Collectors.toList());
+        List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
+        List<CourseResponseDTO> myCourses = new ArrayList<>();
+        for (CourseLecturer assignment : assignments) {
+            myCourses.add(mapToDTO(assignment.getOffering()));
+        }
+        return myCourses;
     }
 
     // --- Helper to Map Entity to DTO ---
@@ -68,23 +98,19 @@ public class CourseServiceImpl implements CourseService {
         Course course = offering.getCourse();
 
         dto.setId(offering.getId());
-        // Use setCourseCode to match DTO field
         dto.setCourseCode(course.getCourseCode());
         dto.setTitle(course.getTitle());
         dto.setDescription(course.getDescription());
         dto.setCredits(course.getCredits());
         dto.setCapacity(offering.getCapacity());
 
-        // Determine Active Status based on the Term
-        dto.setActive(offering.getTerm() != null && offering.getTerm().isActive());
-
-        // Set lecturer info
+        if (offering.getTerm() != null) {
+            dto.setActive(offering.getTerm().isActive());
+        }
         setLecturerInfo(dto, offering);
 
-        // Set schedule info
         setScheduleInfo(dto, offering);
 
-        // Set enrollment count
         setEnrollmentCount(dto, offering);
 
         return dto;

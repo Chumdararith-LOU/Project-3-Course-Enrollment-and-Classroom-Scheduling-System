@@ -8,115 +8,10 @@
     <title>Dashboard | Lecturer Portal</title>
 </head>
 <body class="bg-slate-100 font-sans">
-<!-- Enhanced Sidebar Navigation -->
-<aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
-    <div class="flex flex-col h-full">
-        <!-- Logo -->
-        <div class="px-6 py-8 border-b border-slate-700">
-            <h1 class="text-2xl font-bold tracking-tight">Course Management</h1>
-            <p class="text-sm text-slate-400 mt-1">Lecturer Portal</p>
-        </div>
+<!-- Sidebar Navigation (Matches other pages exactly) -->
+<div th:replace="~{fragments/lecturer-sidebar :: sidebar(activePage='dashboard')}"></div>
 
-        <!-- Navigation Menu -->
-        <nav class="flex-1 px-4 py-6 space-y-2">
-            <!-- Dashboard -->
-            <a th:href="@{/lecturer/dashboard(lecturerId=${lecturerId})}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white transition group">
-                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                Dashboard
-            </a>
-
-            <!-- My Courses -->
-            <a th:href="@{/lecturer/courses(lecturerId=${lecturerId})}"
-               class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition group">
-                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>
-                My Courses
-            </a>
-
-            <!-- Create Course -->
-            <a th:href="@{/lecturer/courses/create}"
-               class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition group">
-                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Create Course
-            </a>
-
-            <!-- Schedule -->
-            <a th:href="@{/lecturer/schedule(lecturerId=${lecturerId})}"
-               class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition group">
-                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Schedule
-            </a>
-
-            <!-- Attendance -->
-            <a th:href="@{/lecturer/attendance(lecturerId=${lecturerId})}"
-               class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition group">
-                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Attendance
-            </a>
-
-            <!-- Students -->
-            <a th:href="@{/lecturer/students(lecturerId=${lecturerId})}"
-               class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition group">
-                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-                Students
-            </a>
-
-            <!-- Reports -->
-            <a th:href="@{/lecturer/reports(lecturerId=${lecturerId})}"
-               class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition group">
-                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
-                Reports
-            </a>
-        </nav>
-
-        <!-- User Profile Section -->
-        <div class="px-4 py-6 border-t border-slate-700">
-            <div class="flex items-center">
-                <div class="relative">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                        <span class="text-sm font-semibold text-white">L</span>
-                    </div>
-                    <!-- Online status indicator -->
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full"></div>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium">Lecturer Account</p>
-                    <p class="text-xs text-slate-400">
-                        ID: <span th:text="${lecturerId}" class="font-semibold">1</span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Logout Button -->
-            <div class="mt-4">
-                <form th:action="@{/logout}" method="post" class="w-full">
-                    <button type="submit" class="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition group">
-                        <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                        Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</aside>
-
-<!-- Rest of your dashboard content remains the same -->
+<!-- The rest of your dashboard remains exactly the same -->
 <div class="ml-64 bg-white border-b border-slate-200">
     <div class="px-8 py-4 flex justify-between items-center">
         <div>
@@ -131,7 +26,9 @@
 </div>
 
 <div class="ml-64 px-8 py-8">
+    <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Cards remain exactly as you had them -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
             <div class="flex items-start justify-between">
                 <div>
@@ -210,6 +107,7 @@
         </div>
     </div>
 
+    <!-- Quick Access Section -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200">
         <div class="px-8 py-6 border-b border-slate-200">
             <h3 class="text-lg font-semibold text-slate-900">Quick Access</h3>
