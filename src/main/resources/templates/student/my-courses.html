@@ -43,7 +43,6 @@
                 <p class="text-gray-500 text-sm">Manage your enrolled classes for Spring 2025</p>
             </div>
 
-            <!-- Course Status Tabs -->
             <div class="mb-6 flex gap-2 border-b border-gray-200 pb-4">
                 <button class="bg-[#1e293b] text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors">
                     Active (<span th:text="${#lists.size(courses.?[enrolledStatus])}">0</span>)
@@ -60,7 +59,7 @@
 
                     <div class="flex items-start gap-4">
                         <div class="bg-blue-50 text-blue-700 w-16 h-16 rounded-lg flex items-center justify-center font-bold text-sm border border-blue-100 shrink-0"
-                             th:text="${course.code}">CODE</div>
+                             th:text="${course.courseCode}">CODE</div>
                         <div class="flex-1">
                             <div class="flex items-start justify-between mb-2">
                                 <div>
@@ -107,7 +106,7 @@
 
                 <div th:if="${#lists.isEmpty(courses.?[enrolledStatus])}" class="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
                     <div class="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <h3 class="text-lg font-medium text-gray-900">You haven't enrolled yet</h3>
                     <p class="text-gray-500 text-sm mb-6">Browse the catalog to find classes.</p>

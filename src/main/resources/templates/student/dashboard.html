@@ -109,7 +109,7 @@
                                 <h4 class="font-medium text-gray-900 text-sm" th:text="${course.title}">Course Title</h4>
                                 <p class="text-xs text-gray-500 mt-1" th:text="${course.lecturer + ' • ' + course.credits + ' credits'}">Lecturer Info</p>
                             </div>
-                            <span class="bg-[#1e293b] text-white text-[10px] font-bold px-2 py-1 rounded-full" th:text="${course.code}">CODE</span>
+                            <span class="bg-[#1e293b] text-white text-[10px] font-bold px-2 py-1 rounded-full" th:text="${course.courseCode}">CODE</span>
                         </div>
 
                         <div th:if="${enrolledCount == 0}" class="text-center py-4 text-gray-400 text-sm">
