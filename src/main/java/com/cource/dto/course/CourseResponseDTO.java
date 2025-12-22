@@ -2,27 +2,38 @@ package com.cource.dto.course;
 
 public class CourseResponseDTO {
     private Long id;
-    private String code;
+    private String courseCode;
     private String title;
     private String description;
-    private String lecturer;
-    private String level;
     private int credits;
     private int capacity;
-    private int enrolled;
-    private boolean enrolledStatus;
+
+    private boolean active;
+
+    private String lecturer;
     private String schedule;
     private String location;
+
+    private int enrolled;
+    private boolean enrolledStatus;
 
     // Constructors
     public CourseResponseDTO() {}
 
     public CourseResponseDTO(Long id, String code, String title, String description, int credits) {
         this.id = id;
-        this.code = code;
+        this.courseCode = code;
         this.title = title;
         this.description = description;
         this.credits = credits;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Long getId() {
@@ -33,12 +44,12 @@ public class CourseResponseDTO {
         this.id = id;
     }
 
-    public String getCode() {
-        return code;
+    public String getCourseCode() {
+        return courseCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setCourseCode(String code) {
+        this.courseCode = code;
     }
 
     public String getTitle() {
@@ -63,14 +74,6 @@ public class CourseResponseDTO {
 
     public void setLecturer(String lecturer) {
         this.lecturer = lecturer;
-    }
-
-    public String getLevel() {
-        return level;
-    }
-
-    public void setLevel(String level) {
-        this.level = level;
     }
 
     public int getCredits() {
