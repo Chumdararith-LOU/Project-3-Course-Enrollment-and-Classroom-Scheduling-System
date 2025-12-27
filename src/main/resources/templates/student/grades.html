@@ -1,148 +1,287 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Grades</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .serif { font-family: 'Merriweather', serif; }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-800">
-<div class="flex h-screen overflow-hidden">
-    <aside class="w-64 bg-[#1e293b] text-white flex flex-col flex-shrink-0">
-        <div class="flex items-center gap-3 px-6 py-6 border-b border-slate-700">
-            <div class="bg-yellow-400 text-slate-900 p-1.5 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg></div>
-            <div><h1 class="font-bold text-lg serif tracking-wide text-white">AcademiX</h1><p class="text-[10px] text-slate-400 uppercase tracking-wider">Student Portal</p></div>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Grades - Student Portal</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight">Course Enrollment</h1>
+          <p class="text-sm text-slate-400 mt-1">Student Portal</p>
         </div>
-        <nav class="flex-1 px-3 py-6 space-y-1">
-            <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                <span class="font-medium text-sm">Dashboard</span>
-            </a>
-            <a href="catalog.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                <span class="font-medium text-sm">Course Catalog</span>
-            </a>
-            <a href="my-courses.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                <span class="font-medium text-sm">My Courses</span>
-            </a>
-            <a href="schedule.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <span class="font-medium text-sm">Schedule</span>
-            </a>
-            <a href="grades.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-600/20 text-blue-400 border-l-4 border-blue-500 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-                <span class="font-medium text-sm">Grades</span>
-            </a>
-            <a href="attendance.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span class="font-medium text-sm">Attendance</span>
-            </a>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+          <a
+            th:href="@{/student/dashboard(studentId=${studentId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            <span>Dashboard</span>
+          </a>
+          <a
+            th:href="@{/student/courses(studentId=${studentId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            <span>Browse Courses</span>
+          </a>
+          <a
+            th:href="@{/student/schedule(studentId=${studentId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span>My Schedule</span>
+          </a>
+          <a
+            th:href="@{/student/grades(studentId=${studentId})}"
+            class="flex items-center px-4 py-3 text-sm font-medium bg-slate-800 text-white rounded-lg transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+              />
+            </svg>
+            <span>My Grades</span>
+          </a>
         </nav>
-        <div class="p-4 border-t border-slate-700">
-            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-sm">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span>Settings</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-sm">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                <span>Sign Out</span>
-            </a>
+        <div class="px-4 py-6 border-t border-slate-700">
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold"
+            >
+              S
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium">Student</p>
+              <p class="text-xs text-slate-400">
+                ID: <span th:text="${studentId}">1</span>
+              </p>
+            </div>
+          </div>
+          <a
+            href="/logout"
+            class="mt-4 flex items-center px-4 py-2 text-sm text-red-400 rounded-lg hover:bg-slate-800 transition"
+          >
+            <svg
+              class="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            <span>Logout</span>
+          </a>
         </div>
+      </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="bg-white border-b border-gray-100 h-16 flex items-center justify-between px-8 z-10 shrink-0">
-            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-serif">Emily</span></h2>
-            <div class="flex items-center gap-6">
-                <div class="relative cursor-pointer">
-                    <span class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white">3</span>
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                </div>
-                <div class="flex items-center gap-3 border-l border-gray-100 pl-6">
-                    <div class="w-9 h-9 bg-[#1e293b] text-white rounded-full flex items-center justify-center font-medium text-sm tracking-wide">ED</div>
-                    <div class="hidden sm:block">
-                        <p class="text-sm font-medium text-gray-900 leading-tight">Emily Davis</p>
-                        <p class="text-[11px] text-gray-500">student@university.edu</p>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">My Grades</h1>
+        <a
+          th:href="@{/student/grades/export(studentId=${studentId})}"
+          th:if="${studentId != null}"
+          class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          Export CSV
+        </a>
+      </div>
 
-        <div class="flex-1 overflow-y-auto p-8">
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-[#1e293b] serif mb-1">Grades & Transcript</h1>
-                <p class="text-gray-500 text-sm">View your academic performance</p>
-            </div>
-
-            <div class="grid grid-cols-3 gap-6 mb-8">
-                <div class="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm">
-                    <p class="text-xs text-gray-500 mb-2">Cumulative GPA</p>
-                    <h2 class="text-4xl font-serif font-bold text-[#1e293b]">4.00</h2>
-                    <p class="text-xs text-gray-400 mt-1">out of 4.0</p>
-                </div>
-                <div class="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm">
-                    <p class="text-xs text-gray-500 mb-2">Completed Credits</p>
-                    <h2 class="text-4xl font-serif font-bold text-[#1e293b]">2</h2>
-                    <p class="text-xs text-gray-400 mt-1">credit hours</p>
-                </div>
-                <div class="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm">
-                    <p class="text-xs text-gray-500 mb-2">In Progress</p>
-                    <h2 class="text-4xl font-serif font-bold text-[#1e293b]">7</h2>
-                    <p class="text-xs text-gray-400 mt-1">credit hours</p>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-serif font-bold text-gray-900">Spring 2025</h3>
-                    <span class="bg-gray-100 px-3 py-1 rounded text-xs font-bold text-gray-700">Term GPA: 4.00</span>
-                 </div>
-                <table class="w-full text-left text-sm">
-                    <thead class="text-gray-500 border-b border-gray-100">
-                        <tr>
-                            <th class="pb-3 font-medium">Course Code</th>
-                            <th class="pb-3 font-medium">Course Title</th>
-                            <th class="pb-3 font-medium">Instructor</th>
-                            <th class="pb-3 font-medium">Credits</th>
-                            <th class="pb-3 font-medium">Grade</th>
-                            <th class="pb-3 font-medium text-right">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50">
-                        <tr>
-                            <td class="py-4">CS101</td>
-                            <td class="py-4 text-gray-900 font-medium">Introduction to Computer Science</td>
-                            <td class="py-4 text-gray-500">Dr. Michael Chen</td>
-                            <td class="py-4">3</td>
-                            <td class="py-4">-</td>
-                            <td class="py-4 text-right"><span class="bg-[#1e293b] text-white px-3 py-1 rounded-full text-[10px] font-bold">ENROLLED</span></td>
-                        </tr>
-                        <tr>
-                            <td class="py-4">CS201</td>
-                            <td class="py-4 text-gray-900 font-medium">Data Structures and Algorithms</td>
-                            <td class="py-4 text-gray-500">Dr. Michael Chen</td>
-                            <td class="py-4">4</td>
-                            <td class="py-4">-</td>
-                            <td class="py-4 text-right"><span class="bg-[#1e293b] text-white px-3 py-1 rounded-full text-[10px] font-bold">ENROLLED</span></td>
-                        </tr>
-                        <tr>
-                            <td class="py-4">ENG201</td>
-                            <td class="py-4 text-gray-900 font-medium">Technical Writing</td>
-                            <td class="py-4 text-gray-500">Dr. Amanda Williams</td>
-                            <td class="py-4">2</td>
-                            <td class="py-4 text-green-600 font-bold bg-green-50 w-8 h-8 rounded-full flex items-center justify-center">A</td>
-                            <td class="py-4 text-right"><span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[10px] font-bold">COMPLETED</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+      <!-- GPA Summary -->
+      <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-slate-500 text-sm font-medium">Overall GPA</div>
+          <div class="text-4xl font-bold text-blue-600">3.85</div>
+          <div class="text-xs text-gray-500 mt-1">Out of 4.00</div>
         </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-gray-500 text-sm font-medium">Credits Earned</div>
+          <div
+            class="text-4xl font-bold text-green-600"
+            th:text="${#lists.size(grades) * 3}"
+          >
+            36
+          </div>
+          <div class="text-xs text-gray-500 mt-1">Total credits</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-gray-500 text-sm font-medium">Courses Completed</div>
+          <div
+            class="text-4xl font-bold text-purple-600"
+            th:text="${#lists.size(grades)}"
+          >
+            12
+          </div>
+          <div class="text-xs text-gray-500 mt-1">With grades</div>
+        </div>
+      </div>
+
+      <!-- Grades Table -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-slate-200">
+          <h2 class="text-xl font-bold text-slate-900">Grade Report</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Course Code
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Course Title
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Credits
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Term
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Grade
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr th:each="enrollment : ${grades}">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                  th:text="${enrollment.offering.course.courseCode}"
+                >
+                  CS101
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                  th:text="${enrollment.offering.course.title}"
+                >
+                  Programming
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                  th:text="${enrollment.offering.course.credits}"
+                >
+                  3
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                  th:text="${enrollment.offering.term.termName}"
+                >
+                  Fall 2025
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    th:class="${enrollment.grade == 'A' or enrollment.grade == 'A+' ? 'bg-green-100 text-green-800' : 
+                                                enrollment.grade == 'B' or enrollment.grade == 'B+' ? 'bg-blue-100 text-blue-800' : 
+                                                enrollment.grade == 'C' or enrollment.grade == 'C+' ? 'bg-yellow-100 text-yellow-800' : 
+                                                'bg-red-100 text-red-800'}"
+                    class="px-3 py-1 inline-flex text-sm font-bold rounded-full"
+                    th:text="${enrollment.grade}"
+                    >A</span
+                  >
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+                  >
+                    Completed
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          th:if="${#lists.isEmpty(grades)}"
+          class="p-8 text-center text-slate-500"
+        >
+          <p>No grades available yet.</p>
+        </div>
+      </div>
     </main>
-</div>
-</body>
+  </body>
 </html>
