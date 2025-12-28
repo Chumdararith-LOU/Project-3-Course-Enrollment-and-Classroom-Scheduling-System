@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link th:href="@{/css/output.css}" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <title>Dashboard | Lecturer Portal</title>
+</head>
+<body class="bg-slate-100 font-sans">
+<!-- Sidebar Navigation (Matches other pages exactly) -->
+<div th:replace="~{fragments/lecturer-sidebar :: sidebar(activePage='dashboard')}"></div>
+
+<!-- The rest of your dashboard remains exactly the same -->
+<div class="ml-64 bg-white border-b border-slate-200">
+    <div class="px-8 py-4 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900">Dashboard Overview</h2>
+            <p class="text-sm text-slate-500 mt-1" th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}">
+                Thursday, December 19, 2025
+            </p>
+        </div>
+        <div class="flex items-center space-x-4">
+        </div>
+    </div>
+</div>
+
+<div class="ml-64 px-8 py-8">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Cards remain exactly as you had them -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Courses</p>
+                    <p class="mt-2 text-3xl font-bold text-slate-900">
+                        <span th:text="${stats?.activeCourses ?: 0}">0</span>
+                    </p>
+                    <p class="mt-2 text-sm text-emerald-600 font-medium">
+                        <span>Active Courses</span>
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Students</p>
+                    <p class="mt-2 text-3xl font-bold text-slate-900">
+                        <span th:text="${stats?.totalStudents ?: 0}">0</span>
+                    </p>
+                    <p class="mt-2 text-sm text-slate-500 font-medium">
+                        <span>Enrolled across all courses</span>
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Upcoming Classes</p>
+                    <p class="mt-2 text-3xl font-bold text-slate-900">
+                        <span th:text="${stats?.upcomingClasses ?: 0}">0</span>
+                    </p>
+                    <p class="mt-2 text-sm text-amber-600 font-medium">
+                        <span>Scheduled for this week</span>
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Attendance Rate</p>
+                    <p class="mt-2 text-3xl font-bold text-slate-900">
+                        <span th:text="${stats?.averageAttendanceRate != null ? #numbers.formatDecimal(stats.averageAttendanceRate, 1, 1) : '0.0'}">0.0</span>%
+                    </p>
+                    <p class="mt-2 text-sm text-emerald-600 font-medium">
+                        <span th:if="${stats != null and stats.averageAttendanceRate > 80}">↗ Above average</span>
+                        <span th:if="${stats != null and stats.averageAttendanceRate <= 80}">Average attendance</span>
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+        <div class="px-8 py-6 border-b border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900">Quick Access</h3>
+            <p class="text-sm text-slate-500 mt-1">Frequently used actions and shortcuts</p>
+        </div>
+        <div class="p-8">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <a th:href="@{/lecturer/courses(lecturerId=${lecturerId})}"
+                   class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-indigo-500 hover:shadow-md transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900">View My Courses</p>
+                            <p class="text-sm text-gray-500">
+                                <span th:text="${stats?.activeCourses ?: 0}">0</span> active courses
+                            </p>
+                        </div>
+                    </div>
+                </a>
+
+                <a th:href="@{/lecturer/attendance(lecturerId=${lecturerId})}"
+                   class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-green-500 hover:shadow-md transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900">Mark Attendance</p>
+                            <p class="text-sm text-gray-500">Record student presence</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a th:href="@{/lecturer/schedule(lecturerId=${lecturerId})}"
+                   class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-yellow-500 hover:shadow-md transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900">View Schedule</p>
+                            <p class="text-sm text-gray-500">
+                                <span th:text="${stats?.upcomingClasses ?: 0}">0</span> upcoming classes
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

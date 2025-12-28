@@ -3,12 +3,20 @@ package com.cource.security;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+<<<<<<< HEAD
+=======
+import org.springframework.stereotype.Component;
+>>>>>>> develop
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
 
+<<<<<<< HEAD
+=======
+@Component
+>>>>>>> develop
 public class RoleBasedAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
