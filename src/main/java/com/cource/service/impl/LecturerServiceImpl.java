@@ -58,7 +58,7 @@ public class LecturerServiceImpl implements LecturerService {
     public List<User> getEnrolledStudents(long offeringId, long lecturerId) {
         verifyOwnership(offeringId, lecturerId);
         return enrollmentRepository.findByOfferingId(offeringId).stream()
-                .map(Enrollment::getStudent)
+                .map(enrollment -> (User) enrollment.getStudent())
                 .collect(Collectors.toList());
     }
 

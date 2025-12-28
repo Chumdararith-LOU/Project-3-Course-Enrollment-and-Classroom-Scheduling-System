@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +22,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseOfferingRepository courseOfferingRepository;
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final WaitlistRepository waitlistRepository;
 
     private final ClassScheduleRepository classScheduleRepository;
@@ -49,7 +51,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ConflictException("Course is full. Please join the waitlist.");
         }
 
-        User student = userRepository.findById(studentId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         // Fetch schedule for the new course
@@ -83,7 +85,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             enrollmentRepository.save(enrollment);
             return new EnrollmentResult("ENROLLED", "Successfully enrolled in course");
         } else {
-            // Course is full - add to waitlist automatically
             return addToWaitlist(studentId, offeringId);
         }
     }
@@ -96,7 +97,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-        // Get next waitlist position
         int maxPosition = waitlistRepository.findMaxPositionByOfferingId(offeringId);
         int nextPosition = (maxPosition > 0) ? maxPosition + 1 : 1;
 
@@ -116,20 +116,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
 
-        // Find the enrollment
         Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
 
-        // Validation: Prevent dropping if course is completed or failed
         if (enrollment.getStatus().equals("COMPLETED") || enrollment.getStatus().equals("FAILED")) {
             throw new ConflictException("Cannot drop a course that is already " + enrollment.getStatus());
         }
 
-        // Update enrollment status to DROPPED
         enrollment.setStatus("DROPPED");
         enrollmentRepository.save(enrollment);
 
-        // Auto-promote waitlist: Process waitlist for this offering
         processWaitlist(offeringId);
 
         return new EnrollmentResult("DROPPED", "Successfully dropped course");
@@ -144,7 +140,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         int currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
 
         if (currentEnrolled < offering.getCapacity()) {
-            // There's space, get first person from waitlist
             Optional<Waitlist> nextWaitlist = waitlistRepository.findFirstByOfferingIdOrderByPosition(offeringId);
 
             if (nextWaitlist.isPresent()) {
