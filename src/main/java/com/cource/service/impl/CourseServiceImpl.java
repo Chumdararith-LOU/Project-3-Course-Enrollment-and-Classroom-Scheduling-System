@@ -8,6 +8,7 @@ import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.*;
 import com.cource.service.CourseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('STUDENT')")
     public List<CourseResponseDTO> getCatalogForStudent(Long studentId) {
         List<CourseOffering> offerings = courseOfferingRepository.findAllActiveOfferings();
         List<CourseResponseDTO> catalog = new ArrayList<>();
@@ -48,6 +50,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
+    // Only Lecturers can create, and they can only create for themselves (email match)
+    @PreAuthorize("hasRole('LECTURER') and #lecturerEmail == authentication.name")
     public void createCourse(CourseRequestDTO dto, String lecturerEmail) {
         if (courseRepository.existsByCourseCode(dto.getCourseCode())) {
             throw new ConflictException("Course code " + dto.getCourseCode() + " already exists");
@@ -83,6 +87,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('LECTURER')") // Only Lecturers can view their managed courses
     public List<CourseResponseDTO> getCoursesByLecturerId(Long lecturerId) {
         List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
         List<CourseResponseDTO> myCourses = new ArrayList<>();
