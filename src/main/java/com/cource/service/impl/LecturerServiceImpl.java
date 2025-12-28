@@ -105,11 +105,11 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status) {
+    public void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status, long lecturerId) {
         ClassSchedule schedule = classScheduleRepository.findById(attendanceRequestDTO.getScheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
-        verifyOwnership(schedule.getOffering().getId(), attendanceRequestDTO.getLecturerId());
+        verifyOwnership(schedule.getOffering().getId(), lecturerId);
 
         Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(
                         studentId, schedule.getOffering().getId())
@@ -122,7 +122,7 @@ public class LecturerServiceImpl implements LecturerService {
         attendance.setStatus(status);
 
         User lecturer = new User();
-        lecturer.setId(attendanceRequestDTO.getLecturerId());
+        lecturer.setId(lecturerId);
         attendance.setRecordedBy(lecturer);
 
         if (attendanceRequestDTO.getNotes() != null) {
