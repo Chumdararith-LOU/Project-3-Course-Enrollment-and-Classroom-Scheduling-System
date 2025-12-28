@@ -67,11 +67,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .map(e -> e.getOffering().getId())
                 .collect(Collectors.toList());
 
-        List<ClassSchedule> studentCurrentSchedules = classScheduleRepository.findByOfferingIdIn(enrolledOfferingIds);
+        if (!enrolledOfferingIds.isEmpty()) {
+            List<ClassSchedule> studentCurrentSchedules = classScheduleRepository.findByOfferingIdIn(enrolledOfferingIds);
 
-        for (ClassSchedule newSched : newCourseSchedules) {
-            if (timeConflictChecker.hasConflict(newSched, studentCurrentSchedules)) {
-                throw new ConflictException("Time conflict detected with course: " + newSched.getCourseOffering().getCourse().getCourseCode());
+            for (ClassSchedule newSched : newCourseSchedules) {
+                if (timeConflictChecker.hasConflict(newSched, studentCurrentSchedules)) {
+                    throw new ConflictException("Time conflict detected with course: " + newSched.getCourseOffering().getCourse().getCourseCode());
+                }
             }
         }
 

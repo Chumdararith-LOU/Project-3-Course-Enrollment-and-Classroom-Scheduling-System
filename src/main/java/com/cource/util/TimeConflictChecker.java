@@ -1,10 +1,12 @@
 package com.cource.util;
 
 import com.cource.entity.ClassSchedule;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
 import java.util.List;
 
+@Component
 public class TimeConflictChecker {
     public boolean hasConflict(ClassSchedule target, List<ClassSchedule> existingSchedules) {
         if (target == null || existingSchedules == null || existingSchedules.isEmpty()) {
