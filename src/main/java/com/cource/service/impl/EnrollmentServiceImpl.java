@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +60,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         // Fetch schedule for the new course
         List<ClassSchedule> newCourseSchedules = classScheduleRepository.findByOfferingId(offeringId);
+
+        // Fetch schedules for courses the student is ALREADY enrolled in
+        List<Enrollment> existingEnrollments = enrollmentRepository.findByStudentIdAndStatus(studentId, "ENROLLED");
+        List<Long> enrolledOfferingIds = existingEnrollments.stream()
+                .map(e -> e.getOffering().getId())
+                .collect(Collectors.toList());
+
+        List<ClassSchedule> studentCurrentSchedules = classScheduleRepository.findByOfferingIdIn(enrolledOfferingIds);
+
+        for (ClassSchedule newSched : newCourseSchedules) {
+            if (timeConflictChecker.hasConflict(newSched, studentCurrentSchedules)) {
+                throw new ConflictException("Time conflict detected with course: " + newSched.getCourseOffering().getCourse().getCourseCode());
+            }
+        }
 
         Enrollment enrollment = new Enrollment();
         enrollment.setStudent(student);
