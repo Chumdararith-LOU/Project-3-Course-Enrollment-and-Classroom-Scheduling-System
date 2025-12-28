@@ -93,11 +93,10 @@ public class AttendanceServiceImpl implements AttendanceService {
         AttendanceResponseDTO dto = new AttendanceResponseDTO();
         dto.setId(attendance.getId());
 
-        // Fix: Use generic User fields since Student inherits User
-        User student = attendance.getEnrollment().getStudent();
+        Student student = attendance.getEnrollment().getStudent();
         dto.setStudentId(student.getId());
         dto.setStudentName(student.getFirstName() + " " + student.getLastName());
-        dto.setStudentIdCard(student.getIdCard());
+        dto.setStudentIdCard(student.getStudentId());
 
         dto.setStatus(attendance.getStatus());
         dto.setDate(attendance.getAttendanceDate());

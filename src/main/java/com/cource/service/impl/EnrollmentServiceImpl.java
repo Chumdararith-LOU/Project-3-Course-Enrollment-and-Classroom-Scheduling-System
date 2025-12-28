@@ -45,12 +45,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ConflictException("You are already enrolled in this course.");
         }
 
-        // Check Capacity of the Course
-        int currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
-        if (currentEnrolled >= offering.getCapacity()) {
-            throw new ConflictException("Course is full. Please join the waitlist.");
-        }
-
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
