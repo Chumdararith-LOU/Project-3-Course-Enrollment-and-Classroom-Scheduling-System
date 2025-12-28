@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Long> {
     List<ClassSchedule> findByOfferingId(Long offeringId);
 
+    List<ClassSchedule> findByOfferingIdIn(List<Long> offeringIds);
+
     @Query("SELECT cs FROM ClassSchedule cs JOIN cs.offering o JOIN o.lecturers cl WHERE cs.offering.id = :offeringId AND cl.lecturer.id = :lecturerId")
     List<ClassSchedule> findByOfferingIdAndLecturerId(@Param("offeringId") Long offeringId, @Param("lecturerId") Long lecturerId);
 
