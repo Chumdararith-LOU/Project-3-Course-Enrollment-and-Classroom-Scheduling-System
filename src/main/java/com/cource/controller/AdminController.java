@@ -3,6 +3,9 @@ package com.cource.controller;
 import java.util.List;
 import java.util.Map;
 
+import com.cource.dto.course.AcademicTermRequestDTO;
+import com.cource.dto.schedule.RoomRequestDTO;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -333,24 +336,27 @@ public class AdminController {
     }
 
     @PostMapping("/rooms")
-    public ResponseEntity<?> createRoom(@RequestBody Map<String, Object> request) {
-        String roomNumber = request.get("roomNumber").toString();
-        String building = request.get("building").toString();
-        Integer capacity = Integer.valueOf(request.get("capacity").toString());
-        String roomType = request.get("roomType").toString();
-        Boolean isActive = request.get("isActive") != null ? (Boolean) request.get("isActive") : true;
-        adminService.createRoom(roomNumber, building, capacity, roomType, isActive);
+    public ResponseEntity<?> createRoom(@RequestBody @Valid RoomRequestDTO request) {
+        adminService.createRoom(
+                request.getRoomNumber(),
+                request.getBuilding(),
+                request.getCapacity(),
+                request.getRoomType(),
+                request.getIsActive()
+        );
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
     @PutMapping("/rooms/{id}")
-    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody Map<String, Object> request) {
-        String roomNumber = request.get("roomNumber").toString();
-        String building = request.get("building").toString();
-        Integer capacity = Integer.valueOf(request.get("capacity").toString());
-        String roomType = request.get("roomType").toString();
-        Boolean isActive = request.get("isActive") != null ? (Boolean) request.get("isActive") : null;
-        adminService.updateRoom(id, roomNumber, building, capacity, roomType, isActive);
+    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody @Valid RoomRequestDTO request) {
+        adminService.updateRoom(
+                id,
+                request.getRoomNumber(),
+                request.getBuilding(),
+                request.getCapacity(),
+                request.getRoomType(),
+                request.getIsActive()
+        );
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
@@ -377,22 +383,25 @@ public class AdminController {
     }
 
     @PostMapping("/terms")
-    public ResponseEntity<?> createTerm(@RequestBody Map<String, Object> request) {
-        String termCode = request.get("termCode").toString();
-        String termName = request.get("termName").toString();
-        java.time.LocalDate startDate = java.time.LocalDate.parse(request.get("startDate").toString());
-        java.time.LocalDate endDate = java.time.LocalDate.parse(request.get("endDate").toString());
-        adminService.createTerm(termCode, termName, startDate, endDate);
+    public ResponseEntity<?> createTerm(@RequestBody @Valid AcademicTermRequestDTO request) {
+        adminService.createTerm(
+                request.getTermCode(),
+                request.getTermName(),
+                request.getStartDate(),
+                request.getEndDate()
+        );
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
     @PutMapping("/terms/{id}")
-    public ResponseEntity<?> updateTerm(@PathVariable Long id, @RequestBody Map<String, Object> request) {
-        String termCode = request.get("termCode").toString();
-        String termName = request.get("termName").toString();
-        java.time.LocalDate startDate = java.time.LocalDate.parse(request.get("startDate").toString());
-        java.time.LocalDate endDate = java.time.LocalDate.parse(request.get("endDate").toString());
-        adminService.updateTerm(id, termCode, termName, startDate, endDate);
+    public ResponseEntity<?> updateTerm(@PathVariable Long id, @RequestBody @Valid AcademicTermRequestDTO request) {
+        adminService.updateTerm(
+                id,
+                request.getTermCode(),
+                request.getTermName(),
+                request.getStartDate(),
+                request.getEndDate()
+        );
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 

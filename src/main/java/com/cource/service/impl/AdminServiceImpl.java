@@ -286,7 +286,11 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
             java.time.LocalDate endDate) {
-        // ensure termCode is unique
+
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("End date cannot be before start date.");
+        }
+
         if (academicTermRepository.findByTermCode(termCode).isPresent()) {
             throw new ConflictException("Term code already exists: " + termCode);
         }
@@ -305,13 +309,17 @@ public class AdminServiceImpl implements AdminService {
     public AcademicTerm updateTerm(Long id, String termCode, String termName, java.time.LocalDate startDate,
             java.time.LocalDate endDate) {
         AcademicTerm term = getTermById(id);
-        // if changing code, ensure uniqueness
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("End date cannot be before start date.");
+        }
+
         if (!term.getTermCode().equals(termCode)) {
             if (academicTermRepository.findByTermCode(termCode).isPresent()) {
                 throw new ConflictException("Term code already exists: " + termCode);
             }
             term.setTermCode(termCode);
         }
+
         term.setTermName(termName);
         term.setStartDate(startDate);
         term.setEndDate(endDate);
@@ -343,6 +351,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public Room createRoom(String roomNumber, String building, Integer capacity, String roomType, Boolean isActive) {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Room capacity must be greater than 0.");
+        }
+
         Room room = new Room();
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
@@ -357,6 +369,11 @@ public class AdminServiceImpl implements AdminService {
     public Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
             Boolean isActive) {
         Room room = getRoomById(id);
+
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Room capacity must be greater than 0.");
+        }
+
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
         room.setCapacity(capacity);
