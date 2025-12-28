@@ -15,7 +15,7 @@ public class Enrollment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "offering_id", nullable = false)
@@ -32,15 +32,15 @@ public class Enrollment {
 
     public Enrollment() {}
 
-    public Enrollment(User student, CourseOffering offering) {
+    public Enrollment(Student student, CourseOffering offering) {
         this.student = student;
         this.offering = offering;
     }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public User getStudent() { return student; }
-    public void setStudent(User student) { this.student = student; }
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
     public CourseOffering getOffering() { return offering; }
     public void setOffering(CourseOffering offering) { this.offering = offering; }
     public String getStatus() { return status; }
