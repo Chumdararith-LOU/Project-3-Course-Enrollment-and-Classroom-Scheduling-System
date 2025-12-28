@@ -3,6 +3,7 @@ package com.cource.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cource.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +16,6 @@ import com.cource.entity.CourseLecturer;
 import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
-import com.cource.repository.AttendanceRepository;
-import com.cource.repository.ClassScheduleRepository;
-import com.cource.repository.CourseLecturerRepository;
-import com.cource.repository.EnrollmentRepository;
 import com.cource.service.LecturerService;
 
 @Service
@@ -29,15 +26,18 @@ public class LecturerServiceImpl implements LecturerService {
     private final AttendanceRepository attendanceRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final UserRepository userRepository;
 
     public LecturerServiceImpl(CourseLecturerRepository courseLecturerRepository,
                                AttendanceRepository attendanceRepository,
                                ClassScheduleRepository classScheduleRepository,
-                               EnrollmentRepository enrollmentRepository) {
+                               EnrollmentRepository enrollmentRepository,
+                               UserRepository userRepository) {
         this.courseLecturerRepository = courseLecturerRepository;
         this.attendanceRepository = attendanceRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -57,15 +57,16 @@ public class LecturerServiceImpl implements LecturerService {
     @Override
     public List<User> getEnrolledStudents(long offeringId, long lecturerId) {
         verifyOwnership(offeringId, lecturerId);
-        return enrollmentRepository.findByOfferingId(offeringId).stream()
-                .map(enrollment -> (User) enrollment.getStudent())
+        List<Long> studentIds = enrollmentRepository.findByOfferingId(offeringId).stream()
+                .map(enrollment -> enrollment.getStudent().getId())
                 .collect(Collectors.toList());
+
+        return userRepository.findAllById(studentIds);
     }
 
     @Override
     @Transactional(readOnly = true)
     public LecturerDashboardDTO getDashboardStats(Long lecturerId) {
-        // 1. Count Active Courses
         List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
         long activeCourses = assignments.size();
 
@@ -76,15 +77,10 @@ public class LecturerServiceImpl implements LecturerService {
 
         for (CourseLecturer assignment : assignments) {
             Long offeringId = assignment.getOffering().getId();
-
-            // 2. Count Students
             totalStudents += enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
-
-            // 3. Count Upcoming Classes
             List<ClassSchedule> schedules = classScheduleRepository.findByOfferingId(offeringId);
             upcomingClasses += schedules.size();
 
-            // 4. Calculate Attendance Rate
             for (ClassSchedule schedule : schedules) {
                 List<Attendance> records = attendanceRepository.findByScheduleId(schedule.getId());
                 totalAttendanceRecords += records.size();
@@ -100,7 +96,7 @@ public class LecturerServiceImpl implements LecturerService {
                 .activeCourses(activeCourses)
                 .totalStudents(totalStudents)
                 .upcomingClasses(upcomingClasses)
-                .averageAttendanceRate(attendanceRate) // FIX: Setting the new field
+                .averageAttendanceRate(attendanceRate)
                 .build();
     }
 
