@@ -19,14 +19,33 @@ public class EnrollmentController {
         try {
             Long studentId = 3L;
 
-            enrollmentService.enrollStudent(studentId, offeringId);
+            var result = enrollmentService.enrollStudent(studentId, offeringId);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Successfully enrolled in course!");
+            if (result.getStatus().equals("ENROLLED")) {
+                redirectAttributes.addFlashAttribute("successMessage", result.getMessage());
+            } else if (result.getStatus().equals("WAITLISTED")) {
+                redirectAttributes.addFlashAttribute("warningMessage", result.getMessage());
+            }
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
         return "redirect:/student/catalog";
+    }
+
+    @PostMapping("/drop")
+    public String drop(@RequestParam Long offeringId, RedirectAttributes redirectAttributes) {
+        try {
+            Long studentId = 3L;
+
+            var result = enrollmentService.dropCourse(studentId, offeringId);
+            redirectAttributes.addFlashAttribute("successMessage", result.getMessage());
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/student/courses";
     }
 }
