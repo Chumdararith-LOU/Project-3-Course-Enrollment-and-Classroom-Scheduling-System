@@ -1,6 +1,10 @@
 package com.cource.service;
 
+import com.cource.dto.EnrollmentResult;
+
 public interface EnrollmentService {
     long getEnrolledCourseCount(Long studentId);
-    void enrollStudent(Long studentId, Long offeringId);
+    EnrollmentResult enrollStudent(Long studentId, Long offeringId);
+    EnrollmentResult dropCourse(Long studentId, Long offeringId);
+    void processWaitlist(Long offeringId);
 }
