@@ -3,6 +3,7 @@ package com.cource.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cource.exception.ConflictException;
 import com.cource.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,6 +111,17 @@ public class LecturerServiceImpl implements LecturerService {
         Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(
                         studentId, schedule.getOffering().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+
+        boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
+                studentId,
+                schedule.getId(),
+                enrollment.getId(),
+                attendanceRequestDTO.getAttendanceDate()
+        );
+
+        if (exists) {
+            throw new ConflictException("Attendance already recorded for this student on this date.");
+        }
 
         Attendance attendance = new Attendance();
         attendance.setEnrollment(enrollment);
