@@ -19,13 +19,10 @@ public class AdminServiceImpl implements AdminService {
     private final AcademicTermRepository termRepository;
     private final RoomRepository roomRepository;
 
-    // --- Academic Term Management ---
-
     @Override
     @Transactional
     @PreAuthorize("hasRole('ADMIN')") // Security: Only ADMIN
     public AcademicTerm createTerm(AcademicTerm term) {
-        // Validation: Term dates
         if (term.getStartDate() != null && term.getEndDate() != null
                 && term.getStartDate().isAfter(term.getEndDate())) {
             throw new IllegalArgumentException("Start date must be before end date");
@@ -54,18 +51,14 @@ public class AdminServiceImpl implements AdminService {
         return termRepository.findAll();
     }
 
-    // --- Room Management ---
 
     @Override
     @Transactional
     @PreAuthorize("hasRole('ADMIN')") // Security: Only ADMIN
     public Room createRoom(Room room) {
-        // Validation: Capacity > 0
         if (room.getCapacity() <= 0) {
             throw new IllegalArgumentException("Room capacity must be greater than 0");
         }
-        // Validation: Unique Room Number (assuming repository has existsByRoomNumber)
-        // if (roomRepository.existsByRoomNumber(room.getRoomNumber())) { ... }
 
         return roomRepository.save(room);
     }
