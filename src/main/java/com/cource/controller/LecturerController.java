@@ -1,5 +1,6 @@
 package com.cource.controller;
 
+import com.cource.dto.attendance.AttendanceRequestDTO;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,10 +50,13 @@ public class LecturerController {
 
     @PostMapping("/attendance")
     public ResponseEntity<String> recordAttendance(
-            @RequestBody com.cource.dto.attendance.AttendanceRequestDTO attendanceRequestDTO,
+            @RequestBody AttendanceRequestDTO attendanceRequestDTO,
             @RequestParam long studentId,
-            @RequestParam String status) {
-        lecturerService.recordAttendance(attendanceRequestDTO, studentId, status);
+            @RequestParam String status,
+            @RequestParam long lecturerId) {
+
+        lecturerService.recordAttendance(attendanceRequestDTO, studentId, status, lecturerId);
+
         return ResponseEntity.ok("Attendance recorded successfully.");
     }
 
