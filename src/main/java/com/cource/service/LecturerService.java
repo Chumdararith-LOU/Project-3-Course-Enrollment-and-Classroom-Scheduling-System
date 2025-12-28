@@ -18,7 +18,7 @@ public interface LecturerService {
 
     List<User> getEnrolledStudents(long offeringId, long lecturerId);
 
-    void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status);
+    void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status, long lecturerId);
 
     List<Attendance> getAttendanceRecords(long scheduleId, long lecturerId);
 
