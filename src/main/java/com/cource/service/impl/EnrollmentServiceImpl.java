@@ -67,7 +67,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             }
         }
 
-        int currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
+        long currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
 
         if (currentEnrolled < offering.getCapacity()) {
             // Course has space - enroll directly
@@ -131,7 +131,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
 
-        int currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
+        long currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
 
         if (currentEnrolled < offering.getCapacity()) {
             Optional<Waitlist> nextWaitlist = waitlistRepository.findFirstByOfferingIdOrderByPosition(offeringId);
