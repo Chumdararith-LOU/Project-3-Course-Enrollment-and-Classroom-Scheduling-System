@@ -2,15 +2,17 @@ package com.cource.controller;
 
 import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.user.UserResponseDTO;
+import com.cource.dto.user.UserUpdateRequest;
+import com.cource.entity.User;
 import com.cource.service.CourseService;
 import com.cource.service.EnrollmentService;
 import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,12 +30,33 @@ public class StudentController {
         return 3L;
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<UserResponseDTO> getProfile(Authentication authentication) {
+        Long userId = (authentication != null) ? 0L : getCurrentUserId();
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(mapToResponseDTO(user));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> getStudentById(@PathVariable Long id) {
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(mapToResponseDTO(user));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponseDTO> updateProfile(@RequestBody UserUpdateRequest request, Authentication authentication) {
+        Long userId = (authentication != null) ? 0L : getCurrentUserId();
+        User updatedUser = userService.updateUser(userId, request);
+        return ResponseEntity.ok(mapToResponseDTO(updatedUser));
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         Long userId = getCurrentUserId();
 
-        UserResponseDTO user = userService.getUserById(userId);
-        model.addAttribute("user", user);
+        User userEntity = userService.getUserById(userId);
+        UserResponseDTO userDTO = mapToResponseDTO(userEntity);
+        model.addAttribute("user", userDTO);
 
         long enrolledCount = enrollmentService.getEnrolledCourseCount(userId);
         model.addAttribute("enrolledCount", enrolledCount);
@@ -42,8 +65,8 @@ public class StudentController {
         model.addAttribute("courses", courses);
 
         model.addAttribute("todaysClasses", java.util.Collections.emptyList());
-
         model.addAttribute("currentPage", "dashboard");
+
         return "student/dashboard";
     }
 
@@ -51,8 +74,9 @@ public class StudentController {
     public String courseCatalog(Model model) {
         Long userId = getCurrentUserId();
 
-        UserResponseDTO user = userService.getUserById(userId);
-        model.addAttribute("user", user);
+        User userEntity = userService.getUserById(userId);
+        UserResponseDTO userDTO = mapToResponseDTO(userEntity);
+        model.addAttribute("user", userDTO);
 
         List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
         model.addAttribute("courses", courses);
@@ -64,13 +88,16 @@ public class StudentController {
     @GetMapping("/my-courses")
     public String myCourses(Model model) {
         Long userId = getCurrentUserId();
-        UserResponseDTO user = userService.getUserById(userId);
-        model.addAttribute("user", user);
+
+        User userEntity = userService.getUserById(userId);
+        UserResponseDTO userDTO = mapToResponseDTO(userEntity);
+        model.addAttribute("user", userDTO);
 
         List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
         model.addAttribute("courses", courses);
 
         model.addAttribute("currentPage", "my-courses");
+
         return "student/my-courses";
     }
 
@@ -91,4 +118,17 @@ public class StudentController {
         model.addAttribute("currentPage", "attendance");
         return "student/attendance";
     }
+
+    private UserResponseDTO mapToResponseDTO(User user) {
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .idCard(user.getIdCard())
+                .role(user.getRole().getRoleName())
+                .isActive(user.isActive())
+                .build();
+    }
+
 }
