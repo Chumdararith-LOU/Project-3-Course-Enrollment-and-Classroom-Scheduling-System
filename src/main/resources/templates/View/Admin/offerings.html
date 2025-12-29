@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Course Offerings Management | Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+      .animate-slideUp {
+        animation: slideUp 0.4s ease-out;
+      }
+      .offering-row:hover {
+        transform: translateX(4px);
+        transition: all 0.2s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight">
+            Offerings Management
+          </h1>
+          <p class="text-sm text-slate-400 mt-1">Admin Portal</p>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <a
+            th:href="@{/admin/dashboard}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            th:href="@{/admin/users}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            Users
+          </a>
+          <a
+            th:href="@{/admin/courses}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            Courses
+          </a>
+          <a
+            th:href="@{/admin/offerings}"
+            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            Offerings
+          </a>
+          <a
+            th:href="@{/admin/enrollments}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Enrollments
+          </a>
+          <a
+            th:href="@{/admin/rooms}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+            Rooms
+          </a>
+          <a
+            th:href="@{/admin/terms}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Terms
+          </a>
+          <a
+            th:href="@{/admin/schedules}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Schedules
+          </a>
+          <a
+            th:href="@{/admin/reports}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Reports
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen">
+      <div class="bg-white border-b border-slate-200 px-8 py-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-3xl font-bold text-slate-900">Course Offerings</h2>
+            <p class="text-slate-600 mt-1">
+              Manage course offerings for each academic term
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <a
+              th:href="@{/admin/offerings/export(termId=${termId})}"
+              style="
+                background-color: #16a34a !important;
+                color: white !important;
+              "
+              class="flex items-center gap-2 px-6 py-3 font-semibold rounded-lg transition shadow-lg hover:shadow-xl"
+              onmouseover="this.style.backgroundColor='#15803d'"
+              onmouseout="this.style.backgroundColor='#16a34a'"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+              Export CSV
+            </a>
+            <button
+              onclick="openCreateModal()"
+              style="
+                background-color: #2563eb !important;
+                color: white !important;
+              "
+              class="flex items-center gap-2 px-6 py-3 font-semibold rounded-lg transition shadow-lg hover:shadow-xl"
+              onmouseover="this.style.backgroundColor='#1d4ed8'"
+              onmouseout="this.style.backgroundColor='#2563eb'"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Add Offering
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 space-y-6">
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+          <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[300px]">
+              <div class="relative">
+                <!-- <svg
+                  class="absolute left-3 bottom-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none z-10"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg> -->
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder=".    Search by course code or title..."
+                  onkeyup="filterOfferings()"
+                  class="w-full px-4 py-2.5 pl-11 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+            <div class="min-w-[200px]">
+              <select
+                id="termFilter"
+                onchange="filterOfferings()"
+                class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Terms</option>
+                <option
+                  th:each="term : ${terms}"
+                  th:value="${term.id}"
+                  th:text="${term.termName + ' (' + term.termCode + ')'}"
+                ></option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Offerings Table -->
+        <div
+          class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden"
+        >
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    ID
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Course
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Term
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Capacity
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Lecturers
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Enrolled
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Available
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="offeringsTableBody" class="divide-y divide-slate-200">
+                <tr
+                  th:each="offering : ${offerings}"
+                  th:attr="data-id=${offering.id},data-term=${offering.term.id},data-course=${offering.course.courseCode + ' - ' + offering.course.title},data-active=${offering.active}"
+                  class="offering-row hover:bg-slate-50"
+                >
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    <span th:text="${offering.id}"></span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-sm font-medium text-slate-900">
+                      <span th:text="${offering.course.courseCode}"></span>
+                    </div>
+                    <div class="text-sm text-slate-500">
+                      <span th:text="${offering.course.title}"></span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    <span th:text="${offering.term.termName}"></span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    <span th:text="${offering.capacity}"></span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    <span th:if="${!#lists.isEmpty(offering.lecturers)}">
+                      <span th:each="lect,iter : ${offering.lecturers}">
+                        <span th:text="${lect.lecturer.fullName}"></span
+                        ><span th:if="${!iter.last}">, </span>
+                      </span>
+                    </span>
+                    <span
+                      th:if="${#lists.isEmpty(offering.lecturers)}"
+                      class="italic text-slate-400"
+                      >None</span
+                    >
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    <span
+                      th:id="'enrolled-' + ${offering.id}"
+                      class="enrollment-count"
+                      >Loading...</span
+                    >
+                  </td>
+                  <td class="px-6 py-4 text-sm font-medium">
+                    <span
+                      th:id="'available-' + ${offering.id}"
+                      class="available-seats"
+                      >-</span
+                    >
+                  </td>
+                  <td class="px-6 py-4">
+                    <span
+                      th:if="${offering.active}"
+                      class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      Active
+                    </span>
+                    <span
+                      th:unless="${offering.active}"
+                      class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                    >
+                      Inactive
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        class="btn-edit px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition"
+                        th:attr="data-id=${offering.id}"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        th:classappend="${offering.active} ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50' : 'text-green-600 hover:text-green-700 hover:bg-green-50'"
+                        class="btn-toggle px-3 py-1.5 text-xs font-medium rounded-lg transition"
+                        th:attr="data-id=${offering.id},data-active=${offering.active}"
+                      >
+                        <span
+                          th:text="${offering.active} ? 'Deactivate' : 'Activate'"
+                        ></span>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-delete px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
+                        th:attr="data-id=${offering.id}"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create/Edit Course Offering Modal -->
+    <div
+      id="offeringModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm items-center justify-center z-50 p-4 animate-fadeIn"
+    >
+      <div
+        class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slideUp"
+      >
+        <div class="bg-white border-b border-slate-200 p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 id="modalTitle" class="text-2xl font-bold text-slate-900">
+                Add Course Offering
+              </h2>
+              <p class="text-sm text-slate-500 mt-1">
+                Configure offering details for the term
+              </p>
+            </div>
+            <button
+              onclick="closeModal()"
+              style="color: #94a3b8 !important"
+              class="p-1.5 rounded-lg transition-colors"
+              onmouseover="this.style.color='#334155'; this.style.backgroundColor='#f1f5f9'"
+              onmouseout="this.style.color='#94a3b8'; this.style.backgroundColor='transparent'"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <form id="offeringForm" class="p-6 space-y-4">
+          <input type="hidden" id="offeringId" name="id" />
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              <span class="text-red-500">*</span> Course
+            </label>
+            <select
+              id="courseId"
+              name="courseId"
+              required
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select Course</option>
+              <option
+                th:each="course : ${courses}"
+                th:value="${course.id}"
+                th:text="${course.courseCode + ' - ' + course.title}"
+              ></option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              <span class="text-red-500">*</span> Lecturers
+            </label>
+            <select
+              id="lecturerIds"
+              name="lecturerIds"
+              required
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px] max-h-44 overflow-y-auto"
+            >
+              <option value="">Select Lecturers</option>
+              <option
+                th:each="lecturer : ${lecturers}"
+                th:value="${lecturer.id}"
+                th:text="${lecturer.fullName + ' (' + lecturer.email + (lecturer.role?.roleCode == 'ADMIN' ? ' - Admin' : '') + ')'}"
+              ></option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              <span class="text-red-500">*</span> Term
+            </label>
+            <select
+              id="termId"
+              name="termId"
+              required
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select Term</option>
+              <option
+                th:each="term : ${terms}"
+                th:value="${term.id}"
+                th:text="${term.termName + ' (' + term.termCode + ')'}"
+              ></option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              <span class="text-red-500">*</span> Capacity
+            </label>
+            <input
+              type="number"
+              id="capacity"
+              name="capacity"
+              min="1"
+              value="30"
+              required
+              placeholder="30"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              Status
+            </label>
+            <select
+              id="isActive"
+              name="isActive"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-3 pt-4">
+            <button
+              type="submit"
+              class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm"
+            >
+              Save Offering
+            </button>
+            <button
+              type="button"
+              onclick="closeModal()"
+              class="px-6 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-300 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      id="deleteModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm items-center justify-center z-50 p-4 animate-fadeIn"
+      onclick="if(event.target === this) closeDeleteModal()"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp transform transition-all"
+      >
+        <!-- Alert Header with Gradient -->
+        <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+          <div class="flex items-center justify-between text-white">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center animate-pulse"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold">Delete Confirmation</h3>
+            </div>
+            <button
+              onclick="closeDeleteModal()"
+              style="color: rgba(255, 255, 255, 0.9) !important"
+              class="p-1.5 rounded-lg transition-all"
+              onmouseover="this.style.color='#ffffff'; this.style.backgroundColor='rgba(255,255,255,0.1)'"
+              onmouseout="this.style.color='rgba(255,255,255,0.9)'; this.style.backgroundColor='transparent'"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Alert Body -->
+        <div class="p-6">
+          <div class="flex items-start gap-4 mb-6">
+            <div
+              class="flex-shrink-0 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-slate-900 mb-2">
+                Are you absolutely sure?
+              </h4>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                This will permanently delete the course offering and all
+                associated data.
+                <span class="font-semibold text-red-600"
+                  >This action cannot be undone</span
+                >
+                and may affect enrolled students.
+              </p>
+            </div>
+          </div>
+
+          <!-- Warning Box -->
+          <div
+            class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-lg"
+          >
+            <div class="flex items-start gap-2">
+              <svg
+                class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <p class="text-xs text-amber-800 font-medium">
+                Please review carefully before confirming deletion
+              </p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              onclick="closeDeleteModal()"
+              style="
+                background-color: #f1f5f9 !important;
+                color: #334155 !important;
+                border: 1px solid #e2e8f0 !important;
+              "
+              class="flex-1 px-5 py-3 font-semibold rounded-xl transition-all duration-200"
+              onmouseover="this.style.backgroundColor='#e2e8f0'; this.style.borderColor='#cbd5e1'"
+              onmouseout="this.style.backgroundColor='#f1f5f9'; this.style.borderColor='#e2e8f0'"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Cancel
+              </span>
+            </button>
+            <button
+              id="confirmDeleteBtn"
+              style="
+                background: linear-gradient(
+                  to right,
+                  #dc2626,
+                  #b91c1c
+                ) !important;
+                color: white !important;
+              "
+              class="flex-1 px-5 py-3 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+              onmouseover="this.style.background='linear-gradient(to right, #b91c1c, #991b1b)'; this.style.transform='scale(1.05)'"
+              onmouseout="this.style.background='linear-gradient(to right, #dc2626, #b91c1c)'; this.style.transform='scale(1)'"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Yes, Delete
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="hidden fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 bg-white rounded-lg shadow-lg border border-slate-200 animate-fadeIn"
+    >
+      <div id="toastIcon" class="flex-shrink-0"></div>
+      <div id="toastMessage" class="text-sm font-medium text-slate-900"></div>
+    </div>
+
+    <script>
+      /*<![CDATA[*/
+      let deleteOfferingId = null;
+
+      // Load enrollment counts on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadEnrollmentCounts();
+        attachEventListeners();
+      });
+
+      // Attach event listeners to buttons using event delegation
+      function attachEventListeners() {
+        const tableBody = document.getElementById("offeringsTableBody");
+
+        if (tableBody) {
+          tableBody.addEventListener("click", function (e) {
+            const target = e.target.closest("button");
+            if (!target) return;
+
+            const offeringId = target.getAttribute("data-id");
+            if (!offeringId) return;
+
+            if (target.classList.contains("btn-edit")) {
+              editOffering(offeringId);
+            } else if (target.classList.contains("btn-toggle")) {
+              const isActive = target.getAttribute("data-active") === "true";
+              toggleOfferingStatus(offeringId, isActive);
+            } else if (target.classList.contains("btn-delete")) {
+              deleteOffering(offeringId);
+            }
+          });
+        }
+      }
+
+      // Load enrollment counts for all offerings
+      async function loadEnrollmentCounts() {
+        const rows = document.querySelectorAll("#offeringsTableBody tr");
+
+        for (const row of rows) {
+          const offeringId = row.getAttribute("data-id");
+          const capacity = parseInt(
+            row.querySelectorAll("td")[3].textContent.trim()
+          );
+
+          try {
+            const response = await fetch(
+              `/api/admin/enrollments/offering/${offeringId}`
+            );
+
+            if (response.ok) {
+              const enrollments = await response.json();
+              const enrolledCount = enrollments.filter(
+                (e) => e.status === "ENROLLED"
+              ).length;
+              const available = capacity - enrolledCount;
+
+              const enrolledSpan = row.querySelector(`#enrolled-${offeringId}`);
+              const availableSpan = row.querySelector(
+                `#available-${offeringId}`
+              );
+
+              if (enrolledSpan) enrolledSpan.textContent = enrolledCount;
+              if (availableSpan) {
+                availableSpan.textContent = available;
+                if (available <= 0) {
+                  availableSpan.classList.add("text-red-600", "font-bold");
+                } else {
+                  availableSpan.classList.add("text-green-600");
+                }
+              }
+            }
+          } catch (error) {
+            console.error(
+              `Error loading enrollments for offering ${offeringId}:`,
+              error
+            );
+            const enrolledSpan = row.querySelector(`#enrolled-${offeringId}`);
+            if (enrolledSpan) enrolledSpan.textContent = "0";
+            const availableSpan = row.querySelector(`#available-${offeringId}`);
+            if (availableSpan) availableSpan.textContent = capacity;
+          }
+        }
+      }
+
+      // Show toast notification
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        const toastMessage = document.getElementById("toastMessage");
+        const toastIcon = document.getElementById("toastIcon");
+
+        toastMessage.textContent = message;
+
+        if (type === "success") {
+          toastIcon.innerHTML =
+            '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        } else {
+          toastIcon.innerHTML =
+            '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        }
+
+        toast.classList.remove("hidden");
+        toast.classList.add("flex");
+        setTimeout(() => {
+          toast.classList.add("hidden");
+          toast.classList.remove("flex");
+        }, 3000);
+      }
+
+      // Filter offerings
+      function filterOfferings() {
+        const searchTerm = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const termFilter = document.getElementById("termFilter").value;
+        const rows = document.querySelectorAll("#offeringsTableBody tr");
+
+        rows.forEach((row) => {
+          const courseText = row.getAttribute("data-course").toLowerCase();
+          const termId = row.getAttribute("data-term");
+          const matchesSearch = courseText.includes(searchTerm);
+          const matchesTerm = !termFilter || termId === termFilter;
+
+          row.style.display = matchesSearch && matchesTerm ? "" : "none";
+        });
+      }
+
+      // Open create modal
+      function openCreateModal() {
+        document.getElementById("modalTitle").textContent =
+          "Add Course Offering";
+        document.getElementById("offeringForm").reset();
+        document.getElementById("offeringId").value = "";
+        document.getElementById("isActive").value = "true";
+        // Reset lecturer select so no lecturer is selected and placeholder is selected
+        const lecturerSelect = document.getElementById("lecturerIds");
+        if (lecturerSelect) {
+          Array.from(lecturerSelect.options).forEach(
+            (opt) => (opt.selected = false)
+          );
+          if (lecturerSelect.options.length > 0) {
+            lecturerSelect.options[0].selected = true;
+          }
+        }
+        document.getElementById("offeringModal").classList.remove("hidden");
+        document.getElementById("offeringModal").classList.add("flex");
+      }
+
+      // Close modal
+      function closeModal() {
+        document.getElementById("offeringModal").classList.add("hidden");
+        document.getElementById("offeringModal").classList.remove("flex");
+      }
+
+      // Close delete modal
+      function closeDeleteModal() {
+        document.getElementById("deleteModal").classList.add("hidden");
+        document.getElementById("deleteModal").classList.remove("flex");
+        deleteOfferingId = null;
+      }
+
+      // Edit offering
+      async function editOffering(id) {
+        try {
+          const response = await fetch(`/api/admin/offerings/${id}`);
+
+          if (response.ok) {
+            const offering = await response.json();
+            document.getElementById("modalTitle").textContent =
+              "Edit Course Offering";
+            document.getElementById("offeringId").value = offering.id;
+            document.getElementById("courseId").value = offering.course.id;
+            document.getElementById("termId").value = offering.term.id;
+            document.getElementById("capacity").value = offering.capacity;
+            document.getElementById("isActive").value = offering.active;
+
+            document.getElementById("offeringModal").classList.remove("hidden");
+            document.getElementById("offeringModal").classList.add("flex");
+          } else {
+            showToast("Error loading offering details", "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Error loading offering details", "error");
+        }
+      }
+
+      // Toggle offering status
+      async function toggleOfferingStatus(id, currentStatus) {
+        try {
+          const response = await fetch(`/api/admin/offerings/${id}/toggle`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            showToast(
+              `Offering ${
+                currentStatus ? "deactivated" : "activated"
+              } successfully`,
+              "success"
+            );
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            showToast("Error toggling offering status", "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Error toggling offering status", "error");
+        }
+      }
+
+      // Delete offering
+      function deleteOffering(id) {
+        deleteOfferingId = id;
+        document.getElementById("deleteModal").classList.remove("hidden");
+        document.getElementById("deleteModal").classList.add("flex");
+      }
+
+      // Confirm delete
+      document
+        .getElementById("confirmDeleteBtn")
+        .addEventListener("click", async function () {
+          if (!deleteOfferingId) return;
+
+          try {
+            const response = await fetch(
+              `/api/admin/offerings/${deleteOfferingId}`,
+              {
+                method: "DELETE",
+              }
+            );
+
+            if (response.ok) {
+              showToast("Offering deleted successfully", "success");
+              closeDeleteModal();
+              setTimeout(() => location.reload(), 1000);
+            } else {
+              showToast("Error deleting offering", "error");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showToast("Error deleting offering", "error");
+          }
+        });
+
+      // Form submission
+      document
+        .getElementById("offeringForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const id = document.getElementById("offeringId").value;
+          const lecturerSelect = document.getElementById("lecturerIds");
+          const selectedLecturers = Array.from(
+            lecturerSelect.selectedOptions
+          ).map((opt) => parseInt(opt.value));
+          const formData = {
+            courseId: parseInt(document.getElementById("courseId").value),
+            termId: parseInt(document.getElementById("termId").value),
+            capacity: parseInt(document.getElementById("capacity").value),
+            isActive: document.getElementById("isActive").value === "true",
+            lecturerIds: selectedLecturers,
+          };
+
+          const url = id
+            ? `/api/admin/offerings/${id}`
+            : "/api/admin/offerings";
+          const method = id ? "PUT" : "POST";
+
+          try {
+            const response = await fetch(url, {
+              method: method,
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+              showToast(
+                `Offering ${id ? "updated" : "created"} successfully`,
+                "success"
+              );
+              closeModal();
+              setTimeout(() => location.reload(), 1000);
+            } else {
+              const error = await response.text();
+              showToast(error || "Error saving offering", "error");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showToast("Error saving offering", "error");
+          }
+        });
+      /*]]>*/
+    </script>
+  </body>
+</html>

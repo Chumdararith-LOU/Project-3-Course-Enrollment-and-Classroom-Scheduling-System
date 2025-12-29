@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Class Schedules - Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight text-black">
+            Room Management
+          </h1>
+          <p class="text-sm text-slate-400 mt-1">Admin Portal</p>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <a
+            th:href="@{/admin/dashboard}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            th:href="@{/admin/users}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            Users
+          </a>
+          <a
+            th:href="@{/admin/courses}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            Courses
+          </a>
+          <a
+            th:href="@{/admin/offerings}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            Offerings
+          </a>
+          <a
+            th:href="@{/admin/enrollments}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Enrollments
+          </a>
+          <a
+            th:href="@{/admin/rooms}"
+            class="flex items-center px-4 py-3 text-sm font-medium bg-slate-800 text-white rounded-lg transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+            Rooms
+          </a>
+          <a
+            th:href="@{/admin/schedules}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Schedules
+          </a>
+          <a
+            th:href="@{/admin/terms}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Terms
+          </a>
+          <a
+            th:href="@{/admin/reports}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Reports
+          </a>
+        </nav>
+        <div class="px-4 py-6 border-t border-slate-700">
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"
+            >
+              A
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-white">Admin User</p>
+              <p class="text-xs text-slate-400">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+      <!-- Header Section with Gradient -->
+      <div
+        class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-lg p-6 mb-8"
+      >
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-3xl font-bold text-black mb-2">Class Schedules</h1>
+            <p class="text-purple-100">
+              Manage course schedules and time slots
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <a
+              th:href="@{/admin/schedules/export}"
+              class="bg-white bg-opacity-20 hover:bg-opacity-30 text-gray-800 px-4 py-2.5 rounded-lg border border-gray-400 flex items-center gap-2 transition backdrop-blur-sm"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Export CSV
+            </a>
+            <button
+              onclick="openCreateModal()"
+              style="
+                background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+                box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+              "
+              class="text-white px-6 py-2.5 rounded-lg font-bold hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Add New Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Search Schedules</label
+            >
+            <div class="relative">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search by course code or title..."
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                onkeyup="filterSchedules()"
+              />
+              <svg
+                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Day of Week</label
+            >
+            <select
+              id="dayFilter"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              onchange="filterSchedules()"
+            >
+              <option value="">All Days</option>
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+              <option value="Saturday">Saturday</option>
+              <option value="Sunday">Sunday</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Status</label
+            >
+            <select
+              id="statusFilter"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              onchange="filterSchedules()"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedules Table -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+          <table
+            class="min-w-full divide-y divide-gray-200"
+            id="schedulesTable"
+          >
+            <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+              <tr>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
+                  Course
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
+                  Day
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
+                  Time
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
+                  Room
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="bg-white divide-y divide-gray-200"
+              id="schedulesTableBody"
+            >
+              <tr
+                th:each="schedule : ${schedules}"
+                class="hover:bg-purple-50 transition"
+              >
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div
+                      class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm"
+                      th:text="${#strings.substring(schedule.offering.course.courseCode, 0, 2)}"
+                    >
+                      CS
+                    </div>
+                    <div class="ml-3">
+                      <div
+                        class="text-sm font-bold text-gray-900"
+                        th:text="${schedule.offering.course.courseCode}"
+                      >
+                        CS101
+                      </div>
+                      <div
+                        class="text-sm text-gray-600"
+                        th:text="${schedule.offering.course.title}"
+                      >
+                        Programming
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="px-3 py-1 text-sm font-semibold text-purple-700 bg-purple-100 rounded-full"
+                    th:text="${schedule.dayOfWeek}"
+                    >Monday</span
+                  >
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 font-medium">
+                    <svg
+                      class="w-4 h-4 inline mr-1 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span
+                      th:text="${schedule.startTime + ' - ' + schedule.endTime}"
+                      >8:00 - 10:00</span
+                    >
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <svg
+                      class="w-4 h-4 text-gray-400 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    <span
+                      class="text-sm text-gray-900 font-medium"
+                      th:text="${schedule.room.building + ' - ' + schedule.room.roomNumber}"
+                      >A - 101</span
+                    >
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    th:class="${schedule.offering.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"
+                    class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full"
+                  >
+                    <svg
+                      th:if="${schedule.offering.isActive}"
+                      class="w-4 h-4 mr-1"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <svg
+                      th:unless="${schedule.offering.isActive}"
+                      class="w-4 h-4 mr-1"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <span
+                      th:text="${schedule.offering.isActive ? 'Active' : 'Inactive'}"
+                      >Active</span
+                    >
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <div class="flex items-center gap-2">
+                    <button
+                      th:data-id="${schedule.id}"
+                      th:data-offering-id="${schedule.offering.id}"
+                      th:data-course-code="${schedule.offering.course.courseCode}"
+                      th:data-course-title="${schedule.offering.course.title}"
+                      th:data-day="${schedule.dayOfWeek}"
+                      th:data-start-time="${schedule.startTime}"
+                      th:data-end-time="${schedule.endTime}"
+                      th:data-room-id="${schedule.room.id}"
+                      th:data-room="${schedule.room.building + ' - ' + schedule.room.roomNumber}"
+                      onclick="openEditModalFromData(this)"
+                      style="
+                        background-color: #06b6d4 !important;
+                        color: white !important;
+                        border: 2px solid #0891b2 !important;
+                        box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3) !important;
+                      "
+                      class="px-3 py-1.5 rounded-md hover:opacity-90 transition font-medium flex items-center gap-1"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      th:data-id="${schedule.id}"
+                      th:data-offering-id="${schedule.offering.id}"
+                      th:data-is-active="${schedule.offering.isActive}"
+                      th:onclick="'toggleOfferingStatus(' + ${schedule.offering.id} + ', ' + ${schedule.offering.isActive} + ')'"
+                      th:style="${schedule.offering.isActive ? 'background-color: #f59e0b !important; color: white !important; border: 2px solid #d97706 !important; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3) !important;' : 'background-color: #10b981 !important; color: white !important; border: 2px solid #059669 !important; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;'}"
+                      class="px-3 py-1.5 rounded-md hover:opacity-90 transition font-medium flex items-center gap-1"
+                    >
+                      <svg
+                        th:if="${schedule.offering.isActive}"
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                        />
+                      </svg>
+                      <svg
+                        th:unless="${schedule.offering.isActive}"
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span
+                        th:text="${schedule.offering.isActive ? 'Deactivate' : 'Activate'}"
+                        >Toggle</span
+                      >
+                    </button>
+                    <button
+                      th:data-id="${schedule.id}"
+                      onclick="openDeleteModalFromData(this)"
+                      style="
+                        background-color: #ef4444 !important;
+                        color: white !important;
+                        border: 2px solid #dc2626 !important;
+                        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+                      "
+                      class="px-3 py-1.5 rounded-md hover:opacity-90 transition font-medium flex items-center gap-1"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          th:if="${#lists.isEmpty(schedules)}"
+          class="text-center py-16 px-4"
+        >
+          <div
+            class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center"
+          >
+            <svg
+              class="w-12 h-12 text-purple-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            No Schedules Found
+          </h3>
+          <p class="text-gray-500 mb-6">
+            Get started by creating your first class schedule
+          </p>
+          <button
+            onclick="openCreateModal()"
+            class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition flex items-center gap-2 mx-auto"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            Create Your First Schedule
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create Schedule Modal -->
+    <div
+      id="createModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      style="animation: fadeIn 0.3s ease-out"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-purple-100"
+        style="animation: slideUp 0.3s ease-out"
+      >
+        <div
+          class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-2xl"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm"
+            >
+              <svg
+                class="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-white">Create New Schedule</h3>
+              <p class="text-purple-100 mt-0.5 text-sm">
+                Add a new class schedule to the system
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <form id="createForm" class="space-y-6">
+            <div
+              class="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-xl border border-purple-200"
+            >
+              <label
+                class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+              >
+                <svg
+                  class="w-5 h-5 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+                Course Offering *
+              </label>
+              <select
+                id="createOfferingId"
+                required
+                class="w-full px-4 py-3 border-2 border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white hover:border-purple-400 transition-colors shadow-sm"
+              >
+                <option value="">Select Course Offering</option>
+                <option
+                  th:each="offering : ${offerings}"
+                  th:value="${offering.id}"
+                  th:text="${offering.course.courseCode + ' - ' + offering.course.title + ' (' + offering.term.termName + ')'}"
+                >
+                  CS101 - Programming (Fall 2024)
+                </option>
+              </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div
+                class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  Day of Week *
+                </label>
+                <select
+                  id="createDayOfWeek"
+                  required
+                  class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white hover:border-blue-400 transition-colors shadow-sm"
+                >
+                  <option value="">Select Day</option>
+                  <option value="Monday">📅 Monday</option>
+                  <option value="Tuesday">📅 Tuesday</option>
+                  <option value="Wednesday">📅 Wednesday</option>
+                  <option value="Thursday">📅 Thursday</option>
+                  <option value="Friday">📅 Friday</option>
+                  <option value="Saturday">📅 Saturday</option>
+                  <option value="Sunday">📅 Sunday</option>
+                </select>
+              </div>
+              <div
+                class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                  Room *
+                </label>
+                <select
+                  id="createRoomId"
+                  required
+                  class="w-full px-4 py-3 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white hover:border-green-400 transition-colors shadow-sm"
+                >
+                  <option value="">Select Room</option>
+                  <option
+                    th:each="room : ${rooms}"
+                    th:value="${room.id}"
+                    th:text="${room.building + ' - ' + room.roomNumber + ' (Cap: ' + room.capacity + ')'}"
+                  >
+                    A - 101 (Cap: 40)
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div
+                class="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-xl border border-orange-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-orange-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Start Time *
+                </label>
+                <div class="relative">
+                  <input
+                    type="time"
+                    id="createStartTime"
+                    value="08:00"
+                    required
+                    class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white hover:border-orange-400 transition-colors shadow-sm"
+                  />
+                </div>
+              </div>
+              <div
+                class="bg-gradient-to-br from-red-50 to-rose-50 p-5 rounded-xl border border-red-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  End Time *
+                </label>
+                <div class="relative">
+                  <input
+                    type="time"
+                    id="createEndTime"
+                    value="17:00"
+                    required
+                    class="w-full px-4 py-3 border-2 border-red-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white hover:border-red-400 transition-colors shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div
+          class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-5 rounded-b-2xl flex justify-between items-center border-t border-gray-200"
+        >
+          <div class="text-xs text-gray-500 flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>All fields marked with * are required</span>
+          </div>
+          <div class="flex gap-3">
+            <button
+              onclick="closeModal('createModal')"
+              class="px-6 py-2.5 text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 font-semibold transition-all hover:shadow-md flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Cancel
+            </button>
+            <button
+              onclick="createSchedule()"
+              class="px-8 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-purple-500/50"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Create Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Schedule Modal -->
+    <div
+      id="editModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      style="animation: fadeIn 0.3s ease-out"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-purple-100"
+        style="animation: slideUp 0.3s ease-out"
+      >
+        <div
+          class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-2xl"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm"
+            >
+              <svg
+                class="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-white">Edit Schedule</h3>
+              <p class="text-purple-100 mt-0.5 text-sm">
+                Update schedule information
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <form id="editForm" class="space-y-6">
+            <input type="hidden" id="editScheduleId" />
+            <input type="hidden" id="editOfferingId" />
+            <div
+              class="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-xl border border-purple-200"
+            >
+              <label
+                class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+              >
+                <svg
+                  class="w-5 h-5 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+                Course Offering
+              </label>
+              <input
+                type="text"
+                id="editCourseDisplay"
+                readonly
+                class="w-full px-4 py-3 border-2 border-purple-200 rounded-xl bg-purple-50/50 text-gray-700 font-medium"
+              />
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div
+                class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  Day of Week *
+                </label>
+                <select
+                  id="editDayOfWeek"
+                  required
+                  class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white hover:border-blue-400 transition-colors shadow-sm"
+                >
+                  <option value="">Select Day</option>
+                  <option value="Monday">📅 Monday</option>
+                  <option value="Tuesday">📅 Tuesday</option>
+                  <option value="Wednesday">📅 Wednesday</option>
+                  <option value="Thursday">📅 Thursday</option>
+                  <option value="Friday">📅 Friday</option>
+                  <option value="Saturday">📅 Saturday</option>
+                  <option value="Sunday">📅 Sunday</option>
+                </select>
+              </div>
+              <div
+                class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                  Room *
+                </label>
+                <select
+                  id="editRoomId"
+                  required
+                  class="w-full px-4 py-3 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white hover:border-green-400 transition-colors shadow-sm"
+                >
+                  <option value="">Select Room</option>
+                  <option
+                    th:each="room : ${rooms}"
+                    th:value="${room.id}"
+                    th:text="${room.building + ' - ' + room.roomNumber + ' (Cap: ' + room.capacity + ')'}"
+                  >
+                    A - 101 (Cap: 40)
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div
+                class="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-xl border border-orange-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-orange-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Start Time *
+                </label>
+                <div class="relative">
+                  <input
+                    type="time"
+                    id="editStartTime"
+                    required
+                    class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white hover:border-orange-400 transition-colors shadow-sm"
+                  />
+                </div>
+              </div>
+              <div
+                class="bg-gradient-to-br from-red-50 to-rose-50 p-5 rounded-xl border border-red-200"
+              >
+                <label
+                  class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  End Time *
+                </label>
+                <div class="relative">
+                  <input
+                    type="time"
+                    id="editEndTime"
+                    required
+                    class="w-full px-4 py-3 border-2 border-red-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white hover:border-red-400 transition-colors shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div
+          class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-5 rounded-b-2xl flex justify-between items-center border-t border-gray-200"
+        >
+          <div class="text-xs text-gray-500 flex items-center gap-1.5">
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>All fields marked with * are required</span>
+          </div>
+          <div class="flex gap-3">
+            <button
+              onclick="closeModal('editModal')"
+              class="px-6 py-2.5 text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 font-semibold transition-all hover:shadow-md flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Cancel
+            </button>
+            <button
+              onclick="updateSchedule()"
+              class="px-8 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-purple-500/50"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Update Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Schedule Modal -->
+    <div
+      id="deleteModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style="animation: fadeIn 0.3s ease-out"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+        style="animation: slideUp 0.3s ease-out"
+      >
+        <div class="bg-gradient-to-r from-red-700 to-red-900 p-6 rounded-t-2xl">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">Delete Schedule</h3>
+              <p class="text-red-100 text-sm mt-1">Permanent removal</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <input type="hidden" id="deleteScheduleId" />
+          <p class="text-gray-600 mb-4">
+            Are you sure you want to delete this schedule?
+          </p>
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <div class="flex">
+              <svg
+                class="w-5 h-5 text-red-500 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-red-800">
+                  Warning: This action cannot be undone!
+                </p>
+                <p class="text-xs text-red-700 mt-1">
+                  This will permanently remove the schedule from the system.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
+          <button
+            onclick="closeModal('deleteModal')"
+            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="confirmDelete()"
+            style="
+              background-color: #b91c1c !important;
+              color: white !important;
+            "
+            class="px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 transition"
+          >
+            Delete Schedule
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="hidden fixed top-4 right-4 z-50 bg-white rounded-lg shadow-xl p-4 min-w-[300px] border-l-4"
+    >
+      <div class="flex items-center">
+        <div id="toastIcon" class="flex-shrink-0"></div>
+        <div class="ml-3 flex-1">
+          <p id="toastMessage" class="text-sm font-medium text-gray-900"></p>
+        </div>
+        <button
+          onclick="closeToast()"
+          class="ml-4 inline-flex text-gray-400 hover:text-gray-600"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Filter schedules
+      function filterSchedules() {
+        const searchValue = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const dayValue = document
+          .getElementById("dayFilter")
+          .value.toLowerCase();
+        const statusValue = document
+          .getElementById("statusFilter")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("#schedulesTableBody tr");
+
+        rows.forEach((row) => {
+          const course = row.cells[0].textContent.toLowerCase();
+          const day = row.cells[1].textContent.toLowerCase();
+          const status = row.cells[4].textContent.toLowerCase();
+
+          const matchesSearch = course.includes(searchValue);
+          const matchesDay = !dayValue || day.includes(dayValue);
+          const matchesStatus = !statusValue || status.includes(statusValue);
+
+          row.style.display =
+            matchesSearch && matchesDay && matchesStatus ? "" : "none";
+        });
+      }
+
+      function openCreateModal() {
+        document.getElementById("createModal").classList.remove("hidden");
+        document.getElementById("createForm").reset();
+      }
+
+      // Wrapper functions for data attributes
+      function openEditModalFromData(button) {
+        const id = button.dataset.id;
+        const courseCode = button.dataset.courseCode;
+        const courseTitle = button.dataset.courseTitle;
+        const day = button.dataset.day;
+        const startTime = button.dataset.startTime;
+        const endTime = button.dataset.endTime;
+        const roomId = button.dataset.roomId;
+
+        openEditModal(
+          id,
+          courseCode,
+          courseTitle,
+          day,
+          startTime,
+          endTime,
+          roomId
+        );
+      }
+
+      function openDeleteModalFromData(button) {
+        const id = button.dataset.id;
+        openDeleteModal(id);
+      }
+
+      function openEditModal(
+        id,
+        courseCode,
+        courseTitle,
+        day,
+        startTime,
+        endTime,
+        roomId
+      ) {
+        const button = event.target.closest("button");
+        const offeringId = button.dataset.offeringId;
+
+        document.getElementById("editModal").classList.remove("hidden");
+        document.getElementById("editScheduleId").value = id;
+        document.getElementById("editOfferingId").value = offeringId;
+        document.getElementById("editCourseDisplay").value =
+          courseCode + " - " + courseTitle;
+        document.getElementById("editDayOfWeek").value = day;
+        document.getElementById("editStartTime").value = startTime;
+        document.getElementById("editEndTime").value = endTime;
+        document.getElementById("editRoomId").value = roomId;
+      }
+
+      function openDeleteModal(id) {
+        document.getElementById("deleteModal").classList.remove("hidden");
+        document.getElementById("deleteScheduleId").value = id;
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).classList.add("hidden");
+      }
+
+      // Toast Functions
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        const toastMessage = document.getElementById("toastMessage");
+        const toastIcon = document.getElementById("toastIcon");
+
+        toastMessage.textContent = message;
+
+        if (type === "success") {
+          toast.className =
+            "fixed top-4 right-4 z-50 bg-white rounded-lg shadow-xl p-4 max-w-md border-l-4 border-green-500";
+          toastIcon.innerHTML =
+            '<svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+        } else {
+          toast.className =
+            "fixed top-4 right-4 z-50 bg-white rounded-lg shadow-xl p-4 max-w-md border-l-4 border-red-500";
+          toastIcon.innerHTML =
+            '<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+        }
+
+        toast.classList.remove("hidden");
+        setTimeout(() => closeToast(), 5000);
+      }
+
+      function closeToast() {
+        document.getElementById("toast").classList.add("hidden");
+      }
+
+      // Create Schedule
+      async function createSchedule() {
+        const offeringId = document.getElementById("createOfferingId").value;
+        const dayOfWeek = document.getElementById("createDayOfWeek").value;
+        const roomId = document.getElementById("createRoomId").value;
+        const startTime = document.getElementById("createStartTime").value;
+        const endTime = document.getElementById("createEndTime").value;
+
+        if (!offeringId || !dayOfWeek || !roomId || !startTime || !endTime) {
+          showToast("Please fill in all required fields", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/admin/schedules", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              offeringId: parseInt(offeringId),
+              dayOfWeek,
+              roomId: parseInt(roomId),
+              startTime,
+              endTime,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Schedule created successfully!", "success");
+            closeModal("createModal");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const errorData = await response.json();
+            let errorMessage = "Failed to create schedule";
+
+            // Check for duplicate constraint violation
+            if (
+              errorData.message &&
+              errorData.message.includes("Duplicate entry")
+            ) {
+              errorMessage =
+                "⚠️ This schedule already exists! A schedule with the same offering, day, and time is already in the system.";
+            } else if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+
+            showToast(errorMessage, "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Failed to create schedule", "error");
+        }
+      }
+
+      // Update Schedule
+      async function updateSchedule() {
+        const id = document.getElementById("editScheduleId").value;
+        const offeringId = document.getElementById("editOfferingId").value;
+        const dayOfWeek = document.getElementById("editDayOfWeek").value;
+        const roomId = document.getElementById("editRoomId").value;
+        const startTime = document.getElementById("editStartTime").value;
+        const endTime = document.getElementById("editEndTime").value;
+
+        if (!offeringId || !dayOfWeek || !roomId || !startTime || !endTime) {
+          showToast("Please fill in all required fields", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/admin/schedules/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              offeringId: parseInt(offeringId),
+              dayOfWeek,
+              roomId: parseInt(roomId),
+              startTime,
+              endTime,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Schedule updated successfully!", "success");
+            closeModal("editModal");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const errorData = await response.json();
+            let errorMessage = "Failed to update schedule";
+
+            // Check for duplicate constraint violation
+            if (
+              errorData.message &&
+              errorData.message.includes("Duplicate entry")
+            ) {
+              errorMessage =
+                "⚠️ This schedule already exists! A schedule with the same offering, day, and time is already in the system.";
+            } else if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+
+            showToast(errorMessage, "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Failed to update schedule", "error");
+        }
+      }
+
+      // Delete Schedule
+      async function confirmDelete() {
+        const id = document.getElementById("deleteScheduleId").value;
+
+        try {
+          const response = await fetch(`/api/admin/schedules/${id}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            showToast("Schedule deleted successfully!", "success");
+            closeModal("deleteModal");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const error = await response.text();
+            showToast(error || "Failed to delete schedule", "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Failed to delete schedule", "error");
+        }
+      }
+
+      // Toggle Offering Status
+      async function toggleOfferingStatus(offeringId, currentStatus) {
+        const action = currentStatus ? "deactivate" : "activate";
+
+        if (!confirm(`Are you sure you want to ${action} this offering?`)) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/api/admin/offerings/${offeringId}/toggle-status`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          if (response.ok) {
+            showToast(`Offering ${action}d successfully!`, "success");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const error = await response.text();
+            showToast(error || `Failed to ${action} offering`, "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast(`Failed to ${action} offering`, "error");
+        }
+      }
+    </script>
+  </body>
+</html>
