@@ -120,15 +120,15 @@ public class StudentController {
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
-        return UserResponseDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .idCard(user.getIdCard())
-                .role(user.getRole().getRoleName())
-                .isActive(user.isActive())
-                .build();
+        return new UserResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIdCard(),
+                user.getRole().getRoleName(),
+                user.isActive()
+        );
     }
 
 }
