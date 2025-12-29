@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/student")
@@ -81,18 +82,43 @@ public class StudentController {
     @GetMapping("/my-courses")
     public String myCourses(Model model) {
         Long userId = getCurrentUserId();
-
         User user = userService.getUserById(userId);
-
-        // Fetch all enrollments for this student
-        List<Enrollment> allEnrollments = enrollmentRepository.findByStudentId(userId);
-
-        // Filter by status for specific tabs if needed, or pass all and filter in Thymeleaf
-        model.addAttribute("enrollments", allEnrollments);
         model.addAttribute("user", mapToResponseDTO(user));
 
-        model.addAttribute("currentPage", "my-courses");
+        // 1. Fetch DTOs instead of raw Entities so the view gets fields like 'courseCode'
+        List<StudentEnrollmentDTO> allEnrollments = courseService.getStudentEnrollments(userId);
 
+        // 2. Filter into categories for the tabs
+        List<StudentEnrollmentDTO> active = allEnrollments.stream()
+                .filter(e -> "ENROLLED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> waitlist = allEnrollments.stream()
+                .filter(e -> "WAITLIST".equalsIgnoreCase(e.getStatus()) || "WAITLISTED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> completed = allEnrollments.stream()
+                .filter(e -> "COMPLETED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> dropped = allEnrollments.stream()
+                .filter(e -> "DROPPED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        // 3. Add lists and counts to the model
+        model.addAttribute("activeEnrollments", active);
+        model.addAttribute("activeCount", active.size());
+
+        model.addAttribute("waitlistEnrollments", waitlist);
+        model.addAttribute("waitlistCount", waitlist.size());
+
+        model.addAttribute("completedEnrollments", completed);
+        model.addAttribute("completedCount", completed.size());
+
+        model.addAttribute("droppedEnrollments", dropped);
+        model.addAttribute("droppedCount", dropped.size());
+
+        model.addAttribute("currentPage", "my-courses");
         return "student/my-courses";
     }
 
