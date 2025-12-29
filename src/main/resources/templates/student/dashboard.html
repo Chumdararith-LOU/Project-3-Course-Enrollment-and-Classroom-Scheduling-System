@@ -1,362 +1,149 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Student Portal</title>
     <link th:href="@{/css/output.css}" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-    <title>Dashboard | Student Portal</title>
-  </head>
-  <body class="bg-slate-100 font-sans">
-    <!-- Sidebar Navigation -->
-    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
-      <div class="flex flex-col h-full">
-        <!-- Logo -->
-        <div class="px-6 py-8 border-b border-slate-700">
-          <h1 class="text-2xl font-bold tracking-tight">Course Enrollment</h1>
-          <p class="text-sm text-slate-400 mt-1">Student Portal</p>
-        </div>
+</head>
+<body class="bg-slate-100 font-sans">
+<div class="flex h-screen overflow-hidden">
 
-        <!-- Navigation Menu -->
-        <nav class="flex-1 px-4 py-6 space-y-2">
-          <a
-            th:href="@{/student/dashboard(studentId=${studentId})}"
-            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
-          >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-              />
-            </svg>
-            Dashboard
-          </a>
-          <a
-            th:href="@{/student/courses(studentId=${studentId})}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
-          >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-              />
-            </svg>
-            Browse Courses
-          </a>
-          <a
-            th:href="@{/student/schedule(studentId=${studentId})}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
-          >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            My Schedule
-          </a>
-          <a
-            th:href="@{/student/grades(studentId=${studentId})}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
-          >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-              />
-            </svg>
-            My Grades
-          </a>
-        </nav>
+    <div th:replace="fragments/student-sidebar :: sidebar(currentPage='dashboard')"></div>
 
-        <!-- User Profile -->
-        <div class="px-4 py-6 border-t border-slate-700">
-          <div class="flex items-center">
-            <div
-              class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold"
-            >
-              S
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="bg-white border-b border-gray-100 h-16 flex items-center justify-between px-8 z-10 shrink-0">
+            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-bold" th:text="${user.firstName}">Student</span></h2>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                    <span th:text="${#strings.substring(user.firstName,0,1)}">S</span>
+                </div>
             </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium">Student</p>
-              <p class="text-xs text-slate-400">
-                ID: <span th:text="${studentId}">1</span>
-              </p>
-            </div>
-          </div>
-          <a
-            href="/logout"
-            class="mt-4 flex items-center px-4 py-2 text-sm text-red-400 rounded-lg hover:bg-slate-800 transition"
-          >
-            <svg
-              class="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            Logout
-          </a>
-        </div>
-      </div>
-    </aside>
+        </header>
 
-    <!-- Main Content -->
-    <main class="ml-64 p-8">
-      <!-- Quick Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-gray-500 text-sm font-medium">Enrolled Courses</div>
-          <div
-            class="text-3xl font-bold text-blue-600 mt-2"
-            th:text="${enrollments != null ? #lists.size(enrollments) : 0}"
-          >
-            0
-          </div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-gray-500 text-sm font-medium">Active Terms</div>
-          <div
-            class="text-3xl font-bold text-green-600 mt-2"
-            th:text="${terms != null ? #lists.size(terms) : 0}"
-          >
-            0
-          </div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-gray-500 text-sm font-medium">This Week</div>
-          <div class="text-3xl font-bold text-purple-600 mt-2">12</div>
-          <div class="text-xs text-gray-500">Classes</div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-gray-500 text-sm font-medium">Overall GPA</div>
-          <div class="text-3xl font-bold text-yellow-600 mt-2">3.85</div>
-        </div>
-      </div>
+        <div class="flex-1 overflow-y-auto p-8">
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">Enrolled Courses</div>
+                    <div class="text-3xl font-bold text-blue-600 mt-2" th:text="${enrolledCount != null ? enrolledCount : 0}">0</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">Active Terms</div>
+                    <div class="text-3xl font-bold text-green-600 mt-2">
+                        <!-- Count unique terms from enrollments using a simpler approach -->
+                        <span th:if="${enrollments != null && !enrollments.empty}">
+                            <span th:text="${#sets.toSet(enrollments.![termName]).size()}">0</span>
+                        </span>
+                        <span th:if="${enrollments == null || enrollments.empty}">0</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">This Week</div>
+                    <div class="text-3xl font-bold text-purple-600 mt-2">
+                        <!-- Calculate total classes per week (assuming each course meets once per week) -->
+                        <span th:text="${enrollments != null ? #lists.size(enrollments) : 0}">0</span>
+                    </div>
+                    <div class="text-xs text-gray-500">Classes</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">Overall GPA</div>
+                    <div class="text-3xl font-bold text-yellow-600 mt-2">3.85</div>
+                </div>
+            </div>
 
-      <!-- Current Enrollments -->
-      <div class="bg-white rounded-lg shadow mb-8">
-        <div class="p-6 border-b border-gray-200">
-          <h2 class="text-xl font-bold text-gray-800">My Current Courses</h2>
+            <!-- Current Enrollments -->
+            <div class="bg-white rounded-lg shadow mb-8">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">My Current Courses</h2>
+                </div>
+                <div class="p-6">
+                    <div th:if="${enrollments == null || #lists.isEmpty(enrollments)}" class="text-center text-gray-500 py-8">
+                        <p>You are not enrolled in any courses yet.</p>
+                        <a th:href="@{/student/catalog}" class="text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block">Browse Available Courses</a>
+                    </div>
+
+                    <div th:if="${enrollments != null && !#lists.isEmpty(enrollments)}" class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="en : ${enrollments}">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${en.courseCode}">CS101</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${en.title}">Introduction to Programming</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${en.credits}">3</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${en.termName}">Fall 2025</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                        <span th:class="${en.status == 'ENROLLED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}"
+                                              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                              th:text="${en.status}">ENROLLED</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <a th:href="@{/student/grades}" class="text-blue-600 hover:text-blue-900 mr-3">View Grade</a>
+                                    <a th:if="${en.status == 'ENROLLED'}" href="#" class="text-red-600 hover:text-red-900">Drop</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a th:href="@{/student/catalog}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 rounded-full p-3 mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Browse Courses</h3>
+                            <p class="text-sm text-gray-500">Find and enroll in courses</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a th:href="@{/student/schedule}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 rounded-full p-3 mr-4">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">My Schedule</h3>
+                            <p class="text-sm text-gray-500">View class schedule</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a th:href="@{/student/grades}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center">
+                        <div class="bg-purple-100 rounded-full p-3 mr-4">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">My Grades</h3>
+                            <p class="text-sm text-gray-500">Check your grades</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
-        <div class="p-6">
-          <div
-            th:if="${enrollments == null || #lists.isEmpty(enrollments)}"
-            class="text-center text-gray-500 py-8"
-          >
-            <p>You are not enrolled in any courses yet.</p>
-            <a
-              th:href="@{/student/courses(studentId=${studentId})}"
-              class="text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block"
-              >Browse Available Courses</a
-            >
-          </div>
-
-          <div
-            th:if="${enrollments != null && !#lists.isEmpty(enrollments)}"
-            class="overflow-x-auto"
-          >
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Course Code
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Course Title
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Credits
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Term
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Status
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr th:each="enrollment : ${enrollments}">
-                  <td
-                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                    th:text="${enrollment.offering.course.courseCode}"
-                  >
-                    CS101
-                  </td>
-                  <td
-                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                    th:text="${enrollment.offering.course.title}"
-                  >
-                    Introduction to Programming
-                  </td>
-                  <td
-                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                    th:text="${enrollment.offering.course.credits}"
-                  >
-                    3
-                  </td>
-                  <td
-                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                    th:text="${enrollment.offering.term.termName}"
-                  >
-                    Fall 2025
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      th:class="${enrollment.status == 'ENROLLED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}"
-                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                      th:text="${enrollment.status}"
-                      >ENROLLED</span
-                    >
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <a
-                      th:href="@{/student/grades(studentId=${studentId})}"
-                      class="text-blue-600 hover:text-blue-900 mr-3"
-                      >View Grade</a
-                    >
-                    <a href="#" class="text-red-600 hover:text-red-900">Drop</a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <a
-          th:href="@{/student/courses(studentId=${studentId})}"
-          class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
-        >
-          <div class="flex items-center">
-            <div class="bg-blue-100 rounded-full p-3 mr-4">
-              <svg
-                class="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 class="font-bold text-gray-800">Browse Courses</h3>
-              <p class="text-sm text-gray-500">Find and enroll in courses</p>
-            </div>
-          </div>
-        </a>
-
-        <a
-          th:href="@{/student/schedule(studentId=${studentId})}"
-          class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
-        >
-          <div class="flex items-center">
-            <div class="bg-green-100 rounded-full p-3 mr-4">
-              <svg
-                class="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 class="font-bold text-gray-800">My Schedule</h3>
-              <p class="text-sm text-gray-500">View class schedule</p>
-            </div>
-          </div>
-        </a>
-
-        <a
-          th:href="@{/student/grades(studentId=${studentId})}"
-          class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
-        >
-          <div class="flex items-center">
-            <div class="bg-purple-100 rounded-full p-3 mr-4">
-              <svg
-                class="w-6 h-6 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 class="font-bold text-gray-800">My Grades</h3>
-              <p class="text-sm text-gray-500">Check your grades</p>
-            </div>
-          </div>
-        </a>
-      </div>
     </main>
-  </body>
+</div>
+</body>
 </html>

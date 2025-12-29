@@ -1,6 +1,7 @@
 package com.cource.controller;
 
 import com.cource.dto.course.CourseResponseDTO;
+import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.dto.user.UserResponseDTO;
 import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.Enrollment;
@@ -54,23 +55,13 @@ public class StudentController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         Long userId = getCurrentUserId();
-
-        // User Info
         User user = userService.getUserById(userId);
         model.addAttribute("user", mapToResponseDTO(user));
 
-        // Stats
-        long enrolledCount = enrollmentService.getEnrolledCourseCount(userId);
-        model.addAttribute("enrolledCount", enrolledCount);
-
-        // Recent Enrollments (limit to 5 for dashboard)
-        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(userId);
+        // Use the new DTO for dashboard list as well
+        List<StudentEnrollmentDTO> enrollments = courseService.getStudentEnrollments(userId);
         model.addAttribute("enrollments", enrollments);
-
-        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
-        model.addAttribute("courses", courses);
-
-        model.addAttribute("todaysClasses", java.util.Collections.emptyList());
+        model.addAttribute("enrolledCount", enrollments.stream().filter(e -> "ENROLLED".equals(e.getStatus())).count());
         model.addAttribute("currentPage", "dashboard");
 
         return "student/dashboard";
@@ -125,7 +116,9 @@ public class StudentController {
         Long userId = getCurrentUserId();
         model.addAttribute("studentId", userId);
 
-        // Fetch graded enrollments
+        User user = userService.getUserById(userId);
+        model.addAttribute("user", mapToResponseDTO(user));
+
         List<Enrollment> grades = enrollmentRepository.findByStudentIdAndGradeIsNotNull(userId);
         model.addAttribute("grades", grades);
         model.addAttribute("currentPage", "grades");
@@ -136,7 +129,8 @@ public class StudentController {
     public String attendance(Model model) {
         Long userId = getCurrentUserId();
         model.addAttribute("studentId", userId);
-        model.addAttribute("currentPage", "attendance");
+        User user = userService.getUserById(userId);
+        model.addAttribute("user", mapToResponseDTO(user));
         model.addAttribute("currentPage", "attendance");
         return "student/attendance";
     }

@@ -4,6 +4,7 @@ import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseRequestDTO;
 import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.course.CourseUpdateRequest;
+import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.entity.*;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CourseServiceImpl implements CourseService {
 
     private final CourseOfferingRepository courseOfferingRepository;
@@ -30,6 +32,61 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final AcademicTermRepository termRepository;
     private final UserRepository userRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('STUDENT')")
+    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+        List<StudentEnrollmentDTO> dtos = new ArrayList<>();
+
+        for (Enrollment en : enrollments) {
+            CourseOffering offering = en.getOffering();
+            Course course = offering.getCourse();
+
+            // 1. Basic Info
+            StudentEnrollmentDTO dto = StudentEnrollmentDTO.builder()
+                    .enrollmentId(en.getId())
+                    .offeringId(offering.getId())
+                    .courseCode(course.getCourseCode())
+                    .title(course.getTitle())
+                    .credits(course.getCredits())
+                    .termName(offering.getTerm().getTermName())
+                    .status(en.getStatus())
+                    .grade(en.getGrade())
+                    .enrolledAt(en.getEnrolledAt())
+                    .build();
+
+            // 2. Fetch Lecturer (Helper Logic)
+            courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId())
+                    .stream().findFirst()
+                    .ifPresentOrElse(
+                            cl -> dto.setLecturer(cl.getLecturer().getFullName()),
+                            () -> dto.setLecturer("TBA")
+                    );
+
+            // 3. Fetch Schedule (Helper Logic)
+            classScheduleRepository.findByOfferingId(offering.getId())
+                    .stream().findFirst()
+                    .ifPresentOrElse(
+                            sched -> {
+                                dto.setSchedule(sched.getDayOfWeek() + " " + sched.getStartTime() + "-" + sched.getEndTime());
+                                if (sched.getRoom() != null) {
+                                    dto.setLocation(sched.getRoom().getBuilding() + " - " + sched.getRoom().getRoomNumber());
+                                } else {
+                                    dto.setLocation("TBA");
+                                }
+                            },
+                            () -> {
+                                dto.setSchedule("TBA");
+                                dto.setLocation("TBA");
+                            }
+                    );
+
+            dtos.add(dto);
+        }
+        return dtos;
+    }
 
     @Override
     @Transactional(readOnly = true)
