@@ -62,7 +62,7 @@ public class AdminViewController {
         model.addAttribute("userLabels", userLabels);
         model.addAttribute("userData", userData);
 
-        return "views/admin/dashboard";
+        return "admin/dashboard";
     }
 
     @GetMapping("/users")
@@ -74,7 +74,7 @@ public class AdminViewController {
             model.addAttribute("users", adminService.getAllUsers());
         }
         model.addAttribute("roles", roleRepository.findAll());
-        return "views/admin/users";
+        return "admin/users";
     }
 
     @GetMapping("/users/{id}/edit")
@@ -87,7 +87,7 @@ public class AdminViewController {
     @GetMapping("/courses")
     public String courses(Model model) {
         model.addAttribute("courses", adminService.getAllCourses());
-        return "views/admin/courses";
+        return "admin/courses";
     }
 
     @GetMapping("/offerings")
@@ -109,13 +109,13 @@ public class AdminViewController {
         } else {
             model.addAttribute("offerings", adminService.getAllCourseOfferings());
         }
-        return "views/admin/offerings";
+        return "admin/offerings";
     }
 
     @GetMapping("/rooms")
     public String rooms(Model model) {
         model.addAttribute("rooms", adminService.getAllRooms());
-        return "views/admin/rooms";
+        return "admin/rooms";
     }
 
     @GetMapping("/schedules")
@@ -123,13 +123,13 @@ public class AdminViewController {
         model.addAttribute("schedules", adminService.getAllSchedules());
         model.addAttribute("offerings", adminService.getAllCourseOfferings());
         model.addAttribute("rooms", adminService.getAllRooms());
-        return "views/admin/schedules";
+        return "admin/schedules";
     }
 
     @GetMapping("/terms")
     public String terms(Model model) {
         model.addAttribute("terms", adminService.getAllTerms());
-        return "views/admin/terms";
+        return "admin/terms";
     }
 
     @GetMapping("/enrollments")
@@ -142,7 +142,7 @@ public class AdminViewController {
         }
         model.addAttribute("offerings", adminService.getAllCourseOfferings());
         model.addAttribute("students", adminService.getUsersByRole("STUDENT"));
-        return "views/admin/enrollments";
+        return "admin/enrollments";
     }
 
     @GetMapping("/reports")
@@ -201,7 +201,7 @@ public class AdminViewController {
                 .max()
                 .orElse(1.0);
         model.addAttribute("courseMax", courseMax);
-        return "views/admin/reports";
+        return "admin/reports";
     }
 
     // Export endpoints
