@@ -106,7 +106,9 @@ public class StudentController {
     @GetMapping("/schedule")
     public String schedule(Model model) {
         Long userId = getCurrentUserId();
-        model.addAttribute("studentId", userId); // Needed for sidebar links
+        model.addAttribute("studentId", userId);
+        User user = userService.getUserById(userId);
+        model.addAttribute("user", mapToResponseDTO(user));
         model.addAttribute("currentPage", "schedule");
         return "student/schedule";
     }
