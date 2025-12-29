@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
   <body>
     <nav
       th:fragment="navbar"
@@ -16,7 +19,28 @@
           <a href="/courses" class="text-gray-700 hover:text-blue-600"
             >Courses</a
           >
-          <a href="/login" class="text-gray-700 hover:text-blue-600">Login</a>
+          <span sec:authorize="!isAuthenticated()">
+            <a href="/login" class="text-gray-700 hover:text-blue-600">Login</a>
+          </span>
+
+          <form
+            th:action="@{/perform_logout}"
+            method="post"
+            sec:authorize="isAuthenticated()"
+            class="m-0 p-0"
+          >
+            <input
+              type="hidden"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
+            <button
+              type="submit"
+              class="text-gray-700 hover:text-blue-600 bg-transparent border-0 p-0"
+            >
+              Sign out
+            </button>
+          </form>
         </div>
       </div>
     </nav>

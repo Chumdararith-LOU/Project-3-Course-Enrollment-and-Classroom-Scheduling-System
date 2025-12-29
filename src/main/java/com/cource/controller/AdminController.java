@@ -324,7 +324,6 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== Room Management =====
     @GetMapping("/rooms")
     public ResponseEntity<List<Room>> getAllRooms() {
         return ResponseEntity.ok(adminService.getAllRooms());
