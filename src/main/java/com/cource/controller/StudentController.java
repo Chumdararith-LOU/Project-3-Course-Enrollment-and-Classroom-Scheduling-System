@@ -37,7 +37,7 @@ public class StudentController {
         return ResponseEntity.ok(mapToResponseDTO(user));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/info/{id}")
     public ResponseEntity<UserResponseDTO> getStudentById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(mapToResponseDTO(user));

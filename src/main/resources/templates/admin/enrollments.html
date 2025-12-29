@@ -414,17 +414,16 @@
                 id="enrollmentsTableBody"
                 class="divide-y divide-slate-200"
               >
-                <tr
-                  th:each="enrollment : ${enrollments}"
-                  th:attr="data-id=${enrollment.id},data-student=${enrollment.student.fullName},data-course=${enrollment.offering.course.courseCode + ' - ' + enrollment.offering.course.title},data-status=${enrollment.status},data-offering=${enrollment.offering.id}"
-                  class="enrollment-row hover:bg-slate-50"
-                >
+              <tr th:each="enrollment : ${enrollments}"
+                  th:attr="data-id=${enrollment.id},data-student=${enrollment.student.firstName + ' ' + enrollment.student.lastName},data-course=${enrollment.offering.course.courseCode + ' - ' + enrollment.offering.course.title},data-status=${enrollment.status},data-offering=${enrollment.offering.id}"
+                  class="enrollment-row hover:bg-slate-50">
+
                   <td class="px-6 py-4 text-sm text-slate-600">
                     <span th:text="${enrollment.id}"></span>
                   </td>
                   <td class="px-6 py-4">
                     <div class="text-sm font-medium text-slate-900">
-                      <span th:text="${enrollment.student.fullName}"></span>
+                      <span th:text="${enrollment.student.firstName + ' ' + enrollment.student.lastName}"></span>
                     </div>
                     <div class="text-sm text-slate-500">
                       <span th:text="${enrollment.student.email}"></span>
