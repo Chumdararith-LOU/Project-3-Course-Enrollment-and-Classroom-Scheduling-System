@@ -79,8 +79,11 @@ public class StudentController {
 
     @GetMapping("/my-courses")
     public String myCourses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User student = getUserByDetails(userDetails);
-        model.addAttribute("enrollments", courseService.getStudentEnrollments(student.getId()));
+        User user = getUserByDetails(userDetails);
+
+        model.addAttribute("user", user);
+
+        model.addAttribute("enrollments", courseService.getStudentEnrollments(user.getId()));
         return "student/my-courses";
     }
 
