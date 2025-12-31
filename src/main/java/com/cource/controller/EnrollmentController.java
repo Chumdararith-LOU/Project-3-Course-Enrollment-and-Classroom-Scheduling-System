@@ -3,6 +3,7 @@ package com.cource.controller;
 import com.cource.dto.EnrollmentResult;
 import com.cource.entity.User;
 import com.cource.service.EnrollmentService;
+import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class EnrollmentController {
     private final EnrollmentService enrollmentService;
+    private final UserService userService;
 
     @PostMapping("/enroll")
     public String enroll(@RequestParam Long offeringId, RedirectAttributes redirectAttributes) {
@@ -56,11 +58,18 @@ public class EnrollmentController {
     }
 
     @PostMapping("/join")
-    public ResponseEntity<EnrollmentResult> joinByCode(
+    public String joinByCode(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam String code) {
-        
-        User studentUser = userService.getUserByEmail(userDetails.getUsername());
-        return ResponseEntity.ok(enrollmentService.enrollByCode(studentUser.getId(), code));
+            @RequestParam String code,
+            RedirectAttributes redirectAttributes) {
+        try {
+            User student = userService.getUserByEmail(userDetails.getUsername());
+            var result = enrollmentService.enrollByCode(student.getId(), code);
+
+            redirectAttributes.addFlashAttribute("successMessage", result.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/student/catalog";
     }
 }

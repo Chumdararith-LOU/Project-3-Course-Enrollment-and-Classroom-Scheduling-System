@@ -7,6 +7,7 @@ import com.cource.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
+    User getUserByEmail(String email);
 
     User getUserById(Long id);
 
