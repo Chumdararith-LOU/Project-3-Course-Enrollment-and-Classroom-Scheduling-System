@@ -1,7 +1,10 @@
 package com.cource.service.impl;
 
+import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseRequestDTO;
 import com.cource.dto.course.CourseResponseDTO;
+import com.cource.dto.course.CourseUpdateRequest;
+import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.entity.*;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
@@ -14,10 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CourseServiceImpl implements CourseService {
 
     private final CourseOfferingRepository courseOfferingRepository;
@@ -27,6 +32,61 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final AcademicTermRepository termRepository;
     private final UserRepository userRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('STUDENT')")
+    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+        List<StudentEnrollmentDTO> dtos = new ArrayList<>();
+
+        for (Enrollment en : enrollments) {
+            CourseOffering offering = en.getOffering();
+            Course course = offering.getCourse();
+
+            // 1. Basic Info
+            StudentEnrollmentDTO dto = StudentEnrollmentDTO.builder()
+                    .enrollmentId(en.getId())
+                    .offeringId(offering.getId())
+                    .courseCode(course.getCourseCode())
+                    .title(course.getTitle())
+                    .credits(course.getCredits())
+                    .termName(offering.getTerm().getTermName())
+                    .status(en.getStatus())
+                    .grade(en.getGrade())
+                    .enrolledAt(en.getEnrolledAt())
+                    .build();
+
+            // 2. Fetch Lecturer (Helper Logic)
+            courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId())
+                    .stream().findFirst()
+                    .ifPresentOrElse(
+                            cl -> dto.setLecturer(cl.getLecturer().getFullName()),
+                            () -> dto.setLecturer("TBA")
+                    );
+
+            // 3. Fetch Schedule (Helper Logic)
+            classScheduleRepository.findByOfferingId(offering.getId())
+                    .stream().findFirst()
+                    .ifPresentOrElse(
+                            sched -> {
+                                dto.setSchedule(sched.getDayOfWeek() + " " + sched.getStartTime() + "-" + sched.getEndTime());
+                                if (sched.getRoom() != null) {
+                                    dto.setLocation(sched.getRoom().getBuilding() + " - " + sched.getRoom().getRoomNumber());
+                                } else {
+                                    dto.setLocation("TBA");
+                                }
+                            },
+                            () -> {
+                                dto.setSchedule("TBA");
+                                dto.setLocation("TBA");
+                            }
+                    );
+
+            dtos.add(dto);
+        }
+        return dtos;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -97,6 +157,80 @@ public class CourseServiceImpl implements CourseService {
         return myCourses;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Course> searchCourses(String search) {
+        return courseRepository.findByCourseCodeContainingIgnoreCaseOrTitleContainingIgnoreCase(search, search);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Course getCourseById(Long id) {
+        return courseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public Course createCourse(CourseCreateRequest request) {
+        if (courseRepository.existsByCourseCode(request.getCourseCode())) {
+            throw new ConflictException("Course code already exists");
+        }
+        Course course = new Course();
+        course.setCourseCode(request.getCourseCode());
+        course.setTitle(request.getTitle());
+        course.setDescription(request.getDescription());
+        course.setCredits(request.getCapacity()); // Mapping capacity to credits based on DTO
+        course.setActive(request.isActive());
+        return courseRepository.save(course);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public Course updateCourse(Long id, CourseUpdateRequest request) {
+        Course course = getCourseById(id);
+
+        if (request.getCourseCode() != null) {
+            // Check uniqueness if changed
+            if (!course.getCourseCode().equals(request.getCourseCode()) &&
+                    courseRepository.existsByCourseCode(request.getCourseCode())) {
+                throw new ConflictException("Course code already exists");
+            }
+            course.setCourseCode(request.getCourseCode());
+        }
+        if (request.getTitle() != null) {
+            course.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            course.setDescription(request.getDescription());
+        }
+        if (request.getCapacity() > 0) {
+            course.setCredits(request.getCapacity());
+        }
+
+        return courseRepository.save(course);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public void toggleCourseStatus(Long id) {
+        Course course = getCourseById(id);
+        course.setActive(!course.isActive());
+        courseRepository.save(course);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public void regenerateEnrollmentCode(Long id) {
+        Course course = getCourseById(id);
+        String newCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        courseRepository.save(course);
+    }
+
     // --- Helper to Map Entity to DTO ---
     private CourseResponseDTO mapToDTO(CourseOffering offering) {
         CourseResponseDTO dto = new CourseResponseDTO();
@@ -113,9 +247,7 @@ public class CourseServiceImpl implements CourseService {
             dto.setActive(offering.getTerm().isActive());
         }
         setLecturerInfo(dto, offering);
-
         setScheduleInfo(dto, offering);
-
         setEnrollmentCount(dto, offering);
 
         return dto;
@@ -197,7 +329,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private void setEnrollmentCount(CourseResponseDTO dto, CourseOffering offering) {
-        int currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ENROLLED");
-        dto.setEnrolled(currentEnrolled);
+        long currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ENROLLED");
+        dto.setEnrolled((int) currentEnrolled);
     }
 }

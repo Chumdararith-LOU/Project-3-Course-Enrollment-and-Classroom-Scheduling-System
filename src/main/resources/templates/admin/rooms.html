@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Room Management - Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight text-black">
+            Room Management
+          </h1>
+          <p class="text-sm text-slate-400 mt-1">Admin Portal</p>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <a
+            th:href="@{/admin/dashboard}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            th:href="@{/admin/users}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            Users
+          </a>
+          <a
+            th:href="@{/admin/courses}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            Courses
+          </a>
+          <a
+            th:href="@{/admin/offerings}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            Offerings
+          </a>
+          <a
+            th:href="@{/admin/enrollments}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Enrollments
+          </a>
+          <a
+            th:href="@{/admin/rooms}"
+            class="flex items-center px-4 py-3 text-sm font-medium bg-slate-800 text-white rounded-lg transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+            Rooms
+          </a>
+          <a
+            th:href="@{/admin/schedules}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Schedules
+          </a>
+          <a
+            th:href="@{/admin/terms}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Terms
+          </a>
+          <a
+            th:href="@{/admin/reports}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Reports
+          </a>
+        </nav>
+        <div class="px-4 py-6 border-t border-slate-700">
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"
+            >
+              A
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-white">Admin User</p>
+              <p class="text-xs text-slate-400">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+      <!-- Header Section -->
+      <div
+        class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-lg p-6 mb-8"
+      >
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-3xl font-bold text-black mb-2">Room Management</h1>
+            <p class="text-purple-100">
+              Manage classroom spaces and facilities
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <a
+              th:href="@{/admin/rooms/export}"
+              class="bg-white bg-opacity-20 hover:bg-opacity-30 text-black px-4 py-2.5 rounded-lg flex items-center gap-2 transition backdrop-blur-sm"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Export CSV
+            </a>
+            <button
+              onclick="openCreateModal()"
+              style="
+                background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+                box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+              "
+              class="text-white px-6 py-2.5 rounded-lg font-bold hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Add New Room
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Search Rooms</label
+            >
+            <div class="relative">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search by building or room number..."
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                onkeyup="filterRooms()"
+              />
+              <svg
+                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Room Type</label
+            >
+            <select
+              id="typeFilter"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              onchange="filterRooms()"
+            >
+              <option value="">All Types</option>
+              <option value="Lecture Hall">Lecture Hall</option>
+              <option value="Lab">Lab</option>
+              <option value="Seminar">Seminar</option>
+              <option value="Standard">Standard</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Status</label
+            >
+            <select
+              id="statusFilter"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              onchange="filterRooms()"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rooms Table -->
+      <div
+        class="bg-white rounded-lg shadow-md overflow-hidden"
+        style="animation: slideUp 0.5s ease-out"
+      >
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead
+              class="bg-gradient-to-r from-cyan-50 to-blue-50 border-b-2 border-cyan-200"
+            >
+              <tr>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-cyan-900 uppercase tracking-wider"
+                >
+                  Building
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-cyan-900 uppercase tracking-wider"
+                >
+                  Room Number
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-cyan-900 uppercase tracking-wider"
+                >
+                  Room Type
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-cyan-900 uppercase tracking-wider"
+                >
+                  Capacity
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-cyan-900 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-cyan-900 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="roomsTableBody">
+              <tr
+                th:each="room : ${rooms}"
+                class="hover:bg-cyan-50 transition duration-150"
+                th:attr="data-building=${room.building}, data-room-number=${room.roomNumber}, data-type=${room.roomType}, data-status=${room.isActive ? 'active' : 'inactive'}"
+              >
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div
+                      class="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-5 h-5 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                    </div>
+                    <div class="ml-4">
+                      <div
+                        class="text-sm font-bold text-gray-900"
+                        th:text="${room.building}"
+                      >
+                        Building A
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div
+                    class="text-sm font-semibold text-cyan-600"
+                    th:text="${room.roomNumber}"
+                  >
+                    101
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div
+                    class="text-sm text-gray-900"
+                    th:text="${room.roomType ?: 'Standard'}"
+                  >
+                    Standard
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center gap-2">
+                    <svg
+                      class="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                    <span
+                      class="text-sm font-medium text-gray-700"
+                      th:text="${room.capacity}"
+                      >40</span
+                    >
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    th:if="${room.isActive}"
+                    class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 inline-flex items-center gap-1"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Active
+                  </span>
+                  <span
+                    th:unless="${room.isActive}"
+                    class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 inline-flex items-center gap-1"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Inactive
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <div class="flex items-center gap-2">
+                    <button
+                      th:data-id="${room.id}"
+                      th:data-building="${room.building}"
+                      th:data-room-number="${room.roomNumber}"
+                      th:data-room-type="${room.roomType}"
+                      th:data-capacity="${room.capacity}"
+                      th:data-active="${room.isActive}"
+                      onclick="openEditModalFromData(this)"
+                      style="
+                        background-color: #06b6d4 !important;
+                        color: white !important;
+                        border: 2px solid #0891b2 !important;
+                        box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3) !important;
+                      "
+                      class="px-3 py-1.5 rounded-md hover:opacity-90 transition font-medium flex items-center gap-1"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      th:data-id="${room.id}"
+                      th:data-active="${room.isActive}"
+                      onclick="openToggleModalFromData(this)"
+                      style="
+                        background-color: #f59e0b !important;
+                        color: white !important;
+                        border: 2px solid #d97706 !important;
+                        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3) !important;
+                      "
+                      class="px-3 py-1.5 rounded-md hover:opacity-90 transition font-medium flex items-center gap-1"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      </svg>
+                      Toggle
+                    </button>
+                    <button
+                      th:data-id="${room.id}"
+                      th:data-building="${room.building}"
+                      th:data-room-number="${room.roomNumber}"
+                      onclick="openDeleteModalFromData(this)"
+                      style="
+                        background-color: #ef4444 !important;
+                        color: white !important;
+                        border: 2px solid #dc2626 !important;
+                        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+                      "
+                      class="px-3 py-1.5 rounded-md hover:opacity-90 transition font-medium flex items-center gap-1"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(rooms)}" class="text-center py-16">
+          <div
+            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-100 mb-4"
+          >
+            <svg
+              class="w-8 h-8 text-cyan-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            No rooms found
+          </h3>
+          <p class="text-gray-500 mb-6">
+            Get started by creating your first room.
+          </p>
+          <button
+            onclick="openCreateModal()"
+            class="bg-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-700 transition inline-flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            Create Your First Room
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create Room Modal -->
+    <div
+      id="createModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style="animation: fadeIn 0.3s ease-out"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        style="animation: slideUp 0.3s ease-out"
+      >
+        <div
+          class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-2xl"
+        >
+          <h3 class="text-2xl font-bold text-black">Create New Room</h3>
+          <p class="text-purple-100 mt-1">Add a new classroom to the system</p>
+        </div>
+        <div class="p-6">
+          <form id="createForm" class="space-y-5">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Building *</label
+                >
+                <input
+                  type="text"
+                  id="createBuilding"
+                  required
+                  placeholder="e.g., Building A"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Room Number *</label
+                >
+                <input
+                  type="text"
+                  id="createRoomNumber"
+                  required
+                  placeholder="e.g., 101"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Room Type *</label
+                >
+                <select
+                  id="createRoomType"
+                  required
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="">Select Type</option>
+                  <option value="Lecture Hall">Lecture Hall</option>
+                  <option value="Lab">Lab</option>
+                  <option value="Seminar">Seminar</option>
+                  <option value="Standard">Standard</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Capacity *</label
+                >
+                <input
+                  type="number"
+                  id="createCapacity"
+                  required
+                  min="1"
+                  placeholder="e.g., 40"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="createIsActive"
+                  checked
+                  class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <span class="text-sm font-medium text-gray-700"
+                  >Active (Room is available for use)</span
+                >
+              </label>
+            </div>
+          </form>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
+          <button
+            onclick="closeModal('createModal')"
+            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="createRoom()"
+            style="
+              background: linear-gradient(
+                135deg,
+                #a855f7 0%,
+                #ec4899 100%
+              ) !important;
+              color: white !important;
+            "
+            class="px-6 py-2.5 text-white rounded-lg font-semibold hover:opacity-90 hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            Create Room
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Room Modal -->
+    <div
+      id="editModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style="animation: fadeIn 0.3s ease-out"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        style="animation: slideUp 0.3s ease-out"
+      >
+        <div
+          class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-2xl"
+        >
+          <h3 class="text-2xl font-bold text-black">Edit Room</h3>
+          <p class="text-purple-100 mt-1">Update room information</p>
+        </div>
+        <div class="p-6">
+          <form id="editForm" class="space-y-5">
+            <input type="hidden" id="editRoomId" />
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Building *</label
+                >
+                <input
+                  type="text"
+                  id="editBuilding"
+                  required
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Room Number *</label
+                >
+                <input
+                  type="text"
+                  id="editRoomNumber"
+                  required
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Room Type *</label
+                >
+                <select
+                  id="editRoomType"
+                  required
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="">Select Type</option>
+                  <option value="Lecture Hall">Lecture Hall</option>
+                  <option value="Lab">Lab</option>
+                  <option value="Seminar">Seminar</option>
+                  <option value="Standard">Standard</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Capacity *</label
+                >
+                <input
+                  type="number"
+                  id="editCapacity"
+                  required
+                  min="1"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="editIsActive"
+                  class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <span class="text-sm font-medium text-gray-700"
+                  >Active (Room is available for use)</span
+                >
+              </label>
+            </div>
+          </form>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
+          <button
+            onclick="closeModal('editModal')"
+            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="updateRoom()"
+            style="
+              background: linear-gradient(
+                135deg,
+                #a855f7 0%,
+                #ec4899 100%
+              ) !important;
+              color: white !important;
+            "
+            class="px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            Update Room
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toggle Status Modal -->
+    <div
+      id="toggleModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style="animation: fadeIn 0.3s ease-out"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+        style="animation: slideUp 0.3s ease-out"
+      >
+        <div
+          class="bg-gradient-to-r from-yellow-500 to-orange-500 p-6 rounded-t-2xl"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">Toggle Room Status</h3>
+              <p class="text-yellow-100 text-sm mt-1">
+                Change room availability
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <input type="hidden" id="toggleRoomId" />
+          <input type="hidden" id="toggleCurrentStatus" />
+          <p class="text-gray-600 mb-4">
+            Are you sure you want to
+            <span id="toggleAction" class="font-bold"></span> this room?
+          </p>
+          <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+            <div class="flex">
+              <svg
+                class="w-5 h-5 text-yellow-500 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <p class="text-sm text-yellow-700">
+                This will affect room scheduling availability.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
+          <button
+            onclick="closeModal('toggleModal')"
+            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="confirmToggleStatus()"
+            style="
+              background-color: #f59e0b !important;
+              color: white !important;
+            "
+            class="px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 transition"
+          >
+            Confirm Toggle
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Room Modal -->
+    <div
+      id="deleteModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style="animation: fadeIn 0.3s ease-out"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+        style="animation: slideUp 0.3s ease-out"
+      >
+        <div class="bg-gradient-to-r from-red-700 to-red-900 p-6 rounded-t-2xl">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">Delete Room</h3>
+              <p class="text-red-100 text-sm mt-1">Permanent removal</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <input type="hidden" id="deleteRoomId" />
+          <p class="text-gray-600 mb-4">
+            Are you sure you want to delete
+            <span id="deleteRoomInfo" class="font-bold text-red-600"></span>?
+          </p>
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <div class="flex">
+              <svg
+                class="w-5 h-5 text-red-500 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-red-800">
+                  Warning: This action cannot be undone!
+                </p>
+                <p class="text-xs text-red-700 mt-1">
+                  All associated schedules will be affected.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
+          <button
+            onclick="closeModal('deleteModal')"
+            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="confirmDelete()"
+            style="
+              background-color: #dc2626 !important;
+              color: white !important;
+            "
+            class="px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 transition flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            Delete Room
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="hidden fixed top-4 right-4 z-50 bg-white rounded-lg shadow-xl p-4 min-w-[300px] border-l-4"
+      style="animation: slideUp 0.3s ease-out"
+    >
+      <div class="flex items-start gap-3">
+        <div id="toastIcon"></div>
+        <div class="flex-1">
+          <p id="toastMessage" class="text-sm font-medium text-gray-900"></p>
+        </div>
+        <button
+          onclick="closeToast()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Filter Rooms
+      function filterRooms() {
+        const searchInput = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const typeFilter = document
+          .getElementById("typeFilter")
+          .value.toLowerCase();
+        const statusFilter = document
+          .getElementById("statusFilter")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("#roomsTableBody tr");
+
+        rows.forEach((row) => {
+          const building = row.getAttribute("data-building").toLowerCase();
+          const roomNumber = row.getAttribute("data-room-number").toLowerCase();
+          const type = row.getAttribute("data-type").toLowerCase();
+          const status = row.getAttribute("data-status").toLowerCase();
+
+          const matchesSearch =
+            building.includes(searchInput) || roomNumber.includes(searchInput);
+          const matchesType = !typeFilter || type === typeFilter;
+          const matchesStatus = !statusFilter || status === statusFilter;
+
+          row.style.display =
+            matchesSearch && matchesType && matchesStatus ? "" : "none";
+        });
+      }
+
+      // Modal Functions
+      function openCreateModal() {
+        document.getElementById("createModal").classList.remove("hidden");
+        document.getElementById("createForm").reset();
+        document.getElementById("createIsActive").checked = true;
+      }
+
+      // Wrapper functions that read from data attributes
+      function openEditModalFromData(button) {
+        const id = button.dataset.id;
+        const building = button.dataset.building;
+        const roomNumber = button.dataset.roomNumber;
+        const roomType = button.dataset.roomType;
+        const capacity = button.dataset.capacity;
+        const isActive = button.dataset.active === "true";
+        openEditModal(id, building, roomNumber, roomType, capacity, isActive);
+      }
+
+      function openToggleModalFromData(button) {
+        const id = button.dataset.id;
+        const isActive = button.dataset.active === "true";
+        openToggleModal(id, isActive);
+      }
+
+      function openDeleteModalFromData(button) {
+        const id = button.dataset.id;
+        const building = button.dataset.building;
+        const roomNumber = button.dataset.roomNumber;
+        openDeleteModal(id, building, roomNumber);
+      }
+
+      function openEditModal(
+        id,
+        building,
+        roomNumber,
+        roomType,
+        capacity,
+        isActive
+      ) {
+        document.getElementById("editModal").classList.remove("hidden");
+        document.getElementById("editRoomId").value = id;
+        document.getElementById("editBuilding").value = building;
+        document.getElementById("editRoomNumber").value = roomNumber;
+        document.getElementById("editRoomType").value = roomType || "";
+        document.getElementById("editCapacity").value = capacity;
+        document.getElementById("editIsActive").checked = isActive;
+      }
+
+      function openToggleModal(id, isActive) {
+        document.getElementById("toggleModal").classList.remove("hidden");
+        document.getElementById("toggleRoomId").value = id;
+        document.getElementById("toggleCurrentStatus").value = isActive;
+        document.getElementById("toggleAction").textContent = isActive
+          ? "deactivate"
+          : "activate";
+      }
+
+      function openDeleteModal(id, building, roomNumber) {
+        document.getElementById("deleteModal").classList.remove("hidden");
+        document.getElementById("deleteRoomId").value = id;
+        document.getElementById(
+          "deleteRoomInfo"
+        ).textContent = `${building} - Room ${roomNumber}`;
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).classList.add("hidden");
+      }
+
+      // Toast Functions
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        const toastMessage = document.getElementById("toastMessage");
+        const toastIcon = document.getElementById("toastIcon");
+
+        toastMessage.textContent = message;
+
+        if (type === "success") {
+          toast.className =
+            "fixed top-4 right-4 z-50 bg-white rounded-lg shadow-xl p-4 min-w-[300px] border-l-4 border-green-500";
+          toastIcon.innerHTML =
+            '<svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+        } else {
+          toast.className =
+            "fixed top-4 right-4 z-50 bg-white rounded-lg shadow-xl p-4 min-w-[300px] border-l-4 border-red-500";
+          toastIcon.innerHTML =
+            '<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+        }
+
+        toast.classList.remove("hidden");
+        setTimeout(() => closeToast(), 4000);
+      }
+
+      function closeToast() {
+        document.getElementById("toast").classList.add("hidden");
+      }
+
+      // Create Room
+      async function createRoom() {
+        const building = document.getElementById("createBuilding").value.trim();
+        const roomNumber = document
+          .getElementById("createRoomNumber")
+          .value.trim();
+        const roomType = document.getElementById("createRoomType").value;
+        const capacity = parseInt(
+          document.getElementById("createCapacity").value
+        );
+        const isActive = document.getElementById("createIsActive").checked;
+
+        if (!building || !roomNumber || !roomType || !capacity) {
+          showToast("Please fill in all required fields", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/admin/rooms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              building,
+              roomNumber,
+              roomType,
+              capacity,
+              isActive,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Room created successfully!", "success");
+            closeModal("createModal");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const error = await response.text();
+            showToast(error || "Failed to create room", "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Failed to create room", "error");
+        }
+      }
+
+      // Update Room
+      async function updateRoom() {
+        const id = document.getElementById("editRoomId").value;
+        const building = document.getElementById("editBuilding").value.trim();
+        const roomNumber = document
+          .getElementById("editRoomNumber")
+          .value.trim();
+        const roomType = document.getElementById("editRoomType").value;
+        const capacity = parseInt(
+          document.getElementById("editCapacity").value
+        );
+        const isActive = document.getElementById("editIsActive").checked;
+
+        if (!building || !roomNumber || !roomType || !capacity) {
+          showToast("Please fill in all required fields", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/admin/rooms/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              building,
+              roomNumber,
+              roomType,
+              capacity,
+              isActive,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Room updated successfully!", "success");
+            closeModal("editModal");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const error = await response.text();
+            showToast(error || "Failed to update room", "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Failed to update room", "error");
+        }
+      }
+
+      // Toggle Room Status
+      async function confirmToggleStatus() {
+        const id = document.getElementById("toggleRoomId").value;
+
+        try {
+          const response = await fetch(`/api/admin/rooms/${id}/toggle-status`, {
+            method: "PATCH",
+          });
+
+          if (response.ok) {
+            showToast("Room status updated successfully!", "success");
+            closeModal("toggleModal");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const error = await response.text();
+            showToast(error || "Failed to toggle status", "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Failed to toggle status", "error");
+        }
+      }
+
+      // Delete Room
+      async function confirmDelete() {
+        const id = document.getElementById("deleteRoomId").value;
+
+        try {
+          const response = await fetch(`/api/admin/rooms/${id}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            showToast("Room deleted successfully!", "success");
+            closeModal("deleteModal");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const error = await response.text();
+            showToast(error || "Failed to delete room", "error");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Failed to delete room", "error");
+        }
+      }
+
+      // Close modals on Escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          ["createModal", "editModal", "toggleModal", "deleteModal"].forEach(
+            closeModal
+          );
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -102,4 +102,8 @@ public class Student {
 
     public List<Enrollment> getEnrollments() { return enrollments; }
     public void setEnrollments(List<Enrollment> enrollments) { this.enrollments = enrollments; }
+
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
+    }
 }
