@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import com.cource.exception.ConflictException;
 import com.cource.repository.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +16,13 @@ import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.Course;
 import com.cource.entity.CourseLecturer;
+import com.cource.entity.CourseOffering;
 import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.LecturerService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -28,17 +33,20 @@ public class LecturerServiceImpl implements LecturerService {
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final CourseOfferingRepository courseOfferingRepository;
 
     public LecturerServiceImpl(CourseLecturerRepository courseLecturerRepository,
                                AttendanceRepository attendanceRepository,
                                ClassScheduleRepository classScheduleRepository,
                                EnrollmentRepository enrollmentRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                                CourseOfferingRepository courseOfferingRepository) {
         this.courseLecturerRepository = courseLecturerRepository;
         this.attendanceRepository = attendanceRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
+        this.courseOfferingRepository = courseOfferingRepository;
     }
 
     @Override
@@ -147,6 +155,26 @@ public class LecturerServiceImpl implements LecturerService {
 
         verifyOwnership(schedule.getOffering().getId(), lecturerId);
         return attendanceRepository.findByScheduleId(scheduleId);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('LECTURER')")
+    public String regenerateOfferingCode(Long offeringId) {
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+        
+        // Simple 6-char random code
+        String newCode = java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        
+        // Ensure uniqueness
+        while (courseOfferingRepository.existsByEnrollmentCode(newCode)) {
+            newCode = java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        }
+        
+        offering.setEnrollmentCode(newCode);
+        courseOfferingRepository.save(offering);
+        return newCode;
     }
 
     private void verifyOwnership(long offeringId, long lecturerId) {

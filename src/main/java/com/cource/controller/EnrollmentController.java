@@ -1,7 +1,13 @@
 package com.cource.controller;
 
+import com.cource.dto.EnrollmentResult;
+import com.cource.entity.User;
 import com.cource.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,5 +53,14 @@ public class EnrollmentController {
         }
 
         return "redirect:/student/courses";
+    }
+
+    @PostMapping("/join")
+    public ResponseEntity<EnrollmentResult> joinByCode(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam String code) {
+        
+        User studentUser = userService.getUserByEmail(userDetails.getUsername());
+        return ResponseEntity.ok(enrollmentService.enrollByCode(studentUser.getId(), code));
     }
 }

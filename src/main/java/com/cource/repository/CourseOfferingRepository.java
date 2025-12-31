@@ -23,6 +23,10 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
 
     List<CourseOffering> findByActiveAndTermId(Boolean active, Long termId);
 
+    Optional<CourseOffering> findByEnrollmentCode(String enrollmentCode);
+
+    boolean existsByEnrollmentCode(String enrollmentCode);
+
     @Query("SELECT co FROM CourseOffering co WHERE co.course.id = :courseId AND co.term.id = :termId")
     Optional<CourseOffering> findByCourseIdAndTermId(@Param("courseId") Long courseId, @Param("termId") Long termId);
 

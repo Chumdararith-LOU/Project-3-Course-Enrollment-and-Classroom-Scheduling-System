@@ -29,6 +29,9 @@ public class CourseOffering {
     @Column(name = "is_active")
     private boolean active = true;
 
+    @Column(name = "enrollment_code", unique = true)
+    private String enrollmentCode;
+
     @OneToMany(mappedBy = "offering", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseLecturer> lecturers = new ArrayList<>();
 
@@ -49,4 +52,12 @@ public class CourseOffering {
     public void setActive(boolean active) { this.active = active; }
     public List<CourseLecturer> getLecturers() { return lecturers; }
     public void setLecturers(List<CourseLecturer> lecturers) { this.lecturers = lecturers; }
+    
+    public String getEnrollmentCode() {
+        return enrollmentCode;
+    }
+
+    public void setEnrollmentCode(String enrollmentCode) {
+        this.enrollmentCode = enrollmentCode;
+    }
 }

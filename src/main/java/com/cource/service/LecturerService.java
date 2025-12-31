@@ -22,4 +22,6 @@ public interface LecturerService {
 
     List<Attendance> getAttendanceRecords(long scheduleId, long lecturerId);
 
+    String regenerateOfferingCode(Long offeringId);
+
 }

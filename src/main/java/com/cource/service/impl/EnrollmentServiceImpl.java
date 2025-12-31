@@ -36,6 +36,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     @Transactional
     @PreAuthorize("hasRole('STUDENT')")
+    public EnrollmentResult enrollByCode(Long studentId, String enrollmentCode) {
+        CourseOffering offering = courseOfferingRepository.findByEnrollmentCode(enrollmentCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid enrollment code"));
+
+        if (!offering.getTerm().isActive()) {
+            throw new ConflictException("Cannot enroll in a course from an inactive term");
+        }
+
+        return enrollStudent(studentId, offering.getId());
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('STUDENT')")
     public EnrollmentResult enrollStudent(Long studentId, Long offeringId) {
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
