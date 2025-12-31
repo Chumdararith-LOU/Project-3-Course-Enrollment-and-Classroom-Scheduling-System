@@ -8,4 +8,5 @@ import java.util.List;
 public interface ScheduleService {
     ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto, String lecturerEmail);
     List<ScheduleResponseDTO> getSchedulesByLecturer(String lecturerEmail);
+    List<ScheduleResponseDTO> getStudentSchedule(Long studentId);
 }

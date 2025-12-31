@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final UserRepository userRepository;
     private final CourseLecturerRepository courseLecturerRepository;
     private final TimeConflictChecker timeConflictChecker;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     @Transactional
@@ -68,7 +70,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         newSchedule.setRoom(room);
         ClassSchedule saved = classScheduleRepository.save(newSchedule);
 
-        return mapToDTO(saved);
+        return null;
     }
 
     @Override
@@ -86,6 +88,26 @@ public class ScheduleServiceImpl implements ScheduleService {
         List<ClassSchedule> schedules = classScheduleRepository.findByOfferingIdIn(offeringIds);
 
         return schedules.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ScheduleResponseDTO> getStudentSchedule(Long studentId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentIdAndStatus(studentId, "ENROLLED");
+
+        if (enrollments.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Long> offeringIds = enrollments.stream()
+                .map(e -> e.getOffering().getId())
+                .collect(Collectors.toList());
+
+        List<ClassSchedule> schedules = classScheduleRepository.findByOfferingIdIn(offeringIds);
+
+        return schedules.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     private ScheduleResponseDTO mapToDTO(ClassSchedule schedule) {
