@@ -10,7 +10,9 @@ import com.cource.entity.UserProfile;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.RoleRepository;
+import com.cource.repository.UserProfileRepository;
 import com.cource.repository.UserRepository;
+import com.cource.service.FileStorageService;
 import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserProfileRepository userProfileRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional(readOnly = true)
