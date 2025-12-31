@@ -1,6 +1,7 @@
 package com.cource.controller;
 
 import com.cource.dto.attendance.AttendanceRequestDTO;
+import com.cource.dto.course.CourseResponseDTO;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,7 +31,7 @@ public class LecturerController {
     }
 
     @GetMapping("/courses")
-    public List<Course> getCourses(@RequestParam long lecturerId) {
+    public List<CourseResponseDTO> getCourses(@RequestParam long lecturerId) {
         return lecturerService.getCoursesByLecturerId(lecturerId);
     }
 
