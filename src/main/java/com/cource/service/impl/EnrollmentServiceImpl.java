@@ -184,4 +184,27 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public List<Attendance> getStudentAttendance(Long studentId) {
         return attendanceRepository.findByEnrollmentStudentIdOrderByAttendanceDateDesc(studentId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Enrollment> getEnrollmentsByOffering(Long offeringId) {
+        return enrollmentRepository.findByOfferingId(offeringId);
+    }
+
+    @Override
+    @Transactional
+    public void updateGrade(Long enrollmentId, String grade) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+
+        enrollment.setGrade(grade);
+
+        if ("F".equalsIgnoreCase(grade)) {
+            enrollment.setStatus("FAILED");
+        } else if (grade != null && !grade.isEmpty()) {
+            enrollment.setStatus("COMPLETED");
+        }
+
+        enrollmentRepository.save(enrollment);
+    }
 }

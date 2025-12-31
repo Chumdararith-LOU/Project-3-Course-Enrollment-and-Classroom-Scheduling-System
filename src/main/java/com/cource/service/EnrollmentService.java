@@ -14,4 +14,6 @@ public interface EnrollmentService {
     void processWaitlist(Long offeringId);
     List<Enrollment> getStudentGrades(Long studentId);
     List<Attendance> getStudentAttendance(Long studentId);
+    List<Enrollment> getEnrollmentsByOffering(Long offeringId);
+    void updateGrade(Long enrollmentId, String grade);
 }

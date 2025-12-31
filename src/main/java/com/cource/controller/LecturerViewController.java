@@ -2,10 +2,15 @@ package com.cource.controller;
 
 import com.cource.dto.course.CourseRequestDTO;
 import com.cource.dto.course.CourseResponseDTO;
+import com.cource.entity.CourseOffering;
+import com.cource.entity.Enrollment;
 import com.cource.entity.User;
+import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.AcademicTermRepository;
+import com.cource.repository.CourseOfferingRepository;
 import com.cource.repository.UserRepository;
 import com.cource.service.CourseService;
+import com.cource.service.EnrollmentService;
 import com.cource.service.LecturerService;
 import com.cource.service.UserService;
 import jakarta.validation.Valid;
@@ -31,6 +36,8 @@ public class LecturerViewController {
     private final AcademicTermRepository termRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final EnrollmentService enrollmentService;
+    private final CourseOfferingRepository courseOfferingRepository;
 
     @GetMapping("/courses")
     public String myCourses(Model model, @AuthenticationPrincipal UserDetails userDetails) {
@@ -58,46 +65,48 @@ public class LecturerViewController {
         if (!model.containsAttribute("courseRequest")) {
             model.addAttribute("courseRequest", new CourseRequestDTO());
         }
+        model.addAttribute("course", new CourseRequestDTO());
         model.addAttribute("terms", termRepository.findByActiveTrue());
         return "lecturer/create_course";
     }
 
+    @GetMapping("/students")
+    public String viewEnrolledStudents(@RequestParam(required = false) Long offeringId,
+                                       @AuthenticationPrincipal UserDetails userDetails,
+                                       Model model) {
+        User user = getUserByDetails(userDetails);
+
+        if (offeringId != null) {
+            CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+
+            List<Enrollment> enrollments = enrollmentService.getEnrollmentsByOffering(offeringId);
+
+            model.addAttribute("offering", offering);
+            model.addAttribute("enrollments", enrollments);
+        }
+
+        if (user != null) {
+            model.addAttribute("lecturerId", user.getId());
+            model.addAttribute("user", user);
+        }
+
+        return "lecturer/students";
+    }
+
     @PostMapping("/courses/create")
-    public String createCourse(@Valid @ModelAttribute("courseRequest") CourseRequestDTO courseRequest,
+    public String createCourse(@Valid @ModelAttribute("course") CourseRequestDTO courseRequest,
                                BindingResult result,
+                               @AuthenticationPrincipal UserDetails userDetails,
                                Model model) {
         if (result.hasErrors()) {
             model.addAttribute("terms", termRepository.findByActiveTrue());
             return "lecturer/create_course";
         }
 
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String email = auth.getName();
+        courseService.createCourse(courseRequest, userDetails.getUsername());
 
-            courseService.createCourse(courseRequest, email);
-            return "redirect:/lecturer/courses";
-
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("terms", termRepository.findByActiveTrue());
-            return "lecturer/create_course";
-        }
-    }
-
-    @GetMapping("/students")
-    public String students(
-            @RequestParam(required = false) Long offeringId,
-            @AuthenticationPrincipal UserDetails userDetails,
-            Model model) {
-        User user = getUserByDetails(userDetails);
-
-        if (offeringId != null && user != null) {
-            model.addAttribute("offeringId", offeringId);
-            model.addAttribute("lecturerId", user.getId());
-            model.addAttribute("students", lecturerService.getEnrolledStudents(offeringId, user.getId()));
-        }
-        return "lecturer/students";
+        return "redirect:/lecturer/courses";
     }
 
     @GetMapping("/attendance")
@@ -133,10 +142,22 @@ public class LecturerViewController {
         return "lecturer/reports";
     }
 
+    @PostMapping("/grades/update")
+    public String updateGrade(@RequestParam Long enrollmentId,
+                              @RequestParam Long offeringId,
+                              @RequestParam String grade) {
+
+        enrollmentService.updateGrade(enrollmentId, grade);
+
+        return "redirect:/lecturer/students?offeringId=" + offeringId;
+    }
+
     private User getUserByDetails(UserDetails userDetails) {
         if (userDetails != null) {
             return userRepository.findByEmail(userDetails.getUsername()).orElse(null);
         }
         return null;
     }
+
+
 }
