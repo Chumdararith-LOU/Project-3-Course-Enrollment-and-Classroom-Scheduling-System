@@ -1,19 +1,25 @@
 package com.cource.controller;
 
 import com.cource.dto.course.CourseRequestDTO;
+import com.cource.dto.course.CourseResponseDTO;
 import com.cource.entity.User;
 import com.cource.repository.AcademicTermRepository;
 import com.cource.repository.UserRepository;
 import com.cource.service.CourseService;
 import com.cource.service.LecturerService;
+import com.cource.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/lecturer")
@@ -24,6 +30,18 @@ public class LecturerViewController {
     private final CourseService courseService;
     private final AcademicTermRepository termRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
+
+    @GetMapping("/courses")
+    public String myCourses(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.getUserByEmail(userDetails.getUsername());
+
+        List<CourseResponseDTO> courses = lecturerService.getCoursesByLecturerId(user.getId());
+
+        model.addAttribute("courses", courses);
+        model.addAttribute("lecturerId", user.getId());
+        return "lecturer/courses";
+    }
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
@@ -53,11 +71,7 @@ public class LecturerViewController {
 
     @GetMapping("/courses/create")
     public String showCreateCourseForm(Model model) {
-        if (!model.containsAttribute("courseRequest")) {
-            model.addAttribute("courseRequest", new CourseRequestDTO());
-        }
-
-        model.addAttribute("terms", termRepository.findByActiveTrue());
+        model.addAttribute("course", new com.cource.dto.course.CourseCreateRequest());
         return "lecturer/create_course";
     }
 

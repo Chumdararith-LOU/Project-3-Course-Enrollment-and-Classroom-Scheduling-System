@@ -1,6 +1,6 @@
 package com.cource.service;
 
-import com.cource.dto.EnrollmentResult;
+import com.cource.dto.enrollment.EnrollmentResult;
 
 public interface EnrollmentService {
     long getEnrolledCourseCount(Long studentId);

@@ -1,8 +1,13 @@
 package com.cource.controller;
 
+import com.cource.dto.course.CourseResponseDTO;
+import com.cource.entity.User;
+import com.cource.service.LecturerService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +20,8 @@ import com.cource.service.AdminService;
 import com.cource.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -31,7 +38,6 @@ public class AdminViewController {
         model.addAttribute("totalLecturers", adminService.getTotalLecturers());
         model.addAttribute("totalCourses", adminService.getTotalCourses());
         model.addAttribute("totalEnrollments", adminService.getTotalEnrollments());
-        // Enrollment trends (labels + data arrays for charts)
         var enrollmentMap = adminService.getEnrollmentStatsByTerm();
         var enrollmentLabels = new java.util.ArrayList<String>(enrollmentMap.keySet());
         var enrollmentData = new java.util.ArrayList<Number>();
@@ -50,7 +56,6 @@ public class AdminViewController {
         model.addAttribute("enrollmentLabels", enrollmentLabels);
         model.addAttribute("enrollmentData", enrollmentData);
 
-        // User distribution by role
         var roles = roleRepository.findAll();
         var userLabels = new java.util.ArrayList<String>();
         var userData = new java.util.ArrayList<Number>();
@@ -94,7 +99,6 @@ public class AdminViewController {
     public String offerings(@RequestParam(required = false) Long termId, Model model) {
         model.addAttribute("terms", adminService.getAllTerms());
         model.addAttribute("courses", adminService.getAllCourses());
-        // Add all lecturers and admins for assignment UI
         var lecturers = new java.util.ArrayList<>(adminService.getUsersByRole("LECTURER"));
         var admins = adminService.getUsersByRole("ADMIN");
         for (var admin : admins) {
@@ -151,8 +155,7 @@ public class AdminViewController {
         model.addAttribute("totalLecturers", adminService.getTotalLecturers());
         model.addAttribute("totalCourses", adminService.getTotalCourses());
         model.addAttribute("totalEnrollments", adminService.getTotalEnrollments());
-        // Convert maps to lists of entries for easier Thymeleaf iteration and compute
-        // maxima
+
         var enrollmentMap = adminService.getEnrollmentStatsByTerm();
         var enrollmentList = new java.util.ArrayList<java.util.Map.Entry<String, Object>>(enrollmentMap.entrySet());
         model.addAttribute("enrollmentStats", enrollmentList);
@@ -204,7 +207,6 @@ public class AdminViewController {
         return "admin/reports";
     }
 
-    // Export endpoints
     @GetMapping("/users/export")
     public ResponseEntity<String> exportUsers(@RequestParam(required = false) String roleCode) {
         StringBuilder csv = new StringBuilder();

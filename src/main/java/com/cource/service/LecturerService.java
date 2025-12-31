@@ -3,6 +3,7 @@ package com.cource.service;
 import java.util.List;
 
 import com.cource.dto.attendance.AttendanceRequestDTO;
+import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.lecturer.LecturerDashboardDTO;
 import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
@@ -12,7 +13,7 @@ import com.cource.entity.User;
 public interface LecturerService {
     LecturerDashboardDTO getDashboardStats(Long lecturerId);
 
-    List<Course> getCoursesByLecturerId(long lecturerId);
+    List<CourseResponseDTO> getCoursesByLecturerId(long lecturerId);
 
     List<ClassSchedule> getClassSchedulesByLecturerId(long offeringId, long lecturerId);
 

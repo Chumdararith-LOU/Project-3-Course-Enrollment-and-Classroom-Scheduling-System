@@ -3,6 +3,7 @@ package com.cource.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cource.dto.course.CourseResponseDTO;
 import com.cource.exception.ConflictException;
 import com.cource.repository.*;
 
@@ -50,10 +51,24 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public List<Course> getCoursesByLecturerId(long lecturerId) {
-        return courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering().getCourse())
-                .distinct()
+    public List<CourseResponseDTO> getCoursesByLecturerId(long lecturerId) {
+        List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
+
+        return assignments.stream()
+                .map(cl -> {
+                    CourseOffering offering = cl.getOffering();
+                    Course course = offering.getCourse();
+
+                    CourseResponseDTO dto = new CourseResponseDTO();
+                    dto.setId(offering.getId()); // IMPORTANT: Use Offering ID, not Course ID
+                    dto.setCourseCode(course.getCourseCode());
+                    dto.setTitle(course.getTitle());
+                    dto.setDescription(course.getDescription());
+                    dto.setCredits(course.getCredits());
+                    dto.setEnrollmentCode(offering.getEnrollmentCode()); // <--- THE MISSING PIECE
+                    dto.setActive(offering.getTerm().isActive());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

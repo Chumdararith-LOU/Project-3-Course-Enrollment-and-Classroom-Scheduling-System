@@ -1,6 +1,6 @@
 package com.cource.service.impl;
 
-import com.cource.dto.EnrollmentResult;
+import com.cource.dto.enrollment.EnrollmentResult;
 import com.cource.entity.*;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
