@@ -31,7 +31,6 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     @PreAuthorize("hasRole('LECTURER')")
     public ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto, String lecturerEmail) {
-        // 1. Validate User
         User lecturer = userRepository.findByEmail(lecturerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
 
@@ -92,8 +91,8 @@ public class ScheduleServiceImpl implements ScheduleService {
     private ScheduleResponseDTO mapToDTO(ClassSchedule schedule) {
         ScheduleResponseDTO dto = new ScheduleResponseDTO();
         dto.setId(schedule.getId());
-        dto.setCourseName(schedule.getCourseOffering().getCourse().getTitle());
-        dto.setCourseCode(schedule.getCourseOffering().getCourse().getCourseCode());
+        dto.setCourseName(schedule.getOffering().getCourse().getTitle());
+        dto.setCourseCode(schedule.getOffering().getCourse().getCourseCode());
         dto.setRoomNumber(schedule.getRoom().getRoomNumber());
         dto.setDayOfWeek(schedule.getDayOfWeek());
         dto.setStartTime(schedule.getStartTime());
