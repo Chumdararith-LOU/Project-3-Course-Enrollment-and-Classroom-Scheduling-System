@@ -133,7 +133,7 @@ public class StudentController {
         User student = getUserByDetails(userDetails);
         model.addAttribute("user", student);
 
-        List<Enrollment> grades = enrollmentRepository.findByStudentIdAndGradeIsNotNull(student.getId());
+        List<Enrollment> grades = enrollmentService.getStudentGrades(student.getId());
         model.addAttribute("grades", grades);
         model.addAttribute("currentPage", "grades");
         return "student/grades";

@@ -172,4 +172,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             }
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Enrollment> getStudentGrades(Long studentId) {
+        return enrollmentRepository.findByStudentIdAndGradeIsNotNull(studentId);
+    }
 }
