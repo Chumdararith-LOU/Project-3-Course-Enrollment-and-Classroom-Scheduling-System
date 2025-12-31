@@ -70,7 +70,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         newSchedule.setRoom(room);
         ClassSchedule saved = classScheduleRepository.save(newSchedule);
 
-        return null;
+        return mapToDTO(saved);
     }
 
     @Override
