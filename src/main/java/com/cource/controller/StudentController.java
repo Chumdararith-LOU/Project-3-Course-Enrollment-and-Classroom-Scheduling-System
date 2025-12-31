@@ -59,7 +59,7 @@ public class StudentController {
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model){
         User student = getUserByDetails(userDetails);
 
-        model.addAttribute("student", student);
+        model.addAttribute("user", student);
         model.addAttribute("enrolledCount", enrollmentService.getEnrolledCourseCount(student.getId()));
         model.addAttribute("enrollments", courseService.getStudentEnrollments(student.getId()));
 
@@ -94,7 +94,7 @@ public class StudentController {
     @GetMapping("/schedule")
     public String schedule(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User student = getUserByDetails(userDetails);
-        model.addAttribute("student", student);
+        model.addAttribute("user", student);
         model.addAttribute("currentPage", "schedule");
         return "student/schedule";
     }
@@ -102,7 +102,7 @@ public class StudentController {
     @GetMapping("/grades")
     public String grades(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User student = getUserByDetails(userDetails);
-        model.addAttribute("student", student);
+        model.addAttribute("user", student);
 
         List<Enrollment> grades = enrollmentRepository.findByStudentIdAndGradeIsNotNull(student.getId());
         model.addAttribute("grades", grades);
@@ -113,7 +113,7 @@ public class StudentController {
     @GetMapping("/attendance")
     public String attendance(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User student = getUserByDetails(userDetails);
-        model.addAttribute("student", student);
+        model.addAttribute("user", student);
         model.addAttribute("currentPage", "attendance");
         return "student/attendance";
     }
