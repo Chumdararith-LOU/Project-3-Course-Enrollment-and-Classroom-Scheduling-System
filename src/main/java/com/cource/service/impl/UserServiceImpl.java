@@ -1,10 +1,12 @@
 package com.cource.service.impl;
 
 import com.cource.dto.user.UserCreateRequest;
+import com.cource.dto.user.UserProfileDTO;
 import com.cource.dto.user.UserResponseDTO;
 import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.Role;
 import com.cource.entity.User;
+import com.cource.entity.UserProfile;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.RoleRepository;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -102,5 +105,28 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("User not found with id: " + id);
         }
         userRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(Long userId, UserProfileDTO dto, MultipartFile avatar) {
+        User user = getUserById(userId);
+        UserProfile profile = userProfileRepository.findByUserId(userId)
+                .orElse(new UserProfile());
+
+        if (profile.getUser() == null) {
+            profile.setUser(user);
+        }
+
+        if (avatar != null && !avatar.isEmpty()) {
+            String fileName = fileStorageService.storeFile(avatar);
+            profile.setAvatarUrl("/uploads/" + fileName);
+        }
+
+        if (dto.getBio() != null) profile.setBio(dto.getBio());
+        if (dto.getPhone() != null) profile.setPhone(dto.getPhone());
+        if (dto.getDateOfBirth() != null) profile.setDateOfBirth(dto.getDateOfBirth());
+
+        userProfileRepository.save(profile);
     }
 }
