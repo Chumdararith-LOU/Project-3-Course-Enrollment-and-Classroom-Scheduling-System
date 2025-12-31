@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -135,6 +135,8 @@ public class CourseServiceImpl implements CourseService {
         offering.setCourse(course);
         offering.setTerm(term);
         offering.setCapacity(dto.getCapacity());
+        offering.setEnrollmentCode(UUID.randomUUID().toString().substring(0, 6).toUpperCase());
+        offering.setEnrollmentCodeExpiresAt(LocalDateTime.now().plusDays(7));
         courseOfferingRepository.save(offering);
 
         // Link Lecturer
