@@ -178,16 +178,12 @@ public class LecturerServiceImpl implements LecturerService {
     public String regenerateOfferingCode(Long offeringId) {
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
-        
-        // Simple 6-char random code
+
         String newCode = java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        
-        // Ensure uniqueness
-        while (courseOfferingRepository.existsByEnrollmentCode(newCode)) {
-            newCode = java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        }
-        
+
         offering.setEnrollmentCode(newCode);
+        offering.setEnrollmentCodeExpiresAt(java.time.LocalDateTime.now().plusDays(7));
+
         courseOfferingRepository.save(offering);
         return newCode;
     }

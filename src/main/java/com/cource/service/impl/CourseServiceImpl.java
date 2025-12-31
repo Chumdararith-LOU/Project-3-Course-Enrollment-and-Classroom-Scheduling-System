@@ -253,6 +253,10 @@ public class CourseServiceImpl implements CourseService {
         return dto;
     }
 
+    private String generateEnrollmentCode() {
+        return UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+    }
+
     private void validateCourseCodeUniqueness(String courseCode) {
         if (courseRepository.existsByCourseCode(courseCode)) {
             throw new ConflictException("Course code " + courseCode + " already exists");
@@ -283,6 +287,8 @@ public class CourseServiceImpl implements CourseService {
         offering.setCourse(course);
         offering.setTerm(term);
         offering.setCapacity(dto.getCapacity());
+        offering.setEnrollmentCode(generateEnrollmentCode());
+        offering.setEnrollmentCodeExpiresAt(java.time.LocalDateTime.now().plusDays(7));
         return courseOfferingRepository.save(offering);
     }
 

@@ -2,6 +2,10 @@ package com.cource.controller;
 
 import com.cource.dto.attendance.AttendanceRequestDTO;
 import com.cource.dto.course.CourseResponseDTO;
+import com.cource.exception.ResourceNotFoundException;
+import com.cource.exception.UnauthorizedException;
+import com.cource.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +16,7 @@ import com.cource.entity.User;
 import com.cource.service.LecturerService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +30,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class LecturerController {
 
     private final LecturerService lecturerService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public LecturerController(LecturerService lecturerService) {
+    public LecturerController(LecturerService lecturerService,
+                              UserRepository userRepository,
+                              PasswordEncoder passwordEncoder) {
         this.lecturerService = lecturerService;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/courses")
@@ -66,6 +77,29 @@ public class LecturerController {
             @PathVariable long scheduleId,
             @RequestParam long lecturerId) {
         return lecturerService.getAttendanceRecords(scheduleId, lecturerId);
+    }
+
+    @PostMapping("/courses/{offeringId}/code/regenerate")
+    public ResponseEntity<String> regenerateCode(
+            @PathVariable Long offeringId,
+            @RequestBody Map<String, String> payload,
+            @RequestParam long lecturerId) {
+
+        String password = payload.get("password");
+        if (password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
+        User lecturer = userRepository.findById(lecturerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
+
+        if (!passwordEncoder.matches(password, lecturer.getPassword())) {
+            throw new UnauthorizedException("Invalid password");
+        }
+
+        String newCode = lecturerService.regenerateOfferingCode(offeringId);
+
+        return ResponseEntity.ok(newCode);
     }
 
 }

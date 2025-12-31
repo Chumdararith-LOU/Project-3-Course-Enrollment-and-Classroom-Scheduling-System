@@ -14,15 +14,12 @@ public interface LecturerService {
     LecturerDashboardDTO getDashboardStats(Long lecturerId);
 
     List<CourseResponseDTO> getCoursesByLecturerId(long lecturerId);
-
     List<ClassSchedule> getClassSchedulesByLecturerId(long offeringId, long lecturerId);
-
     List<User> getEnrolledStudents(long offeringId, long lecturerId);
 
     void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status, long lecturerId);
 
     List<Attendance> getAttendanceRecords(long scheduleId, long lecturerId);
-
     String regenerateOfferingCode(Long offeringId);
 
 }
