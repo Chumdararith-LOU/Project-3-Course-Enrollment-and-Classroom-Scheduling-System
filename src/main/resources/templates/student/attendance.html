@@ -72,23 +72,22 @@
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 text-gray-900">Jan 27, 2025</td>
-                            <td class="px-4 py-4 text-gray-500">MON</td>
-                            <td class="px-4 py-4"><span class="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Late</span></td>
-                            <td class="px-4 py-4 text-gray-500">Arrived 15 minutes late</td>
+                        <tr th:each="record : ${attendanceList}" class="hover:bg-gray-50">
+                            <td class="px-4 py-4 text-gray-900" th:text="${record.attendanceDate}">Date</td>
+                            <td class="px-4 py-4 text-gray-500" th:text="${record.schedule.dayOfWeek}">MON</td>
+                            <td class="px-4 py-4">
+                                <span th:if="${record.status == 'PRESENT'}" class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Present</span>
+                                <span th:if="${record.status == 'ABSENT'}" class="bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Absent</span>
+                                <span th:if="${record.status == 'LATE'}" class="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Late</span>
+                                <span th:if="${record.status == 'EXCUSED'}" class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Excused</span>
+                            </td>
+                            <td class="px-4 py-4 text-gray-500" th:text="${record.notes}">-</td>
                         </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 text-gray-900">Jan 22, 2025</td>
-                            <td class="px-4 py-4 text-gray-500">WED</td>
-                            <td class="px-4 py-4"><span class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Present</span></td>
-                            <td class="px-4 py-4 text-gray-500">-</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 text-gray-900">Jan 20, 2025</td>
-                            <td class="px-4 py-4 text-gray-500">MON</td>
-                            <td class="px-4 py-4"><span class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Present</span></td>
-                            <td class="px-4 py-4 text-gray-500">-</td>
+
+                        <tr th:if="${#lists.isEmpty(attendanceList)}">
+                            <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                                No attendance records found.
+                            </td>
                         </tr>
                         </tbody>
                     </table>

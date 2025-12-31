@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseOfferingRepository courseOfferingRepository;
-    private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final WaitlistRepository waitlistRepository;
+    private final AttendanceRepository attendanceRepository;
 
     private final ClassScheduleRepository classScheduleRepository;
     private final TimeConflictChecker timeConflictChecker;
@@ -177,5 +177,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Transactional(readOnly = true)
     public List<Enrollment> getStudentGrades(Long studentId) {
         return enrollmentRepository.findByStudentIdAndGradeIsNotNull(studentId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Attendance> getStudentAttendance(Long studentId) {
+        return attendanceRepository.findByEnrollmentStudentIdOrderByAttendanceDateDesc(studentId);
     }
 }

@@ -5,6 +5,7 @@ import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.dto.schedule.ScheduleResponseDTO;
 import com.cource.dto.user.UserResponseDTO;
 import com.cource.dto.user.UserUpdateRequest;
+import com.cource.entity.Attendance;
 import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.repository.EnrollmentRepository;
@@ -143,6 +144,16 @@ public class StudentController {
     public String attendance(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User student = getUserByDetails(userDetails);
         model.addAttribute("user", student);
+        List<Attendance> attendanceList = enrollmentService.getStudentAttendance(student.getId());
+        model.addAttribute("attendanceList", attendanceList);
+
+        long present = attendanceList.stream().filter(a -> "PRESENT".equalsIgnoreCase(a.getStatus())).count();
+        long absent = attendanceList.stream().filter(a -> "ABSENT".equalsIgnoreCase(a.getStatus())).count();
+        long late = attendanceList.stream().filter(a -> "LATE".equalsIgnoreCase(a.getStatus())).count();
+
+        model.addAttribute("statsPresent", present);
+        model.addAttribute("statsAbsent", absent);
+        model.addAttribute("statsLate", late);
         model.addAttribute("currentPage", "attendance");
         return "student/attendance";
     }
