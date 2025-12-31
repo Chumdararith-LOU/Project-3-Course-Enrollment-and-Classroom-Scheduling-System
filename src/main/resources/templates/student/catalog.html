@@ -19,44 +19,26 @@
 
     <div th:replace="~{fragments/student-sidebar :: sidebar(currentPage='catalog')}"></div>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+    <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+        <main class="w-full flex-grow p-8">
 
-        <header class="bg-white border-b border-gray-100 h-16 flex items-center justify-between px-8 z-10 shrink-0">
-            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-bold" th:text="${user.firstName}">Student</span></h2>
-            <div class="flex items-center gap-4">
-                <div class="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center text-xs font-bold"
-                     th:text="${#strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1)}">ST</div>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-8">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-slate-900 mb-2">Course Catalog</h1>
-                    <p class="text-gray-500">Browse available courses or join directly with a code.</p>
+                    <p class="text-gray-500">Find and enroll in your next class.</p>
                 </div>
 
-                <div class="flex gap-3 w-full md:w-auto">
-                    <form th:action="@{/enrollment/join}" method="post" class="flex gap-2">
-                        <input type="text" name="code" placeholder="Enter Access Code" required
-                               class="w-40 px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-purple-500 focus:border-purple-500 shadow-sm">
-                        <button type="submit"
-                                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors whitespace-nowrap">
-                            Join
-                        </button>
-                    </form>
+                <button onclick="openJoinModal()"
+                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+                    Join with Code
+                </button>
+            </div>
 
-                    <div class="w-full md:w-64">
-                        <form th:action="@{/student/catalog}" method="get" class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </div>
-                            <input type="text" name="search" th:value="${searchQuery}"
-                                   class="block w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-white text-sm focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                                   placeholder="Search courses...">
-                        </form>
-                    </div>
-                </div>
+            <div th:if="${successMessage}" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
+                <span class="font-medium">Success!</span> <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                <span class="font-medium">Error!</span> <span th:text="${errorMessage}"></span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -113,20 +95,14 @@
                             <i class="fas fa-check mr-1.5"></i> ENROLLED
                         </div>
 
-                        <form th:unless="${course.enrolledStatus}"
-                              method="post"
-                              th:action="@{/enrollment/enroll}">
-                            <input type="hidden" name="offeringId" th:value="${course.id}" />
-
-                            <button type="submit"
-                                    th:disabled="${course.enrolled >= course.capacity}"
-                                    th:class="${course.enrolled >= course.capacity} ?
-                                    'px-4 py-2 bg-gray-300 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed' :
-                                    'px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 text-sm font-medium rounded-lg transition-colors shadow-sm'"
-                                    class="">
-                                <span th:text="${course.enrolled >= course.capacity ? 'Class Full' : 'Enroll Now'}">Enroll Now</span>
-                            </button>
-                        </form>
+                        <button th:unless="${course.enrolledStatus}"
+                                onclick="openCourseJoinModal('${course.id}', '${course.courseCode} - ${course.title}')"
+                                th:disabled="${course.enrolled >= course.capacity}"
+                                th:class="${course.enrolled >= course.capacity} ?
+                                'px-4 py-2 bg-gray-300 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed' :
+                                'px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 text-sm font-medium rounded-lg transition-colors shadow-sm'">
+                            <span th:text="${course.enrolled >= course.capacity ? 'Class Full' : 'Enroll Now'}">Enroll Now</span>
+                        </button>
                     </div>
                 </div>
 
@@ -140,8 +116,68 @@
                 <p class="text-gray-500 text-sm mt-1">Try adjusting your search terms or check back later.</p>
             </div>
 
-        </div>
-    </main>
+        </main>
+    </div>
 </div>
+
+<div id="joinModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-gray-900 bg-opacity-50">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900">
+                    Join Course
+                </h3>
+                <button type="button" onclick="closeJoinModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                </button>
+            </div>
+            <form th:action="@{/enrollment/join}" method="post" class="p-4 md:p-5">
+                <input type="hidden" id="offeringId" name="offeringId" value="">
+                <div class="mb-4">
+                    <label for="code" class="block mb-2 text-sm font-medium text-gray-900">Enter Access Code</label>
+                    <input type="text" name="code" id="code" placeholder="e.g. A1B2C3" required
+                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <p class="mt-2 text-xs text-gray-500" id="courseInfo">Ask your lecturer for the 6-character code.</p>
+                </div>
+                <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                    Join Class
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('joinModal');
+    const offeringIdInput = document.getElementById('offeringId');
+    const courseInfoText = document.getElementById('courseInfo');
+    const codeInput = document.getElementById('code');
+
+    function openJoinModal() {
+        // Reset modal for general join
+        offeringIdInput.value = '';
+        codeInput.value = '';
+        courseInfoText.textContent = 'Ask your lecturer for the 6-character code.';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function openCourseJoinModal(offeringId, courseName) {
+        // Set modal for specific course
+        offeringIdInput.value = offeringId;
+        codeInput.value = '';
+        courseInfoText.textContent = `Enter the access code for ${courseName}`;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeJoinModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+</script>
+
 </body>
 </html>
