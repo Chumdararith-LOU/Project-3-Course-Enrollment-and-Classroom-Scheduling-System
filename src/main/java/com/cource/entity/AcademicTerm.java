@@ -1,11 +1,20 @@
 package com.cource.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "academic_terms")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AcademicTerm {
 
     @Id
@@ -29,19 +38,4 @@ public class AcademicTerm {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    public AcademicTerm() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getTermCode() { return termCode; }
-    public void setTermCode(String termCode) { this.termCode = termCode; }
-    public String getTermName() { return termName; }
-    public void setTermName(String termName) { this.termName = termName; }
-    public LocalDate getStartDate() { return startDate; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
-    public LocalDate getEndDate() { return endDate; }
-    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
 }

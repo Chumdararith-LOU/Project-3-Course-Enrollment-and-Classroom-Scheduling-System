@@ -4,7 +4,8 @@ INSERT INTO roles (role_code, role_name) VALUES
 ('LECTURER', 'Lecturer'),
 ('STUDENT', 'Student');
 
--- 2. INSERT USERS (Fixed syntax and consolidated)
+-- 2. INSERT USERS
+-- Password is 'password' for all ($2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG)
 INSERT INTO users (email, password_hash, first_name, last_name, id_card, role_id, is_active) VALUES
 ('admin@test.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Lou', 'Chumdararith', 'ADM001', (SELECT id FROM roles WHERE role_code = 'ADMIN'), TRUE),
 ('lecturer01@test.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Heng', 'Nguonhour', 'LEC001', (SELECT id FROM roles WHERE role_code = 'LECTURER'), TRUE),
@@ -24,43 +25,42 @@ INSERT INTO academic_terms (term_code, term_name, start_date, end_date, is_activ
 INSERT INTO rooms (room_number, building, capacity, room_type) VALUES
 ('F106', 'Building F', 30, 'LAB'),
 ('J702', 'Building J', 100, 'LECTURE_HALL'),
-('A101', 'Building A', 50, 'SEMINAR'),
 ('I610', 'Building I', 10, 'LAB');
 
 -- 5. INSERT COURSES
 INSERT INTO courses (course_code, title, description, credits) VALUES
 ('GIC25DB', 'Intro to Database', 'MySQL and Database Design', 3),
 ('GIC25SE', 'Software Engineering', 'Spring Boot, UML, and Agile', 3),
-('GIC25WEB', 'Web Development', 'HTML, CSS, JS, and React', 3),
-('GIC25ALG', 'Algorithms', 'Data Structures and Algorithms', 4);
+('GIC25WEB', 'Web Development', 'HTML, CSS, JS, and React', 3);
 
 -- 6. INSERT COURSE OFFERINGS
 INSERT INTO course_offerings (course_id, term_id, capacity) VALUES
 ((SELECT id FROM courses WHERE course_code = 'GIC25DB'), (SELECT id FROM academic_terms WHERE term_code = 'SP2025'), 30),
 ((SELECT id FROM courses WHERE course_code = 'GIC25SE'), (SELECT id FROM academic_terms WHERE term_code = 'SP2025'), 30),
-((SELECT id FROM courses WHERE course_code = 'GIC25WEB'), (SELECT id FROM academic_terms WHERE term_code = 'SP2025'), 2),
-((SELECT id FROM courses WHERE course_code = 'GIC25ALG'), (SELECT id FROM academic_terms WHERE term_code = 'FA2024'), 30);
+((SELECT id FROM courses WHERE course_code = 'GIC25WEB'), (SELECT id FROM academic_terms WHERE term_code = 'SP2025'), 2);
 
--- 7. ASSIGN LECTURERS (Fixed email references)
-INSERT INTO course_lecturers (offering_id, lecturer_id, is_primary) VALUES
-(1, (SELECT id FROM users WHERE email = 'lecturer01@test.com'), TRUE),
-(2, (SELECT id FROM users WHERE email = 'lecturer01@test.com'), TRUE),
-(3, (SELECT id FROM users WHERE email = 'lecturer02@test.com'), TRUE);
+-- 7. ASSIGN LECTURERS (Explicit IDs to avoid subquery errors)
+-- Offering 1 (DB) -> Lecturer 01 (Heng)
+INSERT INTO course_lecturers (offering_id, lecturer_id, is_primary)
+VALUES (1, (SELECT id FROM users WHERE email = 'lecturer01@test.com'), TRUE);
+
+-- Offering 2 (SE) -> Lecturer 01 (Heng)
+INSERT INTO course_lecturers (offering_id, lecturer_id, is_primary)
+VALUES (2, (SELECT id FROM users WHERE email = 'lecturer01@test.com'), TRUE);
+
+-- Offering 3 (Web) -> Lecturer 02 (Sarah)
+INSERT INTO course_lecturers (offering_id, lecturer_id, is_primary)
+VALUES (3, (SELECT id FROM users WHERE email = 'lecturer02@test.com'), TRUE);
 
 -- 8. CREATE SCHEDULES
 INSERT INTO class_schedules (offering_id, room_id, day_of_week, start_time, end_time) VALUES
 (1, (SELECT id FROM rooms WHERE room_number = 'F106'), 'MON', '07:00:00', '09:00:00'),
-(1, (SELECT id FROM rooms WHERE room_number = 'F106'), 'WED', '09:00:00', '11:00:00'),
-
 (2, (SELECT id FROM rooms WHERE room_number = 'J702'), 'TUE', '13:00:00', '15:00:00'),
-(2, (SELECT id FROM rooms WHERE room_number = 'J702'), 'THU', '13:00:00', '15:00:00'),
-
 (3, (SELECT id FROM rooms WHERE room_number = 'I610'), 'FRI', '13:00:00', '17:00:00');
 
 -- 9. SEED ENROLLMENTS
 INSERT INTO enrollments (student_id, offering_id, status) VALUES
 ((SELECT id FROM users WHERE email = 'student01@test.com'), 1, 'ENROLLED'),
-((SELECT id FROM users WHERE email = 'student01@test.com'), 2, 'ENROLLED'),
 ((SELECT id FROM users WHERE email = 'student02@test.com'), 1, 'ENROLLED'),
 ((SELECT id FROM users WHERE email = 'student04@test.com'), 3, 'ENROLLED'),
 ((SELECT id FROM users WHERE email = 'student05@test.com'), 3, 'ENROLLED');
@@ -72,5 +72,4 @@ INSERT INTO waitlist (student_id, offering_id, position, status) VALUES
 -- 11. USER PROFILES
 INSERT INTO user_profiles (user_id, bio, phone) VALUES
 ((SELECT id FROM users WHERE email = 'lecturer01@test.com'), 'Expert in Distributed Systems', '012-333-444'),
-((SELECT id FROM users WHERE email = 'lecturer02@test.com'), 'Frontend Specialist', '010-555-666'),
-((SELECT id FROM users WHERE email = 'student01@test.com'), 'Aspiring Software Engineer', '099-888-777');
+((SELECT id FROM users WHERE email = 'lecturer02@test.com'), 'Frontend Specialist', '010-555-666');
