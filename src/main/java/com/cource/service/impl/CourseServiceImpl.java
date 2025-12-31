@@ -246,6 +246,13 @@ public class CourseServiceImpl implements CourseService {
         if (offering.getTerm() != null) {
             dto.setActive(offering.getTerm().isActive());
         }
+        dto.setEnrollmentCode(offering.getEnrollmentCode());
+        dto.setEnrollmentCodeExpiresAt(offering.getEnrollmentCodeExpiresAt());
+
+        boolean expired = offering.getEnrollmentCodeExpiresAt() != null &&
+                offering.getEnrollmentCodeExpiresAt().isBefore(java.time.LocalDateTime.now());
+        dto.setCodeExpired(expired);
+
         setLecturerInfo(dto, offering);
         setScheduleInfo(dto, offering);
         setEnrollmentCount(dto, offering);
