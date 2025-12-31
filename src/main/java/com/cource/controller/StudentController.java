@@ -2,6 +2,7 @@ package com.cource.controller;
 
 import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.enrollment.StudentEnrollmentDTO;
+import com.cource.dto.schedule.ScheduleResponseDTO;
 import com.cource.dto.user.UserResponseDTO;
 import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.Enrollment;
@@ -9,6 +10,7 @@ import com.cource.entity.User;
 import com.cource.repository.EnrollmentRepository;
 import com.cource.service.CourseService;
 import com.cource.service.EnrollmentService;
+import com.cource.service.ScheduleService;
 import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,7 @@ public class StudentController {
     private final UserService userService;
     private final EnrollmentRepository enrollmentRepository;
     private final EnrollmentService enrollmentService;
+    private final ScheduleService scheduleService;
 
     private Long getCurrentUserId() {
         return 3L;
@@ -80,10 +83,10 @@ public class StudentController {
 
     @GetMapping("/my-courses")
     public String myCourses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = getUserByDetails(userDetails);
-        model.addAttribute("user", user);
+        User student = getUserByDetails(userDetails);
+        model.addAttribute("user", student);
 
-        List<StudentEnrollmentDTO> allEnrollments = courseService.getStudentEnrollments(user.getId());
+        List<StudentEnrollmentDTO> allEnrollments = courseService.getStudentEnrollments(student.getId());
 
         List<StudentEnrollmentDTO> active = allEnrollments.stream()
                 .filter(e -> "ENROLLED".equalsIgnoreCase(e.getStatus()))
@@ -119,6 +122,8 @@ public class StudentController {
     public String schedule(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User student = getUserByDetails(userDetails);
         model.addAttribute("user", student);
+        List<ScheduleResponseDTO> schedules = scheduleService.getStudentSchedule(student.getId());
+        model.addAttribute("schedules", schedules);
         model.addAttribute("currentPage", "schedule");
         return "student/schedule";
     }
