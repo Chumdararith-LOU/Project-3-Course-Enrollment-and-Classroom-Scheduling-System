@@ -57,12 +57,12 @@ public class StudentController {
 
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model){
-        User student = getUserByDetails(userDetails);
+        User user = getUserByDetails(userDetails);
 
-        model.addAttribute("user", student);
-        model.addAttribute("enrolledCount", enrollmentService.getEnrolledCourseCount(student.getId()));
-        model.addAttribute("enrollments", courseService.getStudentEnrollments(student.getId()));
+        model.addAttribute("user", user);
+        model.addAttribute("enrolledCount", enrollmentService.getEnrolledCourseCount(user.getId()));
 
+        model.addAttribute("enrollments", courseService.getStudentEnrollments(user.getId()));
         return "student/dashboard";
     }
 
@@ -70,9 +70,10 @@ public class StudentController {
     public String catalog(@AuthenticationPrincipal UserDetails userDetails,
                           @RequestParam(required = false) String search,
                           Model model) {
-        User student = getUserByDetails(userDetails);
+        User user = getUserByDetails(userDetails);
+        model.addAttribute("user", user);
 
-        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(student.getId());
+        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(user.getId());
         model.addAttribute("courses", courses);
         return "student/catalog";
     }
@@ -80,16 +81,36 @@ public class StudentController {
     @GetMapping("/my-courses")
     public String myCourses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = getUserByDetails(userDetails);
-
         model.addAttribute("user", user);
 
-        model.addAttribute("enrollments", courseService.getStudentEnrollments(user.getId()));
+        List<StudentEnrollmentDTO> allEnrollments = courseService.getStudentEnrollments(user.getId());
+
+        List<StudentEnrollmentDTO> active = allEnrollments.stream()
+                .filter(e -> "ENROLLED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> waitlist = allEnrollments.stream()
+                .filter(e -> "WAITLIST".equalsIgnoreCase(e.getStatus()) || "WAITLISTED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> completed = allEnrollments.stream()
+                .filter(e -> "COMPLETED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> dropped = allEnrollments.stream()
+                .filter(e -> "DROPPED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        model.addAttribute("activeEnrollments", active);
+        model.addAttribute("waitlistEnrollments", waitlist);
+        model.addAttribute("completedEnrollments", completed);
+        model.addAttribute("droppedEnrollments", dropped);
+
         return "student/my-courses";
     }
 
     @GetMapping("/courses")
     public ResponseEntity<List<CourseResponseDTO>> getCourses(@RequestParam(required = false) Long studentId) {
-        // Use provided ID or fallback to current user
         Long id = (studentId != null) ? studentId : getCurrentUserId();
         return ResponseEntity.ok(courseService.getCatalogForStudent(id));
     }
