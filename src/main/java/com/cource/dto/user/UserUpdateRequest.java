@@ -11,4 +11,7 @@ public class UserUpdateRequest {
     private Long roleId;
     private boolean active;
     private String password;
+    private String dob;
+    private String phone;
+    private String bio;
 }
