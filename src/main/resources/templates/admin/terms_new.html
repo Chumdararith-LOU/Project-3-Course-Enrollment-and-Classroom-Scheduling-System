@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academic Terms - Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight">Course Management</h1>
+          <p class="text-sm text-slate-400 mt-1">Admin Portal</p>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <a
+            th:href="@{/admin/dashboard}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            th:href="@{/admin/users}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            Users
+          </a>
+          <a
+            th:href="@{/admin/courses}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            Courses
+          </a>
+          <a
+            th:href="@{/admin/offerings}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            Offerings
+          </a>
+          <a
+            th:href="@{/admin/enrollments}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Enrollments
+          </a>
+          <a
+            th:href="@{/admin/rooms}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+            Rooms
+          </a>
+          <a
+            th:href="@{/admin/schedules}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Schedules
+          </a>
+          <a
+            th:href="@{/admin/terms}"
+            class="flex items-center px-4 py-3 text-sm font-medium bg-slate-800 text-white rounded-lg transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Terms
+          </a>
+          <a
+            th:href="@{/admin/reports}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Reports
+          </a>
+        </nav>
+        <div class="px-4 py-6 border-t border-slate-700">
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"
+            >
+              A
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium">Admin User</p>
+              <p class="text-xs text-slate-400">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Academic Terms</h1>
+        <button
+          onclick="showCreateModal()"
+          class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
+          </svg>
+          Add New Term
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="mb-6">
+        <input
+          type="text"
+          id="searchInput"
+          onkeyup="searchTerms()"
+          placeholder="Search terms by code or name..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      <!-- Terms Table -->
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200" id="termsTable">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Term Code
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Term Name
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Start Date
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                End Date
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Status
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr th:each="term : ${terms}">
+              <td
+                class="px-6 py-4 whitespace-nowrap"
+                th:text="${term.termCode}"
+              >
+                SP2025
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap"
+                th:text="${term.termName}"
+              >
+                Semester I 2025
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap"
+                th:text="${term.startDate}"
+              >
+                2025-01-15
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap" th:text="${term.endDate}">
+                2025-05-30
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  th:if="${term.active}"
+                  class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800"
+                  >Active</span
+                >
+                <span
+                  th:unless="${term.active}"
+                  class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800"
+                  >Inactive</span
+                >
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+              >
+                <button
+                  th:onclick="|editTerm(${term.id})|"
+                  class="text-blue-600 hover:text-blue-900"
+                >
+                  Edit
+                </button>
+                <button
+                  th:onclick="|toggleTermStatus(${term.id})|"
+                  class="text-yellow-600 hover:text-yellow-900"
+                >
+                  Toggle
+                </button>
+                <button
+                  th:onclick="|deleteTerm(${term.id})|"
+                  class="text-red-600 hover:text-red-900"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Create/Edit Term Modal -->
+    <div
+      id="termModal"
+      class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    >
+      <div
+        class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white"
+      >
+        <div class="flex justify-between items-center pb-3 border-b">
+          <h3 id="modalTitle" class="text-2xl font-bold text-gray-900">
+            Add New Term
+          </h3>
+          <button
+            onclick="closeModal()"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <form id="termForm" class="mt-4">
+          <input type="hidden" id="termId" />
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2"
+              >Term Code</label
+            >
+            <input
+              type="text"
+              id="termCode"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., SP2025"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2"
+              >Term Name</label
+            >
+            <input
+              type="text"
+              id="termName"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Semester I 2025"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2"
+              >Start Date</label
+            >
+            <input
+              type="date"
+              id="startDate"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2"
+              >End Date</label
+            >
+            <input
+              type="date"
+              id="endDate"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div class="flex justify-end space-x-3 pt-4 border-t">
+            <button
+              type="button"
+              onclick="closeModal()"
+              class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Save Term
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="hidden fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg"
+    ></div>
+
+    <script>
+      let isEditMode = false;
+
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
+          type === "success" ? "bg-green-500" : "bg-red-500"
+        } text-white`;
+        toast.classList.remove("hidden");
+        setTimeout(() => toast.classList.add("hidden"), 3000);
+      }
+
+      function showCreateModal() {
+        isEditMode = false;
+        document.getElementById("modalTitle").textContent = "Add New Term";
+        document.getElementById("termForm").reset();
+        document.getElementById("termId").value = "";
+        document.getElementById("termModal").classList.remove("hidden");
+      }
+
+      function closeModal() {
+        document.getElementById("termModal").classList.add("hidden");
+      }
+
+      async function editTerm(id) {
+        try {
+          const response = await fetch(`/api/admin/terms/${id}`);
+          const term = await response.json();
+          isEditMode = true;
+          document.getElementById("modalTitle").textContent = "Edit Term";
+          document.getElementById("termId").value = term.id;
+          document.getElementById("termCode").value = term.termCode;
+          document.getElementById("termName").value = term.termName;
+          document.getElementById("startDate").value = term.startDate;
+          document.getElementById("endDate").value = term.endDate;
+          document.getElementById("termModal").classList.remove("hidden");
+        } catch (error) {
+          showToast("Failed to load term details", "error");
+        }
+      }
+
+      async function toggleTermStatus(id) {
+        if (
+          !confirm("Are you sure you want to toggle the status of this term?")
+        )
+          return;
+        try {
+          const response = await fetch(`/api/admin/terms/${id}/toggle-status`, {
+            method: "PATCH",
+          });
+          if (response.ok) {
+            showToast("Term status updated successfully");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            showToast("Failed to update term status", "error");
+          }
+        } catch (error) {
+          showToast("Error updating term status", "error");
+        }
+      }
+
+      async function deleteTerm(id) {
+        if (
+          !confirm(
+            "Are you sure you want to delete this term? This action cannot be undone."
+          )
+        )
+          return;
+        try {
+          const response = await fetch(`/api/admin/terms/${id}`, {
+            method: "DELETE",
+          });
+          if (response.ok) {
+            showToast("Term deleted successfully");
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            showToast("Failed to delete term", "error");
+          }
+        } catch (error) {
+          showToast("Error deleting term", "error");
+        }
+      }
+
+      function searchTerms() {
+        const input = document
+          .getElementById("searchInput")
+          .value.toUpperCase();
+        const table = document.getElementById("termsTable");
+        const tr = table.getElementsByTagName("tr");
+        for (let i = 1; i < tr.length; i++) {
+          const tdCode = tr[i].getElementsByTagName("td")[0];
+          const tdName = tr[i].getElementsByTagName("td")[1];
+          if (tdCode || tdName) {
+            const codeValue = tdCode.textContent || tdCode.innerText;
+            const nameValue = tdName.textContent || tdName.innerText;
+            if (
+              codeValue.toUpperCase().indexOf(input) > -1 ||
+              nameValue.toUpperCase().indexOf(input) > -1
+            ) {
+              tr[i].style.display = "";
+            } else {
+              tr[i].style.display = "none";
+            }
+          }
+        }
+      }
+
+      document
+        .getElementById("termForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.getElementById("termId").value;
+          const data = {
+            termCode: document.getElementById("termCode").value,
+            termName: document.getElementById("termName").value,
+            startDate: document.getElementById("startDate").value,
+            endDate: document.getElementById("endDate").value,
+          };
+
+          try {
+            const url = isEditMode
+              ? `/api/admin/terms/${id}`
+              : "/api/admin/terms";
+            const method = isEditMode ? "PUT" : "POST";
+            const response = await fetch(url, {
+              method: method,
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+              showToast(
+                `Term ${isEditMode ? "updated" : "created"} successfully`
+              );
+              closeModal();
+              setTimeout(() => location.reload(), 1000);
+            } else {
+              showToast(
+                `Failed to ${isEditMode ? "update" : "create"} term`,
+                "error"
+              );
+            }
+          } catch (error) {
+            showToast("Error saving term", "error");
+          }
+        });
+    </script>
+  </body>
+</html>

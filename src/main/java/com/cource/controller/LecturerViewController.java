@@ -1,154 +1,207 @@
 package com.cource.controller;
 
-import com.cource.dto.course.CourseRequestDTO;
-import com.cource.entity.User;
-import com.cource.repository.AcademicTermRepository;
-import com.cource.repository.UserRepository;
-import com.cource.service.CourseService;
-import com.cource.service.LecturerService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-@RequestMapping("/lecturer")
-@RequiredArgsConstructor
+import com.cource.entity.Attendance;
+import com.cource.entity.ClassSchedule;
+import com.cource.entity.Course;
+import com.cource.entity.User;
+import com.cource.exception.ResourceNotFoundException;
+import com.cource.service.LecturerService;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@RestController
+@RequestMapping("/api/lecturer")
+// @PreAuthorize("hasRole('LECTURER')") // DISABLED FOR TESTING
 public class LecturerViewController {
 
     private final LecturerService lecturerService;
-    private final CourseService courseService;
-    private final AcademicTermRepository termRepository;
-    private final UserRepository userRepository;
 
-    @GetMapping("/dashboard")
-    public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
-        if (lecturerId == null) {
-            lecturerId = getCurrentLecturerId();
-        }
-
-        if (lecturerId != null) {
-            model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("stats", lecturerService.getDashboardStats(lecturerId));
-        }
-        return "lecturer/dashboard";
+    public LecturerViewController(LecturerService lecturerService) {
+        this.lecturerService = lecturerService;
     }
 
     @GetMapping("/courses")
-    public String courses(@RequestParam(required = false) Long lecturerId, Model model) {
-        if (lecturerId == null) {
-            lecturerId = getCurrentLecturerId();
-        }
-
-        if (lecturerId != null) {
-            model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("courses", courseService.getCoursesByLecturerId(lecturerId));
-        }
-        return "lecturer/courses";
+    public List<Course> getCourses(@RequestParam long lecturerId) {
+        // TODO: After enabling security, get lecturerId from Authentication
+        return lecturerService.getCoursesByLecturerId(lecturerId);
     }
 
-    @GetMapping("/courses/create")
-    public String showCreateCourseForm(Model model) {
-        if (!model.containsAttribute("courseRequest")) {
-            model.addAttribute("courseRequest", new CourseRequestDTO());
-        }
-
-        model.addAttribute("terms", termRepository.findByActiveTrue());
-        return "lecturer/create_course";
+    @GetMapping("/courses/{offeringId}/schedule")
+    public List<ClassSchedule> getClassSchedules(
+            @PathVariable long offeringId,
+            @RequestParam long lecturerId) {
+        // TODO: After enabling security, get lecturerId from Authentication
+        return lecturerService.getClassSchedulesByLecturerId(offeringId, lecturerId);
     }
 
-    @PostMapping("/courses/create")
-    public String createCourse(@Valid @ModelAttribute("courseRequest") CourseRequestDTO courseRequest,
-                               BindingResult result,
-                               Model model) {
-        if (result.hasErrors()) {
-            model.addAttribute("terms", termRepository.findByActiveTrue());
-            return "lecturer/create_course";
-        }
+    @GetMapping("/courses/{offeringId}/students")
+    public List<User> getEnrolledStudents(
+            @PathVariable long offeringId,
+            @RequestParam long lecturerId) {
+        // TODO: After enabling security, get lecturerId from Authentication
+        return lecturerService.getEnrolledStudents(offeringId, lecturerId);
+    }
 
+    @PostMapping("/attendance")
+    public ResponseEntity<String> recordAttendance(
+            @RequestBody com.cource.dto.attendance.AttendanceRequestDTO attendanceRequestDTO,
+            @RequestParam long studentId,
+            @RequestParam String status) {
+        // TODO: After enabling security, validate lecturerId from Authentication
+        lecturerService.recordAttendance(attendanceRequestDTO, studentId, status);
+        return ResponseEntity.ok("Attendance recorded successfully.");
+    }
+
+    @PutMapping("/attendance/{id}")
+    public ResponseEntity<?> updateAttendance(@PathVariable("id") long attendanceId,
+            @RequestBody com.cource.dto.attendance.AttendanceRequestDTO attendanceRequestDTO,
+            @RequestParam(required = false) Long lecturerId) {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String email = auth.getName();
-
-            courseService.createCourse(courseRequest, email);
-            return "redirect:/lecturer/courses";
-
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("terms", termRepository.findByActiveTrue());
-            return "lecturer/create_course";
+            var updated = lecturerService.updateAttendance(attendanceId, attendanceRequestDTO, lecturerId);
+            // map to a simple DTO to avoid lazy serialization
+            java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+            m.put("id", updated.getId());
+            m.put("attendanceDate", updated.getAttendanceDate());
+            m.put("status", updated.getStatus());
+            m.put("notes", updated.getNotes());
+            if (updated.getEnrollment() != null && updated.getEnrollment().getStudent() != null) {
+                var s = updated.getEnrollment().getStudent();
+                java.util.Map<String, Object> sd = new java.util.LinkedHashMap<>();
+                sd.put("id", s.getId());
+                sd.put("fullName", s.getFullName());
+                m.put("student", sd);
+            }
+            if (updated.getRecordedBy() != null) {
+                var rb = updated.getRecordedBy();
+                java.util.Map<String, Object> rbd = new java.util.LinkedHashMap<>();
+                rbd.put("id", rb.getId());
+                rbd.put("fullName", rb.getFullName());
+                m.put("recordedBy", rbd);
+            }
+            return ResponseEntity.ok(m);
+        } catch (ResourceNotFoundException rnfe) {
+            return ResponseEntity.status(404).body(java.util.Collections.singletonMap("message", rnfe.getMessage()));
+        } catch (SecurityException se) {
+            return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
     }
 
-    @GetMapping("/students")
-    public String students(
-            @RequestParam(required = false) Long offeringId,
-            @RequestParam(required = false) Long lecturerId,
-            Model model) {
-        if (lecturerId == null) {
-            lecturerId = getCurrentLecturerId();
+    @DeleteMapping("/attendance/{id}")
+    public ResponseEntity<?> deleteAttendance(@PathVariable("id") long attendanceId,
+            @RequestParam(required = false) Long lecturerId) {
+        try {
+            lecturerService.deleteAttendance(attendanceId, lecturerId);
+            return ResponseEntity.ok(java.util.Collections.singletonMap("status", "deleted"));
+        } catch (ResourceNotFoundException rnfe) {
+            return ResponseEntity.status(404).body(java.util.Collections.singletonMap("message", rnfe.getMessage()));
+        } catch (SecurityException se) {
+            return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
-
-        if (offeringId != null && lecturerId != null) {
-            model.addAttribute("offeringId", offeringId);
-            model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("students", lecturerService.getEnrolledStudents(offeringId, lecturerId));
-        }
-        return "lecturer/students";
     }
 
-    @GetMapping("/attendance")
-    public String attendance(
-            @RequestParam(required = false) Long scheduleId,
-            @RequestParam(required = false) Long lecturerId,
-            Model model) {
-        if (lecturerId == null) {
-            lecturerId = getCurrentLecturerId();
-        }
-
-        if (scheduleId != null && lecturerId != null) {
-            model.addAttribute("scheduleId", scheduleId);
-            model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("attendanceRecords", lecturerService.getAttendanceRecords(scheduleId, lecturerId));
-        }
-        return "lecturer/attendance";
+    // --- Course offering CRUD for lecturers ---
+    @PostMapping("/offerings")
+    public ResponseEntity<?> createOffering(
+            @RequestBody com.cource.dto.course.CourseOfferingRequestDTO dto,
+            @RequestParam long lecturerId) {
+        var offering = lecturerService.createCourseOffering(lecturerId, dto);
+        return ResponseEntity.ok(offering);
     }
 
-    @GetMapping("/schedule")
-    public String schedule(@RequestParam(required = false) Long lecturerId, Model model) {
-        if (lecturerId == null) {
-            lecturerId = getCurrentLecturerId();
-        }
-
-        if (lecturerId != null) {
-            model.addAttribute("lecturerId", lecturerId);
-        }
-        return "lecturer/schedule";
+    @PutMapping("/offerings/{id}")
+    public ResponseEntity<?> updateOffering(
+            @PathVariable("id") long id,
+            @RequestBody com.cource.dto.course.CourseOfferingRequestDTO dto,
+            @RequestParam long lecturerId) {
+        var offering = lecturerService.updateCourseOffering(lecturerId, id, dto);
+        return ResponseEntity.ok(offering);
     }
 
-    @GetMapping("/reports")
-    public String reports(@RequestParam(required = false) Long lecturerId, Model model) {
-        if (lecturerId == null) {
-            lecturerId = getCurrentLecturerId();
+    @GetMapping("/offerings/{id}")
+    public ResponseEntity<?> getOffering(@PathVariable("id") long id, @RequestParam long lecturerId) {
+        try {
+            var offering = lecturerService.getOfferingById(lecturerId, id);
+            return ResponseEntity.ok(offering);
+        } catch (ResourceNotFoundException rnfe) {
+            return ResponseEntity.status(404).body(java.util.Collections.singletonMap("message", rnfe.getMessage()));
+        } catch (SecurityException se) {
+            return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
-
-        if (lecturerId != null) {
-            model.addAttribute("lecturerId", lecturerId);
-        }
-        return "lecturer/reports";
     }
 
-    private Long getCurrentLecturerId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            return userRepository.findByEmail(auth.getName())
-                    .map(User::getId)
-                    .orElse(null);
+    @PostMapping("/offerings/{id}/regenerate")
+    public ResponseEntity<?> regenerateOfferingCode(@PathVariable("id") long id, @RequestParam long lecturerId) {
+        try {
+            var offering = lecturerService.regenerateOfferingEnrollmentCode(lecturerId, id);
+            return ResponseEntity
+                    .ok(java.util.Collections.singletonMap("enrollmentCode", offering.getEnrollmentCode()));
+        } catch (ResourceNotFoundException rnfe) {
+            return ResponseEntity.status(404).body(java.util.Collections.singletonMap("message", rnfe.getMessage()));
+        } catch (SecurityException se) {
+            return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
-        return null;
     }
+
+    @DeleteMapping("/offerings/{id}")
+    public ResponseEntity<?> deleteOffering(@PathVariable("id") long id, @RequestParam long lecturerId) {
+        lecturerService.deleteCourseOffering(lecturerId, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/attendance/{scheduleId}")
+    public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getAttendanceRecords(
+            @PathVariable long scheduleId,
+            @RequestParam(required = false) Long lecturerId) {
+        // TODO: After enabling security, get lecturerId from Authentication
+        try {
+            var list = lecturerService.getAttendanceRecordsAsDto(scheduleId, lecturerId);
+            return ResponseEntity.ok(list);
+        } catch (ResourceNotFoundException rnfe) {
+            return ResponseEntity.status(404).body(java.util.Collections.emptyList());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body(java.util.Collections.emptyList());
+        }
+    }
+
+    // Attendance counts by date (last N days) for lecturer's offerings
+    @GetMapping("/attendance/trends")
+    public ResponseEntity<java.util.Map<String, Long>> getAttendanceTrends(
+            @RequestParam long lecturerId,
+            @RequestParam(required = false, defaultValue = "14") int days) {
+        var map = lecturerService.getAttendanceCountsByDate(lecturerId, days);
+        return ResponseEntity.ok(map);
+    }
+
+    // Course average grades for lecturer
+    @GetMapping("/courses/averages")
+    public ResponseEntity<java.util.Map<String, Double>> getCourseAverages(@RequestParam long lecturerId) {
+        var map = lecturerService.getCourseAverageGradeByLecturer(lecturerId);
+        return ResponseEntity.ok(map);
+    }
+
 }

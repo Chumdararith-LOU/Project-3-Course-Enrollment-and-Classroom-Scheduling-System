@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Course Management | Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+      .animate-slideUp {
+        animation: slideUp 0.4s ease-out;
+      }
+      .course-row:hover {
+        transform: translateX(4px);
+        transition: all 0.2s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight">Course Management</h1>
+          <p class="text-sm text-slate-400 mt-1">Admin Portal</p>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <a
+            th:href="@{/admin/dashboard}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            th:href="@{/admin/users}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            Users
+          </a>
+          <a
+            th:href="@{/admin/courses}"
+            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            Courses
+          </a>
+          <a
+            th:href="@{/admin/offerings}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            Offerings
+          </a>
+          <a
+            th:href="@{/admin/enrollments}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Enrollments
+          </a>
+          <a
+            th:href="@{/admin/rooms}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+            Rooms
+          </a>
+          <a
+            th:href="@{/admin/schedules}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Schedules
+          </a>
+          <a
+            th:href="@{/admin/terms}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Terms
+          </a>
+          <a
+            th:href="@{/admin/reports}"
+            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Reports
+          </a>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="px-4 py-6 border-t border-slate-700">
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"
+            >
+              A
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium">Admin User</p>
+              <p class="text-xs text-slate-400">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900 mb-1">
+              Course Management
+            </h1>
+            <p class="text-slate-500">
+              Manage courses with auto-generated enrollment codes for students
+            </p>
+          </div>
+          <button
+            onclick="showCreateModal()"
+            class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center gap-2 shadow-sm"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            Add Course
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter by Status -->
+      <div
+        class="bg-white rounded-lg shadow-sm p-5 border border-slate-200 mb-6"
+      >
+        <h3
+          class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3"
+        >
+          Filter by Status
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          <button
+            onclick="filterCourses('all')"
+            id="filter-all"
+            class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-blue-600 text-white"
+          >
+            All Courses
+          </button>
+          <button
+            onclick="filterCourses('active')"
+            id="filter-active"
+            class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
+          >
+            Active
+          </button>
+          <button
+            onclick="filterCourses('inactive')"
+            id="filter-inactive"
+            class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
+          >
+            Inactive
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div
+        class="bg-white rounded-lg shadow-sm p-4 border border-slate-200 mb-6"
+      >
+        <div class="flex gap-3 items-center">
+          <div class="flex-1 relative">
+            <div
+              class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+            >
+              <svg
+                class="w-4 h-4 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+            </div>
+            <input
+              type="text"
+              id="searchInput"
+              onkeyup="searchCourses()"
+              placeholder="Search courses by code or title..."
+              class="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Courses Table -->
+      <div
+        class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden"
+      >
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200" id="coursesTable">
+            <thead class="bg-slate-50/50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wide"
+                >
+                  ID
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                >
+                  Course Code
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                >
+                  Enrollment Code
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                >
+                  Title
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                >
+                  Description
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                >
+                  Credits
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-slate-100">
+              <tr
+                th:each="course : ${courses}"
+                class="hover:bg-slate-50 transition course-row"
+                th:attr="data-status=${course.active ? 'active' : 'inactive'}"
+              >
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-medium"
+                  th:text="${course.id}"
+                >
+                  1
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div
+                    class="text-sm font-medium text-slate-900"
+                    th:text="${course.courseCode}"
+                  >
+                    CS101
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div
+                    th:if="${course.enrollmentCode != null}"
+                    class="flex items-center gap-2"
+                  >
+                    <code
+                      class="px-3 py-1 text-sm font-mono font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-lg border border-blue-200"
+                      th:text="${course.enrollmentCode}"
+                    >
+                      CS10001
+                    </code>
+                    <button
+                      th:data-code="${course.enrollmentCode}"
+                      onclick="copyCode(this.dataset.code)"
+                      class="text-slate-400 hover:text-blue-600 transition"
+                      title="Copy enrollment code"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  <span
+                    th:if="${course.enrollmentCode == null}"
+                    class="text-xs text-slate-400 italic"
+                    >No code</span
+                  >
+                </td>
+                <td
+                  class="px-6 py-4 text-sm text-slate-600 max-w-xs truncate"
+                  th:text="${course.title}"
+                  th:title="${course.title}"
+                >
+                  Introduction to Computer Science
+                </td>
+                <td
+                  class="px-6 py-4 text-sm text-slate-600 max-w-sm truncate"
+                  th:text="${course.description}"
+                  th:title="${course.description}"
+                >
+                  This course covers fundamental concepts...
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-slate-600"
+                  th:text="${course.credits}"
+                >
+                  3
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    th:class="${course.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}"
+                    class="px-3 py-1 inline-flex text-xs font-semibold rounded-full"
+                    th:text="${course.active ? 'Active' : 'Inactive'}"
+                    >Active</span
+                  >
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3"
+                >
+                  <button
+                    th:onclick="|editCourse(${course.id})|"
+                    class="text-indigo-600 hover:text-indigo-800 transition"
+                    title="Edit course"
+                  >
+                    <svg
+                      class="w-5 h-5 inline"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
+                    th:onclick="|regenerateCode(${course.id})|"
+                    class="text-purple-600 hover:text-purple-800 transition"
+                    title="Regenerate enrollment code"
+                  >
+                    <svg
+                      class="w-5 h-5 inline"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    th:onclick="|toggleCourseStatus(${course.id})|"
+                    class="text-amber-600 hover:text-amber-800 transition"
+                    title="Toggle status"
+                  >
+                    <svg
+                      class="w-5 h-5 inline"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
+                    th:onclick="|deleteCourse(${course.id})|"
+                    class="text-red-600 hover:text-red-800 transition"
+                    title="Delete course"
+                  >
+                    <svg
+                      class="w-5 h-5 inline"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      ></path>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          id="emptyState"
+          th:if="${#lists.isEmpty(courses)}"
+          class="text-center py-16"
+        >
+          <svg
+            class="mx-auto h-24 w-24 text-slate-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+            />
+          </svg>
+          <h3 class="mt-6 text-xl font-semibold text-slate-900">
+            No courses found
+          </h3>
+          <p class="mt-2 text-slate-500">
+            Get started by creating your first course
+          </p>
+          <button
+            onclick="showCreateModal()"
+            class="mt-6 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition inline-flex items-center gap-2"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+            Add Course
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create Course Modal -->
+    <div
+      id="createCourseModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm items-center justify-center z-50 p-4 animate-fadeIn"
+    >
+      <div
+        class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slideUp"
+      >
+        <div class="bg-white border-b border-slate-200 p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">
+                Create New Course
+              </h2>
+              <p class="text-sm text-slate-500 mt-1">
+                Add a new course with auto-generated enrollment code
+              </p>
+            </div>
+            <button
+              onclick="closeCreateModal()"
+              class="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <form id="createCourseForm" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              ><span class="text-red-500">*</span> Course Code</label
+            >
+            <input
+              type="text"
+              id="createCourseCode"
+              required
+              placeholder="e.g., CS101"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+            <p class="text-xs text-slate-500 mt-1">
+              Enrollment code will be auto-generated from this
+            </p>
+          </div>
+          <div>
+            <label
+              for="createLecturerIds"
+              class="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              <span class="text-red-500">*</span> Lecturers
+            </label>
+            <select
+              id="createLecturerIds"
+              name="lecturerIds"
+              multiple
+              required
+              aria-label="Select lecturers for this course"
+              size="4"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px] max-h-44 overflow-y-auto"
+              style="height: 44px"
+            >
+              <option value="" disabled selected>Select Lecturers</option>
+              <option
+                th:each="lecturer : ${lecturers}"
+                th:value="${lecturer.id}"
+                th:text="${lecturer.fullName + ' (' + lecturer.email + ')'}"
+              ></option>
+            </select>
+            <p class="text-xs text-slate-500 mt-1">
+              Hold Ctrl (Cmd on Mac) to select multiple.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              ><span class="text-red-500">*</span> Course Title</label
+            >
+            <input
+              type="text"
+              id="createTitle"
+              required
+              placeholder="e.g., Introduction to Computer Science"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              >Description</label
+            >
+            <textarea
+              id="createDescription"
+              rows="4"
+              placeholder="Enter course description..."
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              ><span class="text-red-500">*</span> Credits</label
+            >
+            <input
+              type="number"
+              id="createCredits"
+              required
+              value="3"
+              min="1"
+              max="6"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label class="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                id="createActive"
+                checked
+                class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+              />
+              <span class="ml-2 text-sm font-medium text-slate-700"
+                >Active Course</span
+              >
+            </label>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button
+              type="submit"
+              class="flex-1 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200"
+            >
+              Create Course
+            </button>
+            <button
+              type="button"
+              onclick="closeCreateModal()"
+              class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div
+      id="editCourseModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm items-center justify-center z-50 p-4 animate-fadeIn"
+    >
+      <div
+        class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slideUp"
+      >
+        <div class="bg-white border-b border-slate-200 p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">Edit Course</h2>
+              <p class="text-sm text-slate-500 mt-1">
+                Update course information
+              </p>
+            </div>
+            <button
+              onclick="closeEditModal()"
+              class="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-lg"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <form id="editCourseForm" class="p-6 space-y-4">
+          <input type="hidden" id="editCourseId" />
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              >Enrollment Code</label
+            >
+            <div class="flex items-center gap-2">
+              <code
+                id="editEnrollmentCode"
+                class="px-4 py-2 text-sm font-mono font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-lg border border-blue-200"
+                >CS10001</code
+              >
+              <button
+                type="button"
+                onclick="copyEditCode()"
+                class="px-3 py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition"
+              >
+                Copy
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">
+              Students use this code to enroll
+            </p>
+          </div>
+          <div>
+            <label
+              for="editLecturerIds"
+              class="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              <span class="text-red-500">*</span> Lecturers
+            </label>
+            <select
+              id="editLecturerIds"
+              name="lecturerIds"
+              multiple
+              required
+              aria-label="Select lecturers for this course"
+              size="4"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px] max-h-44 overflow-y-auto"
+              style="height: 44px"
+            >
+              <option value="" disabled selected>Select Lecturers</option>
+              <option
+                th:each="lecturer : ${lecturers}"
+                th:value="${lecturer.id}"
+                th:text="${lecturer.fullName + ' (' + lecturer.email + ')'}"
+              ></option>
+            </select>
+            <p class="text-xs text-slate-500 mt-1">
+              Hold Ctrl (Cmd on Mac) to select multiple.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              ><span class="text-red-500">*</span> Course Code</label
+            >
+            <input
+              type="text"
+              id="editCourseCode"
+              required
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              ><span class="text-red-500">*</span> Course Title</label
+            >
+            <input
+              type="text"
+              id="editTitle"
+              required
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              >Description</label
+            >
+            <textarea
+              id="editDescription"
+              rows="4"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5"
+              ><span class="text-red-500">*</span> Credits</label
+            >
+            <input
+              type="number"
+              id="editCredits"
+              required
+              min="1"
+              max="6"
+              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label class="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                id="editActive"
+                class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+              />
+              <span class="ml-2 text-sm font-medium text-slate-700"
+                >Active Course</span
+              >
+            </label>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button
+              type="submit"
+              class="flex-1 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200"
+            >
+              Update Course
+            </button>
+            <button
+              type="button"
+              onclick="closeEditModal()"
+              class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="hidden fixed bottom-6 right-6 bg-white border border-slate-200 rounded-lg shadow-lg px-6 py-4 z-50 min-w-[300px]"
+    >
+      <div class="flex items-center gap-3">
+        <div id="toastIcon"></div>
+        <p id="toastMessage" class="text-sm font-medium text-slate-900"></p>
+      </div>
+    </div>
+
+    <script>
+      // Show toast notification
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        const toastIcon = document.getElementById("toastIcon");
+        const toastMessage = document.getElementById("toastMessage");
+
+        const icons = {
+          success:
+            '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+          error:
+            '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+          info: '<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        };
+
+        toastIcon.innerHTML = icons[type] || icons.success;
+        toastMessage.textContent = message;
+        toast.classList.remove("hidden");
+
+        setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 3000);
+      }
+
+      // Filter courses
+      function filterCourses(status) {
+        const rows = document.querySelectorAll(".course-row");
+        const buttons = ["all", "active", "inactive"];
+
+        buttons.forEach((btn) => {
+          const button = document.getElementById("filter-" + btn);
+          if (btn === status) {
+            button.classList.remove(
+              "bg-slate-100",
+              "text-slate-700",
+              "hover:bg-slate-200"
+            );
+            button.classList.add("bg-blue-600", "text-white");
+          } else {
+            button.classList.remove("bg-blue-600", "text-white");
+            button.classList.add(
+              "bg-slate-100",
+              "text-slate-700",
+              "hover:bg-slate-200"
+            );
+          }
+        });
+
+        rows.forEach((row) => {
+          if (status === "all") {
+            row.style.display = "";
+          } else {
+            const rowStatus = row.getAttribute("data-status");
+            row.style.display = rowStatus === status ? "" : "none";
+          }
+        });
+      }
+
+      // Search courses
+      function searchCourses() {
+        const input = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll(".course-row");
+
+        rows.forEach((row) => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(input) ? "" : "none";
+        });
+      }
+
+      // Copy enrollment code
+      function copyCode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+          showToast("Enrollment code copied: " + code, "success");
+        });
+      }
+
+      function copyEditCode() {
+        const code = document.getElementById("editEnrollmentCode").textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          showToast("Enrollment code copied: " + code, "success");
+        });
+      }
+
+      // Show create modal
+      function showCreateModal() {
+        document.getElementById("createCourseModal").classList.remove("hidden");
+        document.getElementById("createCourseModal").classList.add("flex");
+      }
+
+      function closeCreateModal() {
+        document.getElementById("createCourseModal").classList.add("hidden");
+        document.getElementById("createCourseModal").classList.remove("flex");
+        document.getElementById("createCourseForm").reset();
+      }
+
+      // Show edit modal
+      function closeEditModal() {
+        document.getElementById("editCourseModal").classList.add("hidden");
+        document.getElementById("editCourseModal").classList.remove("flex");
+      }
+
+      // Create course
+      document
+        .getElementById("createCourseForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const data = {
+            courseCode: document.getElementById("createCourseCode").value,
+            title: document.getElementById("createTitle").value,
+            description: document.getElementById("createDescription").value,
+            credits: parseInt(document.getElementById("createCredits").value),
+            active: document.getElementById("createActive").checked,
+          };
+
+          try {
+            const response = await fetch("/api/admin/courses", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+              showToast("Course created successfully!", "success");
+              closeCreateModal();
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              const error = await response.text();
+              showToast("Error: " + error, "error");
+            }
+          } catch (error) {
+            showToast("Error creating course", "error");
+          }
+        });
+
+      // Edit course
+      async function editCourse(id) {
+        try {
+          const response = await fetch(`/api/admin/courses/${id}`);
+          const course = await response.json();
+
+          document.getElementById("editCourseId").value = course.id;
+          document.getElementById("editCourseCode").value = course.courseCode;
+          document.getElementById("editEnrollmentCode").textContent =
+            course.enrollmentCode;
+          document.getElementById("editTitle").value = course.title;
+          document.getElementById("editDescription").value =
+            course.description || "";
+          document.getElementById("editCredits").value = course.credits;
+          document.getElementById("editActive").checked = course.active;
+
+          document.getElementById("editCourseModal").classList.remove("hidden");
+          document.getElementById("editCourseModal").classList.add("flex");
+        } catch (error) {
+          showToast("Error loading course", "error");
+        }
+      }
+
+      document
+        .getElementById("editCourseForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const id = document.getElementById("editCourseId").value;
+          const data = {
+            courseCode: document.getElementById("editCourseCode").value,
+            title: document.getElementById("editTitle").value,
+            description: document.getElementById("editDescription").value,
+            credits: parseInt(document.getElementById("editCredits").value),
+            active: document.getElementById("editActive").checked,
+          };
+
+          try {
+            const response = await fetch(`/api/admin/courses/${id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+              showToast("Course updated successfully!", "success");
+              closeEditModal();
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              const error = await response.text();
+              showToast("Error: " + error, "error");
+            }
+          } catch (error) {
+            showToast("Error updating course", "error");
+          }
+        });
+
+      // Toggle course status
+      async function toggleCourseStatus(id) {
+        if (confirm("Are you sure you want to toggle the course status?")) {
+          try {
+            const response = await fetch(
+              `/api/admin/courses/${id}/toggle-status`,
+              {
+                method: "PATCH",
+              }
+            );
+
+            if (response.ok) {
+              showToast("Course status updated!", "success");
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              showToast("Error updating status", "error");
+            }
+          } catch (error) {
+            showToast("Error updating status", "error");
+          }
+        }
+      }
+
+      // Regenerate enrollment code
+      async function regenerateCode(id) {
+        if (
+          confirm(
+            "Are you sure you want to regenerate the enrollment code? Students will need the new code to enroll."
+          )
+        ) {
+          try {
+            const response = await fetch(
+              `/api/admin/courses/${id}/regenerate-code`,
+              {
+                method: "POST",
+              }
+            );
+
+            if (response.ok) {
+              const course = await response.json();
+              showToast(
+                "New enrollment code: " + course.enrollmentCode,
+                "success"
+              );
+              setTimeout(() => window.location.reload(), 2000);
+            } else {
+              showToast("Error regenerating code", "error");
+            }
+          } catch (error) {
+            showToast("Error regenerating code", "error");
+          }
+        }
+      }
+
+      // Delete course
+      async function deleteCourse(id) {
+        if (
+          confirm(
+            "Are you sure you want to delete this course? This action cannot be undone."
+          )
+        ) {
+          try {
+            const response = await fetch(`/api/admin/courses/${id}`, {
+              method: "DELETE",
+            });
+
+            if (response.ok) {
+              showToast("Course deleted successfully!", "success");
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              showToast("Error deleting course", "error");
+            }
+          } catch (error) {
+            showToast("Error deleting course", "error");
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -8,8 +8,8 @@
     <title>Dashboard | Lecturer Portal</title>
 </head>
 <body class="bg-slate-100 font-sans">
-<!-- Sidebar Navigation (Matches other pages exactly) -->
-<div th:replace="~{fragments/lecturer-sidebar :: sidebar(activePage='dashboard')}"></div>
+<!-- Sidebar Navigation -->
+<div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
 <!-- The rest of your dashboard remains exactly the same -->
 <div class="ml-64 bg-white border-b border-slate-200">
