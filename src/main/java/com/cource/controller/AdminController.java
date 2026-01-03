@@ -9,8 +9,8 @@ import com.cource.dto.course.AcademicTermRequestDTO;
 import com.cource.dto.schedule.RoomRequestDTO;
 import jakarta.validation.Valid;
 
-import org.apache.tomcat.util.http.parser.MediaType;
-import org.flywaydb.core.internal.resource.classpath.ClassPathResource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

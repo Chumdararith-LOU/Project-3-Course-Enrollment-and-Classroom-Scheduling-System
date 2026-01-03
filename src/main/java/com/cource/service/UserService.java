@@ -28,9 +28,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
-public interface UserService {
+@RequiredArgsConstructor
+public class UserService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
@@ -86,9 +86,10 @@ public interface UserService {
             user.setIdCard(request.getIdCard());
         }
 
-        if (request.getActive() != null) {
-            user.setActive(request.getActive());
-        }
+        // if (request.getActive() != null) {
+        //     user.setActive(request.getActive());
+        // }
+        user.setActive(request.isActive());
 
         if (request.getRoleId() != null) {
             Role role = roleRepository.findById(request.getRoleId())
