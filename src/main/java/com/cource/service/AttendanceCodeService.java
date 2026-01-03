@@ -7,7 +7,9 @@ import java.util.Optional;
 import com.cource.entity.AttendanceCode;
 import com.cource.repository.AttendanceCodeRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AttendanceCodeService {
     private final AttendanceCodeRepository repo;
 
