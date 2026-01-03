@@ -8,8 +8,10 @@ import com.cource.entity.AttendanceCode;
 import com.cource.repository.AttendanceCodeRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AttendanceCodeService {
     private final AttendanceCodeRepository repo;
 
@@ -51,10 +53,6 @@ public class AttendanceCodeService {
         public Integer getLateWindowMinutes() {
             return lateWindowMinutes;
         }
-    }
-
-    public AttendanceCodeService(AttendanceCodeRepository repo) {
-        this.repo = repo;
     }
 
     public CodeInfo generate(Long scheduleId, Long creatorId) {
