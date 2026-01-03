@@ -9,7 +9,7 @@
   </head>
   <body class="bg-slate-100 font-sans">
     <!-- Sidebar Navigation -->
-    <div th:replace="~{fragments/lecturer-sidebar :: sidebar(activePage='reports')}"></div>
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
     <!-- Top Bar -->
     <div class="ml-64 bg-white border-b border-slate-200">

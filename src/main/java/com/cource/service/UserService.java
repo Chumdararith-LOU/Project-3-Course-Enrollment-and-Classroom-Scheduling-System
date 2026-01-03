@@ -211,4 +211,9 @@ public class UserService {
         return new UserProfileDTO(p.getId(), userId, p.getPhone(), p.getDateOfBirth(), p.getBio(),
                 p.getAvatarUrl());
     }
+
+    public User getUserByEmail(String username) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUserByEmail'");
+    }
 }

@@ -9,7 +9,7 @@
 </head>
 <body class="bg-slate-100 font-sans">
 <!-- Sidebar Navigation (Matches Dashboard) -->
-<div th:replace="~{fragments/lecturer-sidebar :: sidebar(activePage='attendance')}"></div>
+ <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
 <!-- Top Bar (Matches Dashboard Style) -->
 <div class="ml-64 bg-white border-b border-slate-200">

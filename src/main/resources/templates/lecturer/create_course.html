@@ -10,9 +10,7 @@
 
 <div class="flex h-screen overflow-hidden">
 
-    <aside class="w-64 bg-slate-900 text-white flex-shrink-0">
-        <div class="p-6 font-bold text-xl">Lecturer Portal</div>
-    </aside>
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
     <main class="flex-1 overflow-y-auto">
         <div class="max-w-3xl mx-auto px-8 py-12">
