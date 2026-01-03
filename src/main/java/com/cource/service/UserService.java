@@ -211,4 +211,10 @@ public class UserService {
         return new UserProfileDTO(p.getId(), userId, p.getPhone(), p.getDateOfBirth(), p.getBio(),
                 p.getAvatarUrl());
     }
+
+    @Transactional(readOnly = true)
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }
