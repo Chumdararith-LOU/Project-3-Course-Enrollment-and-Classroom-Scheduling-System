@@ -12,4 +12,14 @@ public class AttendanceRequestDTO {
     private String status; // "PRESENT", "ABSENT", "LATE", "EXCUSED"
     private LocalDate attendanceDate;
     private String notes;
+
+    public void setLecturerId(Long currentUserId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setLecturerId'");
+    }
+
+    public Object getLecturerId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getLecturerId'");
+    }
 }
