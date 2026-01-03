@@ -86,10 +86,7 @@ public class UserService {
             user.setIdCard(request.getIdCard());
         }
 
-        if (request.getActive() != null) {
-            user.setActive(request.getActive());
-        }
-        // user.setActive(request.isActive());
+        user.setActive(request.isActive());
 
         if (request.getRoleId() != null) {
             Role role = roleRepository.findById(request.getRoleId())
