@@ -87,7 +87,7 @@ public class UserService {
         }
 
         // if (request.getActive() != null) {
-        //     user.setActive(request.getActive());
+        // user.setActive(request.getActive());
         // }
         user.setActive(request.isActive());
 
