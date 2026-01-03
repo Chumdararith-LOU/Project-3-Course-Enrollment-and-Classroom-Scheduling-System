@@ -3,6 +3,11 @@ package com.cource.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cource.dto.course.CourseResponseDTO;
+import com.cource.exception.ConflictException;
+import com.cource.repository.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,14 +17,13 @@ import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.Course;
 import com.cource.entity.CourseLecturer;
+import com.cource.entity.CourseOffering;
 import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
-import com.cource.repository.AttendanceRepository;
-import com.cource.repository.ClassScheduleRepository;
-import com.cource.repository.CourseLecturerRepository;
-import com.cource.repository.EnrollmentRepository;
 import com.cource.service.LecturerService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -29,22 +33,42 @@ public class LecturerServiceImpl implements LecturerService {
     private final AttendanceRepository attendanceRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final UserRepository userRepository;
+    private final CourseOfferingRepository courseOfferingRepository;
 
     public LecturerServiceImpl(CourseLecturerRepository courseLecturerRepository,
                                AttendanceRepository attendanceRepository,
                                ClassScheduleRepository classScheduleRepository,
-                               EnrollmentRepository enrollmentRepository) {
+                               EnrollmentRepository enrollmentRepository,
+                               UserRepository userRepository,
+                                CourseOfferingRepository courseOfferingRepository) {
         this.courseLecturerRepository = courseLecturerRepository;
         this.attendanceRepository = attendanceRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.userRepository = userRepository;
+        this.courseOfferingRepository = courseOfferingRepository;
     }
 
     @Override
-    public List<Course> getCoursesByLecturerId(long lecturerId) {
-        return courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering().getCourse())
-                .distinct()
+    public List<CourseResponseDTO> getCoursesByLecturerId(long lecturerId) {
+        List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
+
+        return assignments.stream()
+                .map(cl -> {
+                    CourseOffering offering = cl.getOffering();
+                    Course course = offering.getCourse();
+
+                    CourseResponseDTO dto = new CourseResponseDTO();
+                    dto.setId(offering.getId()); // IMPORTANT: Use Offering ID, not Course ID
+                    dto.setCourseCode(course.getCourseCode());
+                    dto.setTitle(course.getTitle());
+                    dto.setDescription(course.getDescription());
+                    dto.setCredits(course.getCredits());
+                    dto.setEnrollmentCode(offering.getEnrollmentCode()); // <--- THE MISSING PIECE
+                    dto.setActive(offering.getTerm().isActive());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -57,15 +81,16 @@ public class LecturerServiceImpl implements LecturerService {
     @Override
     public List<User> getEnrolledStudents(long offeringId, long lecturerId) {
         verifyOwnership(offeringId, lecturerId);
-        return enrollmentRepository.findByOfferingId(offeringId).stream()
-                .map(Enrollment::getStudent)
+        List<Long> studentIds = enrollmentRepository.findByOfferingId(offeringId).stream()
+                .map(enrollment -> enrollment.getStudent().getId())
                 .collect(Collectors.toList());
+
+        return userRepository.findAllById(studentIds);
     }
 
     @Override
     @Transactional(readOnly = true)
     public LecturerDashboardDTO getDashboardStats(Long lecturerId) {
-        // 1. Count Active Courses
         List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
         long activeCourses = assignments.size();
 
@@ -76,15 +101,10 @@ public class LecturerServiceImpl implements LecturerService {
 
         for (CourseLecturer assignment : assignments) {
             Long offeringId = assignment.getOffering().getId();
-
-            // 2. Count Students
             totalStudents += enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
-
-            // 3. Count Upcoming Classes
             List<ClassSchedule> schedules = classScheduleRepository.findByOfferingId(offeringId);
             upcomingClasses += schedules.size();
 
-            // 4. Calculate Attendance Rate
             for (ClassSchedule schedule : schedules) {
                 List<Attendance> records = attendanceRepository.findByScheduleId(schedule.getId());
                 totalAttendanceRecords += records.size();
@@ -100,20 +120,31 @@ public class LecturerServiceImpl implements LecturerService {
                 .activeCourses(activeCourses)
                 .totalStudents(totalStudents)
                 .upcomingClasses(upcomingClasses)
-                .averageAttendanceRate(attendanceRate) // FIX: Setting the new field
+                .averageAttendanceRate(attendanceRate)
                 .build();
     }
 
     @Override
-    public void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status) {
+    public void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status, long lecturerId) {
         ClassSchedule schedule = classScheduleRepository.findById(attendanceRequestDTO.getScheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
-        verifyOwnership(schedule.getOffering().getId(), attendanceRequestDTO.getLecturerId());
+        verifyOwnership(schedule.getOffering().getId(), lecturerId);
 
         Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(
                         studentId, schedule.getOffering().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+
+        boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
+                studentId,
+                schedule.getId(),
+                enrollment.getId(),
+                attendanceRequestDTO.getAttendanceDate()
+        );
+
+        if (exists) {
+            throw new ConflictException("Attendance already recorded for this student on this date.");
+        }
 
         Attendance attendance = new Attendance();
         attendance.setEnrollment(enrollment);
@@ -122,7 +153,7 @@ public class LecturerServiceImpl implements LecturerService {
         attendance.setStatus(status);
 
         User lecturer = new User();
-        lecturer.setId(attendanceRequestDTO.getLecturerId());
+        lecturer.setId(lecturerId);
         attendance.setRecordedBy(lecturer);
 
         if (attendanceRequestDTO.getNotes() != null) {
@@ -139,6 +170,22 @@ public class LecturerServiceImpl implements LecturerService {
 
         verifyOwnership(schedule.getOffering().getId(), lecturerId);
         return attendanceRepository.findByScheduleId(scheduleId);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('LECTURER')")
+    public String regenerateOfferingCode(Long offeringId) {
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+
+        String newCode = java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+
+        offering.setEnrollmentCode(newCode);
+        offering.setEnrollmentCodeExpiresAt(java.time.LocalDateTime.now().plusDays(7));
+
+        courseOfferingRepository.save(offering);
+        return newCode;
     }
 
     private void verifyOwnership(long offeringId, long lecturerId) {

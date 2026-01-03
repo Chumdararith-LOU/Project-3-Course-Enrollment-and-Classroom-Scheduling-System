@@ -1,122 +1,151 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Student Dashboard</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Student Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link th:href="@{/css/output.css}" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .serif { font-family: 'Merriweather', serif; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
-
+<body class="bg-slate-100 font-sans">
 <div class="flex h-screen overflow-hidden">
 
-    <div th:replace="~{fragments/student-sidebar :: sidebar(currentPage='dashboard')}"></div>
+    <div th:replace="fragments/student-sidebar :: sidebar(currentPage='dashboard')"></div>
 
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
-
         <header class="bg-white border-b border-gray-100 h-16 flex items-center justify-between px-8 z-10 shrink-0">
-            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-serif" th:text="${user.firstName}">Student</span></h2>
-            <div class="flex items-center gap-6">
-                <div class="relative cursor-pointer">
-                    <span class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white">3</span>
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                </div>
-
-                <div class="flex items-center gap-3 border-l border-gray-100 pl-6">
-                    <div class="w-9 h-9 bg-[#1e293b] text-white rounded-full flex items-center justify-center font-medium text-sm tracking-wide"
-                         th:text="${#strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1)}">ED</div>
-                    <div class="hidden sm:block">
-                        <p class="text-sm font-medium text-gray-900 leading-tight" th:text="${user.firstName + ' ' + user.lastName}">Student Name</p>
-                        <p class="text-[11px] text-gray-500" th:text="${user.email}">student@school.edu</p>
-                    </div>
+            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-bold" th:text="${user.firstName}">Student</span></h2>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                    <span th:text="${#strings.substring(user.firstName,0,1)}">S</span>
                 </div>
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-8">
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-[#1e293b] serif mb-1">Student Dashboard</h1>
-                <p class="text-gray-500 text-sm">Welcome to your academic portal</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Enrolled Courses</p>
-                        <h3 class="text-3xl font-serif font-bold text-gray-900" th:text="${enrolledCount}">0</h3>
-                    </div>
-                    <div class="p-3 bg-gray-50 rounded-lg text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">Enrolled Courses</div>
+                    <div class="text-3xl font-bold text-blue-600 mt-2" th:text="${enrolledCount != null ? enrolledCount : 0}">0</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">Active Terms</div>
+                    <div class="text-3xl font-bold text-green-600 mt-2">
+                        <!-- Count unique terms from enrollments using a simpler approach -->
+                        <span th:if="${enrollments != null && !enrollments.empty}">
+                            <span th:text="${#sets.toSet(enrollments.![termName]).size()}">0</span>
+                        </span>
+                        <span th:if="${enrollments == null || enrollments.empty}">0</span>
                     </div>
                 </div>
-
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Today's Classes</p>
-                        <h3 class="text-3xl font-serif font-bold text-gray-900" th:text="${todaysClassCount != null ? todaysClassCount : '0'}">0</h3>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">This Week</div>
+                    <div class="text-3xl font-bold text-purple-600 mt-2">
+                        <!-- Calculate total classes per week (assuming each course meets once per week) -->
+                        <span th:text="${enrollments != null ? #lists.size(enrollments) : 0}">0</span>
                     </div>
-                    <div class="p-3 bg-gray-50 rounded-lg text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    </div>
+                    <div class="text-xs text-gray-500">Classes</div>
                 </div>
-
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Attendance</p>
-                        <h3 class="text-3xl font-serif font-bold text-gray-900" th:text="${attendancePercentage != null ? attendancePercentage + '%' : 'N/A'}">100%</h3>
-                    </div>
-                    <div class="p-3 bg-gray-50 rounded-lg text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">GPA</p>
-                        <h3 class="text-3xl font-serif font-bold text-gray-900" th:text="${gpa != null ? gpa : 'N/A'}">3.8</h3>
-                    </div>
-                    <div class="p-3 bg-gray-50 rounded-lg text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
-                    </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-gray-500 text-sm font-medium">Overall GPA</div>
+                    <div class="text-3xl font-bold text-yellow-600 mt-2">3.85</div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 h-96">
-                <div class="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold font-serif text-gray-900">Today's Schedule</h3>
-                        <a th:href="@{/student/schedule}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View Full Schedule</a>
+            <!-- Current Enrollments -->
+            <div class="bg-white rounded-lg shadow mb-8">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">My Current Courses</h2>
+                </div>
+                <div class="p-6">
+                    <div th:if="${enrollments == null || #lists.isEmpty(enrollments)}" class="text-center text-gray-500 py-8">
+                        <p>You are not enrolled in any courses yet.</p>
+                        <a th:href="@{/student/catalog}" class="text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block">Browse Available Courses</a>
                     </div>
-                    <div class="flex-1 flex items-center justify-center text-gray-400 font-medium">
-                        <span th:if="${todaysClasses != null and #lists.isEmpty(todaysClasses)}">No classes today</span>
+
+                    <div th:if="${enrollments != null && !#lists.isEmpty(enrollments)}" class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="en : ${enrollments}">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${en.courseCode}">CS101</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${en.title}">Introduction to Programming</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${en.credits}">3</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${en.termName}">Fall 2025</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                        <span th:class="${en.status == 'ENROLLED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}"
+                                              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                              th:text="${en.status}">ENROLLED</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <a th:href="@{/student/grades}" class="text-blue-600 hover:text-blue-900 mr-3">View Grade</a>
+                                    <a th:if="${en.status == 'ENROLLED'}" href="#" class="text-red-600 hover:text-red-900">Drop</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+            </div>
 
-                <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6 overflow-hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold font-serif text-gray-900">My Courses</h3>
-                        <a th:href="@{/student/my-courses}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View All</a>
-                    </div>
-
-                    <div class="space-y-4 overflow-y-auto max-h-64">
-                        <div th:each="course : ${courses}" th:if="${course.enrolledStatus}"
-                             class="bg-gray-50 rounded-lg p-4 border border-gray-100 flex justify-between items-start">
-                            <div>
-                                <h4 class="font-medium text-gray-900 text-sm" th:text="${course.title}">Course Title</h4>
-                                <p class="text-xs text-gray-500 mt-1" th:text="${course.lecturer + ' • ' + course.credits + ' credits'}">Lecturer Info</p>
-                            </div>
-                            <span class="bg-[#1e293b] text-white text-[10px] font-bold px-2 py-1 rounded-full" th:text="${course.courseCode}">CODE</span>
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a th:href="@{/student/catalog}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 rounded-full p-3 mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
                         </div>
-
-                        <div th:if="${enrolledCount == 0}" class="text-center py-4 text-gray-400 text-sm">
-                            No active courses found.
+                        <div>
+                            <h3 class="font-bold text-gray-800">Browse Courses</h3>
+                            <p class="text-sm text-gray-500">Find and enroll in courses</p>
                         </div>
                     </div>
-                </div>
+                </a>
+
+                <a th:href="@{/student/schedule}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 rounded-full p-3 mr-4">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">My Schedule</h3>
+                            <p class="text-sm text-gray-500">View class schedule</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a th:href="@{/student/grades}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center">
+                        <div class="bg-purple-100 rounded-full p-3 mr-4">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">My Grades</h3>
+                            <p class="text-sm text-gray-500">Check your grades</p>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </main>

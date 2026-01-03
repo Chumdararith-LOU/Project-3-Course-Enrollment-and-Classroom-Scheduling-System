@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports & Analytics - Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+      <div class="flex flex-col h-full">
+        <div class="px-6 py-8 border-b border-slate-700">
+          <h1 class="text-2xl font-bold tracking-tight">Course Management</h1>
+          <p class="text-sm text-slate-400 mt-1">Admin Portal</p>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <a th:href="@{/admin/dashboard}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard
+          </a>
+          <a th:href="@{/admin/users}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>Users
+          </a>
+          <a th:href="@{/admin/courses}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>Courses
+          </a>
+          <a th:href="@{/admin/offerings}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Offerings
+          </a>
+          <a th:href="@{/admin/enrollments}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Enrollments
+          </a>
+          <a th:href="@{/admin/rooms}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Rooms
+          </a>
+          <a th:href="@{/admin/schedules}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Schedules
+          </a>
+          <a th:href="@{/admin/terms}" class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Terms
+          </a>
+          <a th:href="@{/admin/reports}" class="flex items-center px-4 py-3 text-sm font-medium bg-slate-800 text-white rounded-lg transition">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Reports
+          </a>
+        </nav>
+        <div class="px-4 py-6 border-t border-slate-700">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">A</div>
+            <div class="ml-3">
+              <p class="text-sm font-medium">Admin User</p>
+              <p class="text-xs text-slate-400">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+      <h1 class="text-3xl font-bold text-slate-900 mb-6">Reports & Analytics</h1>
+
+      <!-- System Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-slate-500 text-sm font-medium">Total Students</div>
+          <div
+            class="text-3xl font-bold text-blue-600"
+            th:text="${totalStudents != null ? totalStudents : 0}"
+          >
+            0
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-gray-500 text-sm font-medium">Total Lecturers</div>
+          <div
+            class="text-3xl font-bold text-green-600"
+            th:text="${totalLecturers != null ? totalLecturers : 0}"
+          >
+            0
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-gray-500 text-sm font-medium">Total Courses</div>
+          <div
+            class="text-3xl font-bold text-purple-600"
+            th:text="${totalCourses != null ? totalCourses : 0}"
+          >
+            0
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-gray-500 text-sm font-medium">Total Enrollments</div>
+          <div
+            class="text-3xl font-bold text-yellow-600"
+            th:text="${totalEnrollments != null ? totalEnrollments : 0}"
+          >
+            0
+          </div>
+        </div>
+      </div>
+
+      <!-- Enrollment Statistics by Term -->
+      <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">
+          Enrollment Statistics by Term
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Term
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Total Enrollments
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Active
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Completed
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Dropped
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr th:each="stat : ${enrollmentStats}">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                  th:text="${stat.key}"
+                >
+                  Fall 2025
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                  th:text="${stat.value}"
+                >
+                  100
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold"
+                >
+                  -
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold"
+                >
+                  -
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold"
+                >
+                  -
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          th:if="${enrollmentStats == null || #lists.isEmpty(enrollmentStats)}"
+          class="text-center py-8 text-gray-500"
+        >
+          <p>No enrollment statistics available.</p>
+        </div>
+      </div>
+
+      <!-- Course Popularity -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">
+          Most Popular Courses
+        </h2>
+        <div class="space-y-4">
+          <div
+            th:each="course : ${coursePopularity}"
+            class="flex items-center justify-between border-b pb-3"
+          >
+            <div class="flex-1">
+              <h3
+                class="font-semibold text-gray-800"
+                th:text="${course.key}"
+              >
+                CS101 - Programming
+              </h3>
+              <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div
+                  class="bg-blue-600 h-2 rounded-full"
+                  th:style="'width: ' + (${course.value} * 100.0 / (${courseMax} == 0 ? 1 : ${courseMax})) + '%'"
+                ></div>
+              </div>
+            </div>
+            <div class="ml-4 text-right">
+              <span
+                class="text-2xl font-bold text-blue-600"
+                th:text="${course.value}"
+                >50</span
+              >
+              <p class="text-xs text-gray-500">students</p>
+            </div>
+          </div>
+        </div>
+        <div
+          th:if="${coursePopularity == null || #lists.isEmpty(coursePopularity)}"
+          class="text-center py-8 text-gray-500"
+        >
+          <p>No course popularity data available.</p>
+        </div>
+      </div>
+    </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Enrollment Trends</h2>
+          <div class="relative h-64">
+            <canvas id="enrollmentChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">User Distribution</h2>
+          <div class="relative h-64">
+            <canvas id="userChart"></canvas>
+          </div>
+        </div>
+      </div>
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      var enrollmentLabels = /*[[${enrollmentLabels}]]*/ [];
+      var enrollmentData = /*[[${enrollmentData}]]*/ [];
+      var userLabels = /*[[${userLabels}]]*/ [];
+      var userData = /*[[${userData}]]*/ [];
+      /*]]>*/
+    </script>
+
+    <script>
+      // Enrollment Trends (server data)
+      const enrollmentEl = document.getElementById('enrollmentChart');
+      if (enrollmentEl && typeof enrollmentLabels !== 'undefined') {
+        const ctx = enrollmentEl.getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: { labels: enrollmentLabels, datasets: [{ label: 'Enrollments', data: enrollmentData, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { grid: { display: false } } } }
+        });
+      }
+
+      // User Distribution (server data)
+      const userEl = document.getElementById('userChart');
+      if (userEl && typeof userLabels !== 'undefined') {
+        const ctx2 = userEl.getContext('2d');
+        new Chart(ctx2, {
+          type: 'doughnut',
+          data: { labels: userLabels, datasets: [{ data: userData, backgroundColor: ['rgb(59,130,246)', 'rgb(34,197,94)', 'rgb(168,85,247)'], borderWidth: 0 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 20, font: { size: 12 } } } } }
+        });
+      }
+    </script>
+  </body>
+</html>

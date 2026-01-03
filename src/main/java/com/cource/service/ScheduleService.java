@@ -1,5 +1,12 @@
 package com.cource.service;
 
-public class ScheduleService {
-    
+import com.cource.dto.schedule.ScheduleRequestDTO;
+import com.cource.dto.schedule.ScheduleResponseDTO;
+
+import java.util.List;
+
+public interface ScheduleService {
+    ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto, String lecturerEmail);
+    List<ScheduleResponseDTO> getSchedulesByLecturer(String lecturerEmail);
+    List<ScheduleResponseDTO> getStudentSchedule(Long studentId);
 }
