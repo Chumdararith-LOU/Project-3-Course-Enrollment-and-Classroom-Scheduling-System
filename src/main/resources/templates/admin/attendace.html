@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link th:href="@{/css/output.css}" rel="stylesheet" />
+    <title>Admin Attendance</title>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
+    <main class="ml-64 p-8">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-bold">All Attendance Records</h2>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6 mt-6">
+        <form method="get" th:action="@{/admin/attendance}">
+          <div class="flex gap-3 mb-4">
+            <select name="offeringId" class="rounded border-gray-300 px-2 py-1">
+              <option value="">All Offerings</option>
+              <option
+                th:each="o : ${offerings}"
+                th:value="${o.id}"
+                th:text="${o.course.courseCode + ' - ' + o.course.title}"
+                th:selected="${offeringId != null and offeringId == o.id}"
+              ></option>
+            </select>
+            <select name="scheduleId" class="rounded border-gray-300 px-2 py-1">
+              <option value="">All Schedules</option>
+              <option
+                th:each="s : ${schedules}"
+                th:value="${s.id}"
+                th:text="${s.dayOfWeek + ' ' + s.startTime + '-' + s.endTime}"
+                th:selected="${scheduleId != null and scheduleId == s.id}"
+              ></option>
+            </select>
+            <input
+              type="date"
+              name="from"
+              th:value="${from}"
+              class="rounded border-gray-300 px-2 py-1"
+            />
+            <input
+              type="date"
+              name="to"
+              th:value="${to}"
+              class="rounded border-gray-300 px-2 py-1"
+            />
+            <button
+              type="submit"
+              class="px-3 py-1 bg-indigo-600 text-white rounded"
+            >
+              Filter
+            </button>
+            <a
+              th:href="@{/admin/attendance}"
+              class="px-3 py-1 bg-gray-200 rounded"
+              >Clear</a
+            >
+          </div>
+        </form>
+
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="px-4 py-2">ID</th>
+              <th class="px-4 py-2">Date</th>
+              <th class="px-4 py-2">Course</th>
+              <th class="px-4 py-2">Schedule</th>
+              <th class="px-4 py-2">Status</th>
+              <th class="px-4 py-2">Student</th>
+              <th class="px-4 py-2">Recorded At</th>
+              <th class="px-4 py-2">Recorded By</th>
+              <th class="px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="r : ${attendanceRows}">
+              <td class="px-4 py-2" th:text="${r.id}"></td>
+              <td class="px-4 py-2" th:text="${r.attendanceDate}"></td>
+              <td
+                class="px-4 py-2"
+                th:text="${r.schedule != null && r.schedule.offering != null ? r.schedule.offering.course.courseCode : 'N/A'}"
+              ></td>
+              <td
+                class="px-4 py-2"
+                th:text="${r.schedule != null ? (r.schedule.dayOfWeek + ' ' + (r.schedule.startTime != null ? r.schedule.startTime : '') + '-' + (r.schedule.endTime != null ? r.schedule.endTime : '')) : 'N/A'}"
+              ></td>
+              <td class="px-4 py-2" th:text="${r.status}"></td>
+              <td
+                class="px-4 py-2"
+                th:text="${r.enrollment != null && r.enrollment.student != null ? r.enrollment.student.fullName : 'N/A'}"
+              ></td>
+              <td
+                class="px-4 py-2"
+                th:text="${r.recordedAt != null ? r.recordedAt : '-'}"
+              ></td>
+              <td
+                class="px-4 py-2"
+                th:text="${r.recordedBy != null ? (r.recordedBy.firstName + ' ' + r.recordedBy.lastName) : '-'}"
+              ></td>
+              <td class="px-4 py-2">
+                <button
+                  class="text-red-600"
+                  th:onclick="|fetch('/api/admin/attendance/'+${r.id}+'/delete',{method:'POST'}).then(()=>location.reload())|"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>
