@@ -27,38 +27,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.configure(http))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/api/auth/**", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                .requestMatchers("/student/**").hasRole("STUDENT")
-                .requestMatchers("/lecturer/**").hasRole("LECTURER")
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/perform_login")
-                .usernameParameter("email")
-                .defaultSuccessUrl("/default", true)
-                .successHandler(successHandler)
-                .failureUrl("/login?error=true")
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutUrl("/perform_logout")
-                .logoutSuccessUrl("/login?logout=true")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID", "AUTH-TOKEN")
-                .permitAll()
-            )
-            .sessionManagement(session -> session
-                .sessionFixation().migrateSession()
-                .maximumSessions(1)
-                .expiredUrl("/login?expired=true")
-            )
-            .exceptionHandling(ex -> ex
-                .accessDeniedPage("/access-denied")
-            );
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/login", "/api/auth/**", "/css/**", "/js/**", "/images/**",
+                                "/webjars/**")
+                        .permitAll()
+                        .requestMatchers("/student/**").hasRole("STUDENT")
+                        .requestMatchers("/lecturer/**").hasRole("LECTURER")
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/perform_login")
+                        .usernameParameter("email")
+                        .defaultSuccessUrl("/default", true)
+                        .successHandler(successHandler)
+                        .failureUrl("/login?error=true")
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/perform_logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID", "AUTH-TOKEN")
+                        .permitAll())
+                .sessionManagement(session -> session
+                        .sessionFixation().migrateSession()
+                        .maximumSessions(1)
+                        .expiredUrl("/login?expired=true"))
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/access-denied"));
 
         return http.build();
     }
