@@ -1,4 +1,3 @@
-
 package com.cource.controller;
 
 import org.springframework.http.HttpHeaders;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.cource.service.StudentService;
+import com.cource.util.SecurityHelper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class StudentViewController {
 
     private final StudentService studentService;
+    private final SecurityHelper securityHelper;
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long studentId, Model model) {
@@ -35,7 +36,7 @@ public class StudentViewController {
             model.addAttribute("creditsEarned", studentService.getCreditsEarned(studentId));
             model.addAttribute("coursesCompleted", studentService.getCoursesCompleted(studentId));
         }
-        return "student/dashboard";
+        return "views/student/dashboard";
     }
 
     @GetMapping("/courses")
@@ -44,7 +45,7 @@ public class StudentViewController {
             model.addAttribute("studentId", studentId);
             model.addAttribute("terms", studentService.getAllTerms());
         }
-        return "student/courses";
+        return "views/student/courses";
     }
 
     @GetMapping("/my-courses")
@@ -53,7 +54,7 @@ public class StudentViewController {
             model.addAttribute("studentId", studentId);
             model.addAttribute("enrollments", studentService.getMyEnrollments(studentId));
         }
-        return "student/my-courses";
+        return "views/student/my-courses";
     }
 
     @GetMapping("/schedule")
@@ -71,7 +72,7 @@ public class StudentViewController {
             }
             model.addAttribute("schedule", sched);
         }
-        return "student/schedule";
+        return "views/student/schedule";
     }
 
     @GetMapping("/grades")
@@ -85,7 +86,7 @@ public class StudentViewController {
             model.addAttribute("creditsEarned", studentService.getCreditsEarned(studentId));
             model.addAttribute("coursesCompleted", studentService.getCoursesCompleted(studentId));
         }
-        return "student/grades";
+        return "views/student/grades";
     }
 
     @GetMapping("/attendance")
@@ -123,14 +124,14 @@ public class StudentViewController {
                 }
             }
         }
-        return "student/attendance";
+        return "views/student/attendance";
     }
 
     @GetMapping("/enter-code")
     public String enterCode(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null)
             model.addAttribute("studentId", studentId);
-        return "student/enter-code";
+        return "views/student/enter-code";
     }
 
     @GetMapping("/waitlist")
@@ -139,7 +140,7 @@ public class StudentViewController {
             model.addAttribute("studentId", studentId);
             model.addAttribute("waitlistEntries", studentService.getMyWaitlistEntries(studentId));
         }
-        return "student/waitlist";
+        return "views/student/waitlist";
     }
 
     // Export endpoints
