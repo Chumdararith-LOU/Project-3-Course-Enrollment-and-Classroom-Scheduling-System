@@ -1,11 +1,6 @@
 package com.cource.controller;
 
-import com.cource.dto.course.CourseResponseDTO;
 import com.cource.entity.User;
-import com.cource.service.LecturerService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -20,8 +15,6 @@ import com.cource.service.AdminService;
 import com.cource.service.UserService;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -179,7 +172,6 @@ public class AdminViewController {
         var enrollmentList = new java.util.ArrayList<java.util.Map.Entry<String, Object>>(enrollmentMap.entrySet());
         model.addAttribute("enrollmentStats", enrollmentList);
 
-        // Also provide arrays for charts
         var enrollmentLabels = new java.util.ArrayList<String>(enrollmentMap.keySet());
         var enrollmentData = new java.util.ArrayList<Number>();
         for (String k : enrollmentLabels) {
@@ -197,7 +189,6 @@ public class AdminViewController {
         model.addAttribute("enrollmentLabels", enrollmentLabels);
         model.addAttribute("enrollmentData", enrollmentData);
 
-        // User distribution by role
         var roles = roleRepository.findAll();
         var userLabels = new java.util.ArrayList<String>();
         var userData = new java.util.ArrayList<Number>();
@@ -226,135 +217,8 @@ public class AdminViewController {
         return "admin/reports";
     }
 
-    @GetMapping("/users/export")
-    public ResponseEntity<String> exportUsers(@RequestParam(required = false) String roleCode) {
-        StringBuilder csv = new StringBuilder();
-        csv.append("ID,Email,First Name,Last Name,ID Card,Role,Status\n");
-
-        var users = roleCode != null && !roleCode.isEmpty()
-                ? adminService.getUsersByRole(roleCode)
-                : adminService.getAllUsers();
-
-        for (var user : users) {
-            csv.append(String.format("%d,%s,%s,%s,%s,%s,%s\n",
-                    user.getId(),
-                    user.getEmail(),
-                    user.getFirstName(),
-                    user.getLastName(),
-                    user.getIdCard(),
-                    user.getRole().getRoleCode(),
-                    user.isActive() ? "Active" : "Inactive"));
-        }
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=users-export.csv")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csv.toString());
-    }
-
-    @GetMapping("/courses/export")
-    public ResponseEntity<String> exportCourses() {
-        StringBuilder csv = new StringBuilder();
-        csv.append("Course Code,Title,Description,Credits,Status\n");
-
-        for (var course : adminService.getAllCourses()) {
-            csv.append(String.format("%s,%s,%s,%d,%s\n",
-                    course.getCourseCode(),
-                    course.getTitle(),
-                    course.getDescription() != null ? course.getDescription().replace(",", ";") : "",
-                    course.getCredits(),
-                    course.isActive() ? "Active" : "Inactive"));
-        }
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=courses-export.csv")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csv.toString());
-    }
-
-    @GetMapping("/offerings/export")
-    public ResponseEntity<String> exportOfferings(@RequestParam(required = false) Long termId) {
-        StringBuilder csv = new StringBuilder();
-        csv.append("Offering ID,Course Code,Course Title,Term,Capacity,Enrolled,Available,Status\n");
-
-        var offerings = termId != null
-                ? adminService.getCourseOfferingsByTerm(termId)
-                : adminService.getAllCourseOfferings();
-
-        for (var offering : offerings) {
-            // Get enrollment count (you might need to add this to AdminService)
-            var enrollments = adminService.getEnrollmentsByOffering(offering.getId());
-            int enrolledCount = enrollments.size();
-            int available = offering.getCapacity() - enrolledCount;
-
-            csv.append(String.format("%d,%s,%s,%s,%d,%d,%d,%s\n",
-                    offering.getId(),
-                    offering.getCourse().getCourseCode(),
-                    offering.getCourse().getTitle(),
-                    offering.getTerm().getTermName(),
-                    offering.getCapacity(),
-                    enrolledCount,
-                    available,
-                    offering.isActive() ? "Active" : "Inactive"));
-        }
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=offerings-export.csv")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csv.toString());
-    }
-
-    @GetMapping("/enrollments/export")
-    public ResponseEntity<String> exportEnrollments(@RequestParam(required = false) Long offeringId) {
-        StringBuilder csv = new StringBuilder();
-        csv.append("Student ID,Student Name,Email,Course,Term,Status,Grade\n");
-
-        var enrollments = offeringId != null
-                ? adminService.getEnrollmentsByOffering(offeringId)
-                : adminService.getAllEnrollments();
-
-        for (var enrollment : enrollments) {
-            csv.append(String.format("%s,%s %s,%s,%s,%s,%s,%s\n",
-                    enrollment.getStudent().getStudentId(),
-                    enrollment.getStudent().getFirstName(),
-                    enrollment.getStudent().getLastName(),
-                    enrollment.getStudent().getEmail(),
-                    enrollment.getOffering().getCourse().getTitle(),
-                    enrollment.getOffering().getTerm().getTermCode(),
-                    enrollment.getStatus(),
-                    enrollment.getGrade() != null ? enrollment.getGrade() : "N/A"));
-        }
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=enrollments-export.csv")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csv.toString());
-    }
-
-    @GetMapping("/rooms/export")
-    public ResponseEntity<String> exportRooms() {
-        StringBuilder csv = new StringBuilder();
-        csv.append("Room Number,Building,Capacity,Type,Status\n");
-
-        for (var room : adminService.getAllRooms()) {
-            csv.append(String.format("%s,%s,%d,%s,%s\n",
-                    room.getRoomNumber(),
-                    room.getBuilding(),
-                    room.getCapacity(),
-                    room.getRoomType() != null ? room.getRoomType() : "N/A",
-                    room.isActive() ? "Active" : "Inactive"));
-        }
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=rooms-export.csv")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csv.toString());
-    }
-
     @GetMapping("/activities")
     public String activities(Model model) {
-        // This would show system activity logs
-        // For now, redirect to dashboard
         return "redirect:/admin/dashboard";
     }
 }
