@@ -1,10 +1,13 @@
 package com.cource.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +18,9 @@ import com.cource.entity.CourseLecturer;
 import com.cource.entity.CourseOffering;
 import com.cource.entity.Enrollment;
 import com.cource.entity.Room;
+import com.cource.entity.Student;
 import com.cource.entity.User;
+import com.cource.entity.Waitlist;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.AcademicTermRepository;
@@ -25,7 +30,9 @@ import com.cource.repository.CourseOfferingRepository;
 import com.cource.repository.CourseRepository;
 import com.cource.repository.EnrollmentRepository;
 import com.cource.repository.RoomRepository;
+import com.cource.repository.StudentRepository;
 import com.cource.repository.UserRepository;
+import com.cource.repository.WaitlistRepository;
 import com.cource.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +44,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
     private final CourseOfferingRepository courseOfferingRepository;
     private final EnrollmentRepository enrollmentRepository;
@@ -44,6 +52,7 @@ public class AdminServiceImpl implements AdminService {
     private final RoomRepository roomRepository;
     private final AcademicTermRepository academicTermRepository;
     private final CourseLecturerRepository courseLecturerRepository;
+    private final WaitlistRepository waitlistRepository;
 
     @Override
     public List<User> getLecturersForOffering(Long offeringId) {
@@ -129,8 +138,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CourseOffering getOfferingById(Long id) {
-        return courseOfferingRepository.findById(id)
+        return courseOfferingRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found with id: " + id));
     }
 
@@ -148,6 +158,11 @@ public class AdminServiceImpl implements AdminService {
         offering.setTerm(term);
         offering.setCapacity(capacity);
         offering.setActive(isActive != null ? isActive : true);
+
+        // Generate unique enrollment code
+        String enrollmentCode = generateUniqueEnrollmentCode();
+        offering.setEnrollmentCode(enrollmentCode);
+        offering.setEnrollmentCodeExpiresAt(LocalDateTime.now().plusDays(90));
 
         return courseOfferingRepository.save(offering);
     }
@@ -178,7 +193,60 @@ public class AdminServiceImpl implements AdminService {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteOffering(Long id) {
         CourseOffering offering = getOfferingById(id);
+
+        // Check if offering has any enrollments
+        List<Enrollment> enrollments = enrollmentRepository.findByOfferingId(id);
+        if (!enrollments.isEmpty()) {
+            throw new ConflictException(
+                    "Cannot delete offering with existing enrollments. Please delete all enrollments first.");
+        }
+
+        // Delete related waitlist entries
+        List<Waitlist> waitlistEntries = waitlistRepository.findByOfferingIdOrderByPositionAsc(id);
+        if (!waitlistEntries.isEmpty()) {
+            waitlistRepository.deleteAll(waitlistEntries);
+        }
+
+        // Delete related course lecturers
+        List<CourseLecturer> courseLecturers = courseLecturerRepository.findByOfferingId(id);
+        if (!courseLecturers.isEmpty()) {
+            courseLecturerRepository.deleteAll(courseLecturers);
+        }
+
+        // Delete related schedules
+        List<ClassSchedule> schedules = classScheduleRepository.findByOfferingId(id);
+        if (!schedules.isEmpty()) {
+            classScheduleRepository.deleteAll(schedules);
+        }
+
+        // Finally delete the offering
         courseOfferingRepository.delete(offering);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteMultipleOfferings(List<Long> offeringIds) {
+        if (offeringIds == null || offeringIds.isEmpty()) {
+            return;
+        }
+
+        StringBuilder errors = new StringBuilder();
+        int successCount = 0;
+
+        for (Long id : offeringIds) {
+            try {
+                deleteOffering(id);
+                successCount++;
+            } catch (Exception e) {
+                errors.append("Failed to delete offering ID ").append(id)
+                        .append(": ").append(e.getMessage()).append("; ");
+            }
+        }
+
+        if (errors.length() > 0) {
+            throw new RuntimeException("Deleted " + successCount + " offering(s). Errors: " + errors.toString());
+        }
     }
 
     @Override
@@ -215,7 +283,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public Enrollment createEnrollment(Long studentId, Long offeringId) {
-        User studentUser = userRepository.findById(studentId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
@@ -231,6 +299,7 @@ public class AdminServiceImpl implements AdminService {
         }
 
         Enrollment enrollment = new Enrollment();
+        enrollment.setStudent(student);
         enrollment.setOffering(offering);
         enrollment.setStatus("ENROLLED");
         enrollment.setEnrolledAt(java.time.LocalDateTime.now());
@@ -291,7 +360,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
-                                   java.time.LocalDate endDate) {
+            java.time.LocalDate endDate) {
 
         if (endDate.isBefore(startDate)) {
             throw new IllegalArgumentException("End date cannot be before start date.");
@@ -314,7 +383,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public AcademicTerm updateTerm(Long id, String termCode, String termName, java.time.LocalDate startDate,
-                                   java.time.LocalDate endDate) {
+            java.time.LocalDate endDate) {
         AcademicTerm term = getTermById(id);
         if (endDate.isBefore(startDate)) {
             throw new IllegalArgumentException("End date cannot be before start date.");
@@ -378,7 +447,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
-                           Boolean isActive) {
+            Boolean isActive) {
         Room room = getRoomById(id);
 
         if (capacity <= 0) {
@@ -423,7 +492,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ClassSchedule createSchedule(Long offeringId, Long roomId, String dayOfWeek, java.time.LocalTime startTime,
-                                        java.time.LocalTime endTime) {
+            java.time.LocalTime endTime) {
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
 
@@ -441,7 +510,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ClassSchedule updateSchedule(Long id, Long offeringId, Long roomId, String dayOfWeek,
-                                        java.time.LocalTime startTime, java.time.LocalTime endTime) {
+            java.time.LocalTime startTime, java.time.LocalTime endTime) {
         ClassSchedule schedule = getScheduleById(id);
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
@@ -493,5 +562,14 @@ public class AdminServiceImpl implements AdminService {
             popularity.put(course.getTitle(), count);
         }
         return popularity;
+    }
+
+    // Helper method to generate unique enrollment code
+    private String generateUniqueEnrollmentCode() {
+        String code;
+        do {
+            code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        } while (courseOfferingRepository.existsByEnrollmentCode(code));
+        return code;
     }
 }
