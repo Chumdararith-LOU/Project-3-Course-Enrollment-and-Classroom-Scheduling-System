@@ -90,8 +90,27 @@ public class AdminViewController {
     }
 
     @GetMapping("/courses")
-    public String courses(Model model) {
+    public String courses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("courses", adminService.getAllCourses());
+        model.addAttribute("lecturers", adminService.getUsersByRole("LECTURER"));
+
+        // Add user info for sidebar - set defaults if not available
+        model.addAttribute("userId", 1L);
+        model.addAttribute("role", "ADMIN");
+
+        if (userDetails != null) {
+            try {
+                User user = userService.getUserByEmail(userDetails.getUsername());
+                if (user != null) {
+                    model.addAttribute("userId", user.getId());
+                    if (user.getRole() != null) {
+                        model.addAttribute("role", user.getRole().getRoleCode());
+                    }
+                }
+            } catch (Exception e) {
+                // Use defaults if unable to fetch user
+            }
+        }
         return "admin/courses";
     }
 
