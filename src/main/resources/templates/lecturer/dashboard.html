@@ -8,10 +8,9 @@
     <title>Dashboard | Lecturer Portal</title>
 </head>
 <body class="bg-slate-100 font-sans">
-<!-- Sidebar Navigation -->
-<div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
-<!-- The rest of your dashboard remains exactly the same -->
+<div th:replace="~{fragments/profile :: sidebar(${lecturerId}, 'LECTURER')}"></div>
+
 <div class="ml-64 bg-white border-b border-slate-200">
     <div class="px-8 py-4 flex justify-between items-center">
         <div>
@@ -26,15 +25,14 @@
 </div>
 
 <div class="ml-64 px-8 py-8">
-    <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Cards remain exactly as you had them -->
+
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
             <div class="flex items-start justify-between">
                 <div>
                     <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Courses</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">
-                        <span th:text="${stats?.activeCourses ?: 0}">0</span>
+                        <span th:text="${dashboard?.activeCourses ?: 0}">0</span>
                     </p>
                     <p class="mt-2 text-sm text-emerald-600 font-medium">
                         <span>Active Courses</span>
@@ -53,7 +51,7 @@
                 <div>
                     <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Students</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">
-                        <span th:text="${stats?.totalStudents ?: 0}">0</span>
+                        <span th:text="${dashboard?.totalStudents ?: 0}">0</span>
                     </p>
                     <p class="mt-2 text-sm text-slate-500 font-medium">
                         <span>Enrolled across all courses</span>
@@ -72,7 +70,7 @@
                 <div>
                     <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Upcoming Classes</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">
-                        <span th:text="${stats?.upcomingClasses ?: 0}">0</span>
+                        <span th:text="${dashboard?.upcomingClasses ?: 0}">0</span>
                     </p>
                     <p class="mt-2 text-sm text-amber-600 font-medium">
                         <span>Scheduled for this week</span>
@@ -91,11 +89,11 @@
                 <div>
                     <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Attendance Rate</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">
-                        <span th:text="${stats?.averageAttendanceRate != null ? #numbers.formatDecimal(stats.averageAttendanceRate, 1, 1) : '0.0'}">0.0</span>%
+                        <span th:text="${dashboard?.averageAttendanceRate != null ? #numbers.formatDecimal(dashboard.averageAttendanceRate, 1, 1) : '0.0'}">0.0</span>%
                     </p>
                     <p class="mt-2 text-sm text-emerald-600 font-medium">
-                        <span th:if="${stats != null and stats.averageAttendanceRate > 80}">↗ Above average</span>
-                        <span th:if="${stats != null and stats.averageAttendanceRate <= 80}">Average attendance</span>
+                        <span th:if="${dashboard != null and dashboard.averageAttendanceRate > 80}">↗ Above average</span>
+                        <span th:if="${dashboard != null and dashboard.averageAttendanceRate <= 80}">Average attendance</span>
                     </p>
                 </div>
                 <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
@@ -107,7 +105,6 @@
         </div>
     </div>
 
-    <!-- Quick Access Section -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200">
         <div class="px-8 py-6 border-b border-slate-200">
             <h3 class="text-lg font-semibold text-slate-900">Quick Access</h3>
@@ -126,7 +123,7 @@
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-gray-900">View My Courses</p>
                             <p class="text-sm text-gray-500">
-                                <span th:text="${stats?.activeCourses ?: 0}">0</span> active courses
+                                <span th:text="${dashboard?.activeCourses ?: 0}">0</span> active courses
                             </p>
                         </div>
                     </div>
@@ -158,7 +155,7 @@
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-gray-900">View Schedule</p>
                             <p class="text-sm text-gray-500">
-                                <span th:text="${stats?.upcomingClasses ?: 0}">0</span> upcoming classes
+                                <span th:text="${dashboard?.upcomingClasses ?: 0}">0</span> upcoming classes
                             </p>
                         </div>
                     </div>

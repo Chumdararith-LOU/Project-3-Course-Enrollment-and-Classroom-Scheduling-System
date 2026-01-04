@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @Slf4j
-@RequestMapping("/student-view")
+@RequestMapping("/student")
 @RequiredArgsConstructor
 public class StudentViewController {
 

@@ -1,158 +1,73 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Schedule | Student Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link th:href="@{/css/output.css}" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-    <style>
-        /* SCROLLBAR STYLING */
-        #schedule-scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
-        #schedule-scroll-area::-webkit-scrollbar-track { background: #f1f5f9; }
-        #schedule-scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        #schedule-scroll-area::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* GRID SETUP */
-        .timetable-wrapper {
-            display: grid;
-            /* Time Column (60px) + 6 Days */
-            grid-template-columns: 60px repeat(6, minmax(140px, 1fr));
-            /* Header (40px) + 12 Hours (60px each) */
-            grid-template-rows: 40px repeat(12, 60px);
-            position: relative;
-            background-color: #fff;
-            border: 1px solid #e2e8f0;
-        }
-
-        /* 1. CORNER (Top-Left) */
-        .corner-cell {
-            position: sticky; top: 0; left: 0; z-index: 50;
-            background-color: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            border-right: 1px solid #e2e8f0;
-        }
-
-        /* 2. HEADERS (Days) */
-        .header-cell {
-            position: sticky; top: 0; z-index: 40;
-            background-color: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            border-right: 1px solid #e2e8f0;
-            font-weight: 600; font-size: 0.85rem; color: #475569;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        /* 3. TIME LABELS (Left Column) - FIXED ALIGNMENT */
-        .time-cell {
-            grid-column: 1;
-            position: sticky; left: 0; z-index: 30;
-            background-color: #fff;
-            border-right: 1px solid #e2e8f0; /* Continuous vertical line */
-            height: 60px;
-
-            /* Align content to the TOP right */
-            display: flex;
-            align-items: flex-start;
-            justify-content: flex-end;
-            padding-right: 8px;
-        }
-
-        /* The magic fix: Move the text up by 50% of its own height
-           so it sits CENTERED on the grid line */
-        .time-cell > span {
-            transform: translateY(-50%);
-            display: block;
-            background-color: #fff; /* Optional: Masks the line behind text for cleaner look */
-            padding-left: 4px;
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        /* 4. BACKGROUND GRID LINES */
-        .grid-line {
-            border-bottom: 1px solid #f1f5f9;
-            border-right: 1px solid #f1f5f9;
-            height: 100%; width: 100%;
-        }
-
-        /* 5. EVENT CARDS */
-        .event-card {
-            position: absolute;
-            width: 94%; left: 3%;
-            padding: 8px 10px; border-radius: 6px;
-            font-size: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 4px solid;
-            transition: all 0.2s; z-index: 10; cursor: pointer;
-            overflow: hidden; display: flex; flex-direction: column; justify-content: center;
-        }
-        .time-cell-start > span {
-            transform: translateY(0) !important; /* Don't shift it up */
-            position: relative;
-            top: -4px; /* Slight adjustment to tuck it right under the header line */
-        }
-        .event-card:hover { z-index: 50; transform: scale(1.02); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-
-        /* COLORS */
-        .card-purple { background-color: #f3e8ff; border-color: #9333ea; color: #6b21a8; }
-        .card-blue   { background-color: #dbeafe; border-color: #2563eb; color: #1e40af; }
-    </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900 overflow-hidden">
-<div class="flex h-screen">
+<body class="bg-slate-50 font-sans text-slate-900">
+<div class="flex h-screen overflow-hidden">
 
     <div th:replace="~{fragments/student-sidebar :: sidebar(currentPage='schedule')}"></div>
 
-    <main class="flex-1 flex flex-col h-screen relative">
-        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 z-20 shrink-0 shadow-sm">
-            <h1 class="text-xl font-bold text-slate-800">Weekly Timetable</h1>
-            <div class="text-sm text-gray-500 flex gap-4">
-                <span class="flex items-center"><div class="w-3 h-3 rounded-sm bg-purple-100 border border-purple-600 mr-2"></div> Lecture</span>
-                <span class="flex items-center"><div class="w-3 h-3 rounded-sm bg-blue-100 border border-blue-600 mr-2"></div> Lab</span>
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 z-10 shrink-0">
+            <h1 class="text-xl font-bold text-slate-800">Class Schedule</h1>
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <div class="text-xs text-gray-500">Current Term</div>
+                    <div class="font-bold text-sm text-slate-800">Spring 2025</div>
+                </div>
             </div>
         </header>
 
-        <div class="flex-1 overflow-auto p-6 bg-slate-50" id="schedule-scroll-area">
-            <div class="timetable-wrapper shadow-sm rounded-lg overflow-hidden" id="timetable">
+        <div class="flex-1 overflow-y-auto p-8">
 
-                <div class="corner-cell"></div>
+            <div th:if="${schedules == null || schedules.isEmpty()}" class="flex flex-col items-center justify-center h-96 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="far fa-calendar-times text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">No classes scheduled</h3>
+                <p class="text-gray-500 max-w-sm mt-1">You haven't enrolled in any courses with active schedules yet.</p>
+                <a th:href="@{/student/catalog}" class="mt-4 text-blue-600 hover:text-blue-800 font-medium">Browse Catalog &rarr;</a>
+            </div>
 
-                <div class="header-cell">MON</div>
-                <div class="header-cell">TUE</div>
-                <div class="header-cell">WED</div>
-                <div class="header-cell">THU</div>
-                <div class="header-cell">FRI</div>
-                <div class="header-cell">SAT</div>
+            <div th:if="${schedules != null && !schedules.isEmpty()}" class="grid gap-6">
 
-                <th:block th:each="hour, iterStat : ${#numbers.sequence(7, 18)}">
+                <div th:each="sch : ${schedules}"
+                     class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col md:flex-row md:items-center gap-6 relative overflow-hidden group">
 
-                    <div class="time-cell"
-                         th:classappend="${iterStat.first} ? 'time-cell-start' : ''"
-                         th:style="'grid-row: ' + ${hour - 7 + 2} + ';'">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 group-hover:bg-blue-600 transition-colors"></div>
 
-                        <span th:text="${hour} + ':00'">7:00</span>
+                    <div class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-lg p-4 min-w-[100px]">
+                        <span class="text-xs font-bold uppercase tracking-wider mb-1" th:text="${sch.dayOfWeek}">MON</span>
+                        <span class="text-lg font-bold" th:text="${sch.startTime}">09:00</span>
+                        <span class="text-xs text-blue-500">to</span>
+                        <span class="text-lg font-bold" th:text="${sch.endTime}">10:30</span>
                     </div>
 
-                    <div class="grid-line" th:each="d : ${#numbers.sequence(1,6)}"></div>
-                </th:block>
-
-                <div th:each="sched, iterStat : ${schedules}"
-                     class="event-card group"
-                     th:classappend="${iterStat.index % 2 == 0 ? 'card-purple' : 'card-blue'}"
-                     th:data-day="${sched.dayOfWeek}"
-                     th:data-start="${sched.startTime}"
-                     th:data-end="${sched.endTime}">
-
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="font-bold truncate text-[11px] uppercase tracking-wide opacity-70" th:text="${sched.roomNumber}">Room</span>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200"
+                                  th:text="${sch.offering.course.courseCode}">CODE</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 border border-green-200"
+                                  th:text="${sch.room.roomNumber}">Room 101</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900" th:text="${sch.offering.course.title}">Course Title</h3>
+                        <p class="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                            <i class="fas fa-chalkboard-teacher text-gray-400"></i>
+                            <span th:text="${sch.offering.lecturer.firstName + ' ' + sch.offering.lecturer.lastName}">Dr. Smith</span>
+                        </p>
                     </div>
-                    <div class="font-bold text-sm leading-tight mb-1 line-clamp-2" th:text="${sched.courseName}">Course</div>
-                    <div class="text-[10px] font-semibold opacity-80 flex items-center gap-1">
-                        <i class="far fa-clock"></i>
-                        <span th:text="${#strings.substring(sched.startTime,0,5)}">08:00</span> -
-                        <span th:text="${#strings.substring(sched.endTime,0,5)}">09:30</span>
+
+                    <div class="text-right pl-4 border-l border-gray-100 hidden md:block">
+                        <div class="text-xs text-gray-400 uppercase">Location</div>
+                        <div class="font-medium text-gray-700" th:text="${sch.room.building}">Building A</div>
+                        <div class="text-sm text-gray-500" th:text="${'Room ' + sch.room.roomNumber}">Room 101</div>
                     </div>
                 </div>
 
@@ -160,43 +75,5 @@
         </div>
     </main>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const startHour = 7;
-        const hourPx = 60;
-        const headerPx = 40;
-
-        const dayMap = { 'MON': 2, 'TUE': 3, 'WED': 4, 'THU': 5, 'FRI': 6, 'SAT': 7 };
-
-        const cards = document.querySelectorAll('.event-card');
-
-        cards.forEach(card => {
-            const day = card.getAttribute('data-day');
-            const startTime = card.getAttribute('data-start');
-            const endTime = card.getAttribute('data-end');
-
-            if (dayMap[day]) {
-                const colIndex = dayMap[day];
-                const [startH, startM] = startTime.split(':').map(Number);
-                const [endH, endM] = endTime.split(':').map(Number);
-
-                card.style.gridColumnStart = colIndex;
-                card.style.gridColumnEnd = "span 1";
-
-                // Position Calculation
-                const topPosition = headerPx + ((startH - startHour) * hourPx) + ((startM / 60) * hourPx);
-                const durationMinutes = ((endH * 60) + endM) - ((startH * 60) + startM);
-                const heightPx = (durationMinutes / 60) * hourPx;
-
-                // Add 1px offset to topPosition to avoid overlapping the exact border line if preferred
-                card.style.top = (topPosition + 1) + "px";
-                card.style.height = (heightPx - 2) + "px"; // Subtract 2px for visual gap
-
-                card.style.display = 'flex';
-            }
-        });
-    });
-</script>
 </body>
 </html>
