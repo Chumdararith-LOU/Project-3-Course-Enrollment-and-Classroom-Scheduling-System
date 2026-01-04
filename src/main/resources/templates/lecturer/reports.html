@@ -22,15 +22,84 @@
           </p>
         </div>
         <div class="flex items-center space-x-3">
-          <select
-            class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <form
+            method="get"
+            th:action="@{/lecturer/reports}"
+            class="flex items-center space-x-3"
           >
-            <option>This Semester</option>
-            <option>Last Semester</option>
-            <option>This Year</option>
-            <option>All Time</option>
-          </select>
-          <button
+            <input type="hidden" name="lecturerId" th:value="${lecturerId}" />
+            <input
+              type="date"
+              name="from"
+              th:value="${filterFrom}"
+              class="px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="date"
+              name="to"
+              th:value="${filterTo}"
+              class="px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <select
+              name="offeringId"
+              class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="" th:selected="${filterOfferingId == null}">
+                All Courses
+              </option>
+              <option
+                th:each="off : ${offerings}"
+                th:value="${off.id}"
+                th:selected="${filterOfferingId != null and off.id == filterOfferingId}"
+                th:text="${off.course.courseCode + ' - ' + off.course.title}"
+              >
+                Course
+              </option>
+            </select>
+            <select
+              name="studentStatus"
+              class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option
+                value=""
+                th:selected="${filterStudentStatus == null or #strings.isEmpty(filterStudentStatus)}"
+              >
+                All Statuses
+              </option>
+              <option
+                value="ENROLLED"
+                th:selected="${filterStudentStatus != null and filterStudentStatus.equalsIgnoreCase('ENROLLED')}"
+              >
+                ENROLLED
+              </option>
+              <option
+                value="COMPLETED"
+                th:selected="${filterStudentStatus != null and filterStudentStatus.equalsIgnoreCase('COMPLETED')}"
+              >
+                COMPLETED
+              </option>
+              <option
+                value="DROPPED"
+                th:selected="${filterStudentStatus != null and filterStudentStatus.equalsIgnoreCase('DROPPED')}"
+              >
+                DROPPED
+              </option>
+              <option
+                value="FAILED"
+                th:selected="${filterStudentStatus != null and filterStudentStatus.equalsIgnoreCase('FAILED')}"
+              >
+                FAILED
+              </option>
+            </select>
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
+            >
+              Apply
+            </button>
+          </form>
+          <a
+            th:href="@{/lecturer/reports/export/report.pdf(lecturerId=${lecturerId},offeringId=${filterOfferingId},from=${filterFrom},to=${filterTo},studentStatus=${filterStudentStatus})}"
             class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
           >
             <svg
@@ -47,7 +116,7 @@
               />
             </svg>
             Export Report
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -64,9 +133,17 @@
               >
                 Average Attendance
               </p>
-              <p class="mt-2 text-3xl font-bold text-slate-900">-</p>
-              <p class="mt-2 text-sm text-emerald-600 font-medium">
-                <span>↗ +2.5% from last month</span>
+              <p
+                class="mt-2 text-3xl font-bold text-slate-900"
+                th:text="${#numbers.formatDecimal(summaryAvgAttendance, 1, 1)} + '%'"
+              >
+                0.0%
+              </p>
+              <p
+                class="mt-2 text-sm text-slate-500 font-medium"
+                th:text="'From ' + ${filterFrom} + ' to ' + ${filterTo}"
+              >
+                From
               </p>
             </div>
             <div
@@ -97,9 +174,17 @@
               >
                 Pass Rate
               </p>
-              <p class="mt-2 text-3xl font-bold text-slate-900">-</p>
+              <p
+                class="mt-2 text-3xl font-bold text-slate-900"
+                th:text="${#numbers.formatDecimal(summaryPassRate, 1, 1)} + '%'"
+              >
+                0.0%
+              </p>
               <p class="mt-2 text-sm text-slate-500 font-medium">
-                <span>Across all courses</span>
+                <span
+                  th:text="${filterOfferingId == null ? 'Across all courses' : 'Selected course'}"
+                  >Across all courses</span
+                >
               </p>
             </div>
             <div
@@ -130,9 +215,17 @@
               >
                 Active Enrollments
               </p>
-              <p class="mt-2 text-3xl font-bold text-slate-900">-</p>
-              <p class="mt-2 text-sm text-amber-600 font-medium">
-                <span>Current semester</span>
+              <p
+                class="mt-2 text-3xl font-bold text-slate-900"
+                th:text="${summaryActiveEnrollments}"
+              >
+                0
+              </p>
+              <p
+                class="mt-2 text-sm text-slate-500 font-medium"
+                th:text="${filterStudentStatus == null or #strings.isEmpty(filterStudentStatus) ? 'All statuses' : filterStudentStatus}"
+              >
+                All statuses
               </p>
             </div>
             <div
@@ -163,9 +256,17 @@
               >
                 Total Classes
               </p>
-              <p class="mt-2 text-3xl font-bold text-slate-900">-</p>
-              <p class="mt-2 text-sm text-purple-600 font-medium">
-                <span>This semester</span>
+              <p
+                class="mt-2 text-3xl font-bold text-slate-900"
+                th:text="${summaryTotalClasses}"
+              >
+                0
+              </p>
+              <p
+                class="mt-2 text-sm text-slate-500 font-medium"
+                th:text="${filterOfferingId == null ? 'All courses' : 'Selected course'}"
+              >
+                All courses
               </p>
             </div>
             <div
@@ -196,13 +297,11 @@
             <h3 class="text-lg font-semibold text-slate-900">
               Attendance Trends
             </h3>
-            <select
+            <span
               class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-lg"
+              th:text="${filterFrom} + ' → ' + ${filterTo}"
+              >Range</span
             >
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
-              <option>Last 3 Months</option>
-            </select>
           </div>
           <div class="relative h-64">
             <canvas id="enrollmentChart"></canvas>
@@ -214,12 +313,11 @@
             <h3 class="text-lg font-semibold text-slate-900">
               Course Performance
             </h3>
-            <select
+            <span
               class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-lg"
+              th:text="${(filterOfferingId != null and gradeLabels != null and !gradeLabels.isEmpty()) ? 'Grade Distribution' : 'Avg Grade by Course'}"
+              >Avg Grade by Course</span
             >
-              <option>All Courses</option>
-              <option>Active Only</option>
-            </select>
           </div>
           <div class="relative h-64">
             <canvas id="userChart"></canvas>
@@ -233,6 +331,8 @@
         var enrollmentData = /*[[${enrollmentData}]]*/ [];
         var courseLabels = /*[[${courseLabels}]]*/ [];
         var courseData = /*[[${courseData}]]*/ [];
+        var gradeLabels = /*[[${gradeLabels}]]*/ [];
+        var gradeData = /*[[${gradeData}]]*/ [];
         /*]]>*/
       </script>
 
@@ -245,7 +345,7 @@
               labels: enrollmentLabels,
               datasets: [
                 {
-                  label: "Enrollments",
+                  label: "Attendance",
                   data: enrollmentData,
                   borderColor: "rgb(59,130,246)",
                   backgroundColor: "rgba(59,130,246,0.1)",
@@ -267,18 +367,33 @@
         }
         const uEl = document.getElementById("userChart");
         if (uEl && typeof courseLabels !== "undefined") {
+          const hasGradeDist =
+            typeof gradeLabels !== "undefined" &&
+            Array.isArray(gradeLabels) &&
+            gradeLabels.length > 0 &&
+            typeof gradeData !== "undefined" &&
+            Array.isArray(gradeData);
+
+          const labels = hasGradeDist ? gradeLabels : courseLabels;
+          const data = hasGradeDist ? gradeData : courseData;
+          const baseColors = [
+            "rgb(59,130,246)",
+            "rgb(34,197,94)",
+            "rgb(168,85,247)",
+          ];
+          const backgroundColor = Array.from(
+            { length: Array.isArray(data) ? data.length : 0 },
+            (_, i) => baseColors[i % baseColors.length]
+          );
+
           new Chart(uEl.getContext("2d"), {
             type: "doughnut",
             data: {
-              labels: courseLabels,
+              labels: labels,
               datasets: [
                 {
-                  data: courseData,
-                  backgroundColor: [
-                    "rgb(59,130,246)",
-                    "rgb(34,197,94)",
-                    "rgb(168,85,247)",
-                  ],
+                  data: data,
+                  backgroundColor: backgroundColor,
                   borderWidth: 0,
                 },
               ],
@@ -291,6 +406,207 @@
           });
         }
       </script>
+
+      <!-- Selected Course Detail -->
+      <div
+        th:if="${courseDetail != null}"
+        class="bg-white rounded-xl shadow-sm border border-slate-200 mb-8"
+      >
+        <div class="px-6 py-4 border-b border-slate-200">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3
+                class="text-lg font-semibold text-slate-900"
+                th:text="${courseDetail.summary.courseCode + ' - ' + courseDetail.summary.courseName}"
+              >
+                Course
+              </h3>
+              <p
+                class="text-sm text-slate-500 mt-1"
+                th:text="${courseDetail.summary.termName}"
+              >
+                Term
+              </p>
+            </div>
+            <span
+              class="px-3 py-1 text-xs font-semibold rounded-full"
+              th:classappend="${courseDetail.summary.active} ? ' bg-emerald-100 text-emerald-800' : ' bg-slate-100 text-slate-800'"
+              th:text="${courseDetail.summary.active} ? 'Active' : 'Inactive'"
+              >Active</span
+            >
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              <p
+                class="text-xs font-medium text-slate-500 uppercase tracking-wider"
+              >
+                Students
+              </p>
+              <p
+                class="mt-1 text-2xl font-bold text-slate-900"
+                th:text="${courseDetail.summary.studentCount}"
+              >
+                0
+              </p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              <p
+                class="text-xs font-medium text-slate-500 uppercase tracking-wider"
+              >
+                Avg Attendance
+              </p>
+              <p
+                class="mt-1 text-2xl font-bold text-slate-900"
+                th:text="${#numbers.formatDecimal(courseDetail.summary.avgAttendancePercent, 1, 1)} + '%'"
+              >
+                0.0%
+              </p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              <p
+                class="text-xs font-medium text-slate-500 uppercase tracking-wider"
+              >
+                Pass Rate
+              </p>
+              <p
+                class="mt-1 text-2xl font-bold text-slate-900"
+                th:text="${#numbers.formatDecimal(courseDetail.summary.passRatePercent, 1, 1)} + '%'"
+              >
+                0.0%
+              </p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              <p
+                class="text-xs font-medium text-slate-500 uppercase tracking-wider"
+              >
+                Range
+              </p>
+              <p
+                class="mt-1 text-sm font-semibold text-slate-900"
+                th:text="${filterFrom} + ' → ' + ${filterTo}"
+              >
+                Range
+              </p>
+              <p
+                class="mt-1 text-xs text-slate-500"
+                th:text="${filterStudentStatus == null or #strings.isEmpty(filterStudentStatus) ? 'All statuses' : filterStudentStatus}"
+              >
+                All statuses
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1">
+              <h4 class="text-sm font-semibold text-slate-900 mb-3">
+                Grade Distribution
+              </h4>
+              <div class="overflow-hidden border border-slate-200 rounded-lg">
+                <table class="min-w-full divide-y divide-slate-200">
+                  <thead class="bg-slate-50">
+                    <tr>
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                      >
+                        Grade
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider"
+                      >
+                        Count
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-slate-200">
+                    <tr
+                      th:each="g : ${courseDetail.gradeDistribution.entrySet()}"
+                    >
+                      <td
+                        class="px-4 py-2 text-sm font-medium text-slate-900"
+                        th:text="${g.key}"
+                      >
+                        A
+                      </td>
+                      <td
+                        class="px-4 py-2 text-sm text-slate-900 text-right"
+                        th:text="${g.value}"
+                      >
+                        0
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="lg:col-span-2">
+              <h4 class="text-sm font-semibold text-slate-900 mb-3">
+                Student Grades
+              </h4>
+              <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                <table class="min-w-full divide-y divide-slate-200">
+                  <thead class="bg-slate-50">
+                    <tr>
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                      >
+                        Student
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                      >
+                        Email
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider"
+                      >
+                        Grade
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-slate-200">
+                    <tr th:each="row : ${courseDetail.studentGrades}">
+                      <td class="px-4 py-2 text-sm font-medium text-slate-900">
+                        <div th:text="${row.get('fullName')}">Student Name</div>
+                        <div
+                          class="text-xs text-slate-500"
+                          th:text="${row.get('studentId') != null ? 'ID: ' + row.get('studentId') : ''}"
+                        ></div>
+                      </td>
+                      <td
+                        class="px-4 py-2 text-sm text-slate-700"
+                        th:text="${row.get('email')}"
+                      >
+                        email
+                      </td>
+                      <td
+                        class="px-4 py-2 text-sm text-slate-700"
+                        th:text="${row.get('status')}"
+                      >
+                        ENROLLED
+                      </td>
+                      <td
+                        class="px-4 py-2 text-sm font-semibold text-slate-900 text-right"
+                        th:text="${row.get('grade') != null ? row.get('grade') : '-'}"
+                      >
+                        -
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Course Details Table -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200">
@@ -403,21 +719,22 @@
                   <div class="flex items-center">
                     <span
                       class="text-sm font-medium text-slate-900"
-                      th:text="${report.avgAttendance + '%'}"
+                      th:text="${#numbers.formatDecimal(report.avgAttendancePercent, 1, 1)} + '%'"
                       >92%</span
                     >
-                    <span class="ml-2 text-xs text-emerald-600">↗</span>
                   </div>
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm text-slate-900"
-                  th:text="${report.passRate + '%'}"
+                  th:text="${#numbers.formatDecimal(report.passRatePercent, 1, 1)} + '%'"
                 >
                   88%
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800"
+                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    th:classappend="${report.active} ? ' bg-emerald-100 text-emerald-800' : ' bg-slate-100 text-slate-800'"
+                    th:text="${report.active} ? 'Active' : 'Inactive'"
                   >
                     Active
                   </span>
@@ -425,12 +742,24 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
                 >
-                  <button class="text-blue-600 hover:text-blue-900 mr-3">
+                  <a
+                    class="text-blue-600 hover:text-blue-900 mr-3"
+                    th:href="@{/lecturer/reports(lecturerId=${lecturerId},offeringId=${report.offeringId},from=${filterFrom},to=${filterTo},studentStatus=${filterStudentStatus})}"
+                  >
                     View Details
-                  </button>
-                  <button class="text-slate-600 hover:text-slate-900">
-                    Export
-                  </button>
+                  </a>
+                  <a
+                    class="text-slate-600 hover:text-slate-900 mr-3"
+                    th:href="@{/lecturer/reports/export/grades.csv(lecturerId=${lecturerId},offeringId=${report.offeringId},studentStatus=${filterStudentStatus})}"
+                  >
+                    Grades CSV
+                  </a>
+                  <a
+                    class="text-slate-600 hover:text-slate-900"
+                    th:href="@{/lecturer/reports/export/attendance.csv(lecturerId=${lecturerId},offeringId=${report.offeringId},from=${filterFrom},to=${filterTo},studentStatus=${filterStudentStatus})}"
+                  >
+                    Attendance CSV
+                  </a>
                 </td>
               </tr>
             </tbody>
