@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import com.cource.entity.Attendance;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
+    List<Attendance> findByEnrollmentStudentIdOrderByAttendanceDateDesc(Long studentId);
 
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Attendance a WHERE a.enrollment.student.id = :studentId AND a.schedule.id = :scheduleId AND a.enrollment.id = :enrollmentId AND a.attendanceDate = :date")
     boolean existsByStudentIdAndScheduleId(@Param("studentId") Long studentId, @Param("scheduleId") Long scheduleId,

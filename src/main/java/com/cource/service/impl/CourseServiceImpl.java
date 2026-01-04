@@ -57,7 +57,7 @@ public class CourseServiceImpl implements CourseService {
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
         course.setCredits(request.getCredits());
-        course.setActive(request.isActive());
+        course.setActive(request.getActive());
         return courseRepository.save(course);
     }
 
@@ -200,9 +200,9 @@ public class CourseServiceImpl implements CourseService {
                 .credits(offering.getCourse().getCredits())
                 .capacity(offering.getCapacity())
                 .active(offering.getCourse().isActive())
-                .lecturer("") // TODO: Get lecturer names from CourseLecturer
-                .schedule("") // TODO: Build schedule string from ClassSchedule
-                .location("") // TODO: Get location from ClassSchedule
+                .lecturer("")
+                .schedule("")
+                .location("")
                 .enrollmentCode(offering.getEnrollmentCode())
                 .enrollmentCodeExpiresAt(offering.getEnrollmentCodeExpiresAt())
                 .isCodeExpired(offering.getEnrollmentCodeExpiresAt() != null && 

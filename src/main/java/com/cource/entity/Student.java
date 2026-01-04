@@ -63,4 +63,8 @@ public class Student {
 
     @OneToMany(mappedBy = "student")
     private List<Enrollment> enrollments;
+
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
+    }
 }

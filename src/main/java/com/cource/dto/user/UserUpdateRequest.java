@@ -9,7 +9,7 @@ public class UserUpdateRequest {
     private String lastName;
     private String idCard;
     private Long roleId;
-    private boolean active;
+    private Boolean active;
     private String password;
     private String dob;
     private String phone;

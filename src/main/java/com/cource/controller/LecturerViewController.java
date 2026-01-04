@@ -1,12 +1,14 @@
 package com.cource.controller;
 
+import com.cource.dto.course.CourseResponseDTO;
+import com.cource.dto.lecturer.LecturerDashboardDTO;
+import com.cource.entity.*;
+import com.cource.util.SecurityHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cource.entity.Attendance;
-import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
-import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.LecturerService;
 
@@ -22,35 +24,72 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("/api/lecturer")
-// @PreAuthorize("hasRole('LECTURER')") // DISABLED FOR TESTING
+@RequestMapping("/lecturer")
+@RequiredArgsConstructor
 public class LecturerViewController {
 
     private final LecturerService lecturerService;
+    private final SecurityHelper securityHelper;
 
-    public LecturerViewController(LecturerService lecturerService) {
-        this.lecturerService = lecturerService;
+    @GetMapping("/dashboard")
+    public String getDashboard(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) {
+            lecturerId = securityHelper.getCurrentUserId();
+        }
+
+        LecturerDashboardDTO stats = lecturerService.getDashboardStats(lecturerId);
+
+        model.addAttribute("dashboard", stats);
+        model.addAttribute("lecturerId", lecturerId);
+
+        return "lecturer/dashboard";
+    }
+
+    @GetMapping("/schedule")
+    public String getSchedulePage(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) lecturerId = securityHelper.getCurrentUserId();
+
+        model.addAttribute("lecturerId", lecturerId);
+        return "lecturer/schedule";
+    }
+
+    @GetMapping("/attendance")
+    public String getAttendancePage(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) lecturerId = securityHelper.getCurrentUserId();
+
+        model.addAttribute("lecturerId", lecturerId);
+        return "lecturer/attendance";
+    }
+
+    @GetMapping("/reports")
+    public String getReportsPage(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) lecturerId = securityHelper.getCurrentUserId();
+
+        model.addAttribute("lecturerId", lecturerId);
+        return "lecturer/reports";
     }
 
     @GetMapping("/courses")
-    public List<Course> getCourses(@RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
-        return lecturerService.getCoursesByLecturerId(lecturerId);
+    public String getCoursesPage(@RequestParam(required = false) Long lecturerId, Model model) {
+        if (lecturerId == null) lecturerId = securityHelper.getCurrentUserId();
+
+        List<CourseResponseDTO> courses = lecturerService.getCoursesByLecturerId(lecturerId);
+        model.addAttribute("courses", courses);
+        model.addAttribute("lecturerId", lecturerId);
+        return "lecturer/courses";
     }
 
     @GetMapping("/courses/{offeringId}/schedule")
     public List<ClassSchedule> getClassSchedules(
             @PathVariable long offeringId,
             @RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         return lecturerService.getClassSchedulesByLecturerId(offeringId, lecturerId);
     }
 
     @GetMapping("/courses/{offeringId}/students")
-    public List<User> getEnrolledStudents(
+    public List<Student> getEnrolledStudents(
             @PathVariable long offeringId,
             @RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         return lecturerService.getEnrolledStudents(offeringId, lecturerId);
     }
 
@@ -59,7 +98,6 @@ public class LecturerViewController {
             @RequestBody com.cource.dto.attendance.AttendanceRequestDTO attendanceRequestDTO,
             @RequestParam long studentId,
             @RequestParam String status) {
-        // TODO: After enabling security, validate lecturerId from Authentication
         lecturerService.recordAttendance(attendanceRequestDTO, studentId, status);
         return ResponseEntity.ok("Attendance recorded successfully.");
     }
@@ -176,7 +214,6 @@ public class LecturerViewController {
     public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getAttendanceRecords(
             @PathVariable long scheduleId,
             @RequestParam(required = false) Long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         try {
             var list = lecturerService.getAttendanceRecordsAsDto(scheduleId, lecturerId);
             return ResponseEntity.ok(list);
@@ -188,7 +225,6 @@ public class LecturerViewController {
         }
     }
 
-    // Attendance counts by date (last N days) for lecturer's offerings
     @GetMapping("/attendance/trends")
     public ResponseEntity<java.util.Map<String, Long>> getAttendanceTrends(
             @RequestParam long lecturerId,
@@ -197,7 +233,6 @@ public class LecturerViewController {
         return ResponseEntity.ok(map);
     }
 
-    // Course average grades for lecturer
     @GetMapping("/courses/averages")
     public ResponseEntity<java.util.Map<String, Double>> getCourseAverages(@RequestParam long lecturerId) {
         var map = lecturerService.getCourseAverageGradeByLecturer(lecturerId);

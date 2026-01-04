@@ -17,16 +17,24 @@ public class AttendanceResponseDTO {
     private Long studentId;
     private String studentName;
     private String studentEmail;
+    private String studentIdCard;
     private Long scheduleId;
     private String scheduleDayOfWeek;
     private String scheduleTime;
     private Long offeringId;
     private String courseName;
     private String courseCode;
+
     private LocalDate attendanceDate;
+
     private String status;
     private String notes;
     private Long recordedById;
     private String recordedByName;
     private LocalDateTime recordedAt;
+
+    public void setDate(LocalDate date) {
+        this.attendanceDate = date;
+    }
+
 }
