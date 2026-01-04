@@ -44,7 +44,6 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .anyMatch(cl -> cl.getLecturer().getId().equals(lecturer.getId()));
 
         if (!isAssigned) {
-            List<CourseLecturer> allLecturers = courseLecturerRepository.findAll();
             throw new UnauthorizedException("You are not assigned to this course offering.");
         }
 
