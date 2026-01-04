@@ -178,6 +178,18 @@ public class AdminController {
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
+    @DeleteMapping("/courses/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+        courseService.deleteCourse(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/courses/delete-multiple")
+    public ResponseEntity<?> deleteMultipleCourses(@RequestBody List<Long> courseIds) {
+        courseService.deleteMultipleCourses(courseIds);
+        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+    }
+
     @GetMapping("/courses/stats/total")
     public ResponseEntity<Long> getTotalCourses() {
         return ResponseEntity.ok(adminService.getTotalCourses());
@@ -263,6 +275,12 @@ public class AdminController {
     public ResponseEntity<Void> deleteOffering(@PathVariable Long id) {
         adminService.deleteOffering(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/offerings/delete-multiple")
+    public ResponseEntity<?> deleteMultipleOfferings(@RequestBody List<Long> offeringIds) {
+        adminService.deleteMultipleOfferings(offeringIds);
+        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
     @PatchMapping("/offerings/{id}/toggle")
