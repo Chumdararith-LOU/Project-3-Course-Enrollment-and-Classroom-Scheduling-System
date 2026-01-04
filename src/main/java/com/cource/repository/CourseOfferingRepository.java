@@ -37,8 +37,12 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
     List<CourseOffering> findByCourseTitleContainingIgnoreCase(@Param("keyword") String keyword);
 
     @Query("SELECT co FROM CourseOffering co WHERE LOWER(co.course.title) LIKE LOWER(CONCAT('%', :keyword, '%')) AND co.term.id = :termId")
-    List<CourseOffering> findByCourseTitleContainingIgnoreCaseAndTermId(@Param("keyword") String keyword, @Param("termId") Long termId);
+    List<CourseOffering> findByCourseTitleContainingIgnoreCaseAndTermId(@Param("keyword") String keyword,
+            @Param("termId") Long termId);
 
     @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.offering.id = :offeringId AND e.status = 'ENROLLED'")
     Long countEnrolledStudents(@Param("offeringId") Long offeringId);
+
+    @Query("SELECT co FROM CourseOffering co LEFT JOIN FETCH co.course LEFT JOIN FETCH co.term WHERE co.id = :id")
+    Optional<CourseOffering> findByIdWithDetails(@Param("id") Long id);
 }
