@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
 import com.cource.entity.User;
 import com.cource.service.LecturerService;
 
@@ -34,8 +33,8 @@ public class LecturerController {
     private final PasswordEncoder passwordEncoder;
 
     public LecturerController(LecturerService lecturerService,
-                              UserRepository userRepository,
-                              PasswordEncoder passwordEncoder) {
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
         this.lecturerService = lecturerService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -48,14 +47,14 @@ public class LecturerController {
 
     @GetMapping("/courses/{offeringId}/schedule")
     public List<ClassSchedule> getClassSchedules(
-            @PathVariable long offeringId, 
+            @PathVariable long offeringId,
             @RequestParam long lecturerId) {
         return lecturerService.getClassSchedulesByLecturerId(offeringId, lecturerId);
     }
 
     @GetMapping("/courses/{offeringId}/students")
     public List<User> getEnrolledStudents(
-            @PathVariable long offeringId, 
+            @PathVariable long offeringId,
             @RequestParam long lecturerId) {
         return lecturerService.getEnrolledStudents(offeringId, lecturerId);
     }

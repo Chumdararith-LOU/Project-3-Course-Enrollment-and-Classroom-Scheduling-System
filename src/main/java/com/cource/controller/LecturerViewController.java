@@ -12,12 +12,9 @@ import com.cource.repository.UserRepository;
 import com.cource.service.CourseService;
 import com.cource.service.EnrollmentService;
 import com.cource.service.LecturerService;
-import com.cource.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,7 +32,6 @@ public class LecturerViewController {
     private final CourseService courseService;
     private final AcademicTermRepository termRepository;
     private final UserRepository userRepository;
-    private final UserService userService;
     private final EnrollmentService enrollmentService;
     private final CourseOfferingRepository courseOfferingRepository;
 
@@ -72,8 +68,8 @@ public class LecturerViewController {
 
     @GetMapping("/students")
     public String viewEnrolledStudents(@RequestParam(required = false) Long offeringId,
-                                       @AuthenticationPrincipal UserDetails userDetails,
-                                       Model model) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            Model model) {
         User user = getUserByDetails(userDetails);
 
         if (offeringId != null) {
@@ -96,9 +92,9 @@ public class LecturerViewController {
 
     @PostMapping("/courses/create")
     public String createCourse(@Valid @ModelAttribute("course") CourseRequestDTO courseRequest,
-                               BindingResult result,
-                               @AuthenticationPrincipal UserDetails userDetails,
-                               Model model) {
+            BindingResult result,
+            @AuthenticationPrincipal UserDetails userDetails,
+            Model model) {
         if (result.hasErrors()) {
             model.addAttribute("terms", termRepository.findByActiveTrue());
             return "lecturer/create_course";
@@ -144,8 +140,8 @@ public class LecturerViewController {
 
     @PostMapping("/grades/update")
     public String updateGrade(@RequestParam Long enrollmentId,
-                              @RequestParam Long offeringId,
-                              @RequestParam String grade) {
+            @RequestParam Long offeringId,
+            @RequestParam String grade) {
 
         enrollmentService.updateGrade(enrollmentId, grade);
 
@@ -158,6 +154,5 @@ public class LecturerViewController {
         }
         return null;
     }
-
 
 }
