@@ -26,7 +26,7 @@ import com.cource.util.SecurityHelper;
 @RestController
 @RequestMapping("/api/attendance-code")
 @RequiredArgsConstructor
-public class AttendaceCodeController {
+public class AttendanceCodeController {
     private final AttendanceCodeService attendanceCodeService;
     private final SecurityHelper securityHelper;
     private final EnrollmentRepository enrollmentRepository;
