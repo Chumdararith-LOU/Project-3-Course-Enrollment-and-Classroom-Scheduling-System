@@ -4,6 +4,7 @@ import com.cource.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,8 +23,20 @@ public class SecurityHelper {
                 .orElse(null);
     }
 
-    public String getCurrentUsername() {
+    public String getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth == null ? null : auth.getName();
+        if (auth != null) {
+            if (auth.getPrincipal() instanceof UserDetails) {
+                return ((UserDetails) auth.getPrincipal()).getUsername();
+            }
+            return auth.getName();
+        }
+        return null;
+    }
+
+    public boolean hasRole(String role) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(role));
     }
 }
