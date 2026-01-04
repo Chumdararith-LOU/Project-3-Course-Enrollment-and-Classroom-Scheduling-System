@@ -21,15 +21,17 @@ public class EnrollmentController {
     private final UserService userService;
 
     @PostMapping("/enroll")
-    public String enroll(@RequestParam Long offeringId, RedirectAttributes redirectAttributes) {
+    public String enroll(@RequestParam Long offeringId,
+                         @AuthenticationPrincipal UserDetails userDetails, // Inject logged-in user
+                         RedirectAttributes redirectAttributes) {
         try {
-            Long studentId = 3L;
+            User student = userService.getUserByEmail(userDetails.getUsername());
 
-            var result = enrollmentService.enrollStudent(studentId, offeringId);
+            var result = enrollmentService.enrollStudent(student.getId(), offeringId);
 
-            if (result.getStatus().equals("ENROLLED")) {
+            if ("ENROLLED".equals(result.getStatus())) {
                 redirectAttributes.addFlashAttribute("successMessage", result.getMessage());
-            } else if (result.getStatus().equals("WAITLISTED")) {
+            } else if ("WAITLISTED".equals(result.getStatus())) {
                 redirectAttributes.addFlashAttribute("warningMessage", result.getMessage());
             }
 
@@ -41,18 +43,20 @@ public class EnrollmentController {
     }
 
     @PostMapping("/drop")
-    public String drop(@RequestParam Long offeringId, RedirectAttributes redirectAttributes) {
+    public String drop(@RequestParam Long offeringId,
+                       @AuthenticationPrincipal UserDetails userDetails, // Inject logged-in user
+                       RedirectAttributes redirectAttributes) {
         try {
-            Long studentId = 3L;
+            User student = userService.getUserByEmail(userDetails.getUsername());
 
-            var result = enrollmentService.dropCourse(studentId, offeringId);
+            var result = enrollmentService.dropCourse(student.getId(), offeringId);
             redirectAttributes.addFlashAttribute("successMessage", result.getMessage());
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/student/courses";
+        return "redirect:/student/my-courses";
     }
 
     @PostMapping("/join")
