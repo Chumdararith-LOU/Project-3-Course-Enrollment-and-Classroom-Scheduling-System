@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <body>
     <aside
-      th:fragment="sidebar(userId, role)"
+      th:fragment="sidebar(userId, role, currentPage)"
       class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10"
     >
       <div class="flex flex-col h-full">
@@ -16,7 +16,7 @@
         <nav class="flex-1 px-4 py-6 space-y-2">
           <a
             th:href="@{/admin/dashboard}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'dashboard'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -36,7 +36,7 @@
 
           <a
             th:href="@{/admin/users}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'users'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -48,7 +48,7 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
             Users
@@ -56,7 +56,7 @@
 
           <a
             th:href="@{/admin/courses}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'courses'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -76,7 +76,7 @@
 
           <a
             th:href="@{/admin/offerings}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'offerings'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -96,7 +96,7 @@
 
           <a
             th:href="@{/admin/schedules}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'schedules'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -116,7 +116,7 @@
 
           <a
             th:href="@{/admin/enrollments}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'enrollments'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -136,7 +136,7 @@
 
           <a
             th:href="@{/admin/rooms}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'rooms'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -156,7 +156,7 @@
 
           <a
             th:href="@{/admin/terms}"
-            class="flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition"
+            th:class="${currentPage == 'terms'} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition'"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -184,7 +184,7 @@
               <span class="text-sm font-semibold">A</span>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium">Administrator</p>
+              <p class="text-sm font-medium" th:text="${role}">Administrator</p>
               <p class="text-xs text-slate-400">
                 ID: <span th:text="${userId}">1</span>
               </p>
