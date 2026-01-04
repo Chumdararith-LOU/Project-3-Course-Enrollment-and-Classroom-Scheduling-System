@@ -14,4 +14,5 @@ public interface CourseLecturerRepository extends JpaRepository<CourseLecturer, 
 
     @Query("SELECT (COUNT(cl) > 0) FROM CourseLecturer cl WHERE cl.offering.id = :offeringId AND cl.lecturer.id = :lecturerId")
     boolean existsByOfferingIdAndLecturerId(@Param("offeringId") Long offeringId, @Param("lecturerId") Long lecturerId);
+    boolean existsByLecturerIdAndOfferingId(Long lecturerId, Long offeringId);
 }

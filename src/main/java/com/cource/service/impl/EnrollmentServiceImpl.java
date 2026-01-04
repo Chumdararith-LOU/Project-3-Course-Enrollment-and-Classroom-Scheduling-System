@@ -122,22 +122,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     @Transactional
     public EnrollmentResult dropCourse(Long studentId, Long offeringId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
 
         Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
-
-        if (enrollment.getStatus().equals("COMPLETED") || enrollment.getStatus().equals("FAILED")) {
-            throw new ConflictException("Cannot drop a course that is already " + enrollment.getStatus());
-        }
+                .orElseThrow(() -> new ResourceNotFoundException("You are not enrolled in this course"));
 
         enrollment.setStatus("DROPPED");
         enrollmentRepository.save(enrollment);
 
-        processWaitlist(offeringId);
+        processWaitlist(offering.getId());
 
-        return new EnrollmentResult("DROPPED", "Successfully dropped course");
+        return new EnrollmentResult("DROPPED", "Successfully dropped course.");
     }
 
     @Override

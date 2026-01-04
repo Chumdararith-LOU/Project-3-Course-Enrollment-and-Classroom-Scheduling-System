@@ -7,6 +7,7 @@ import com.cource.dto.lecturer.LecturerDashboardDTO;
 import com.cource.entity.*;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
+import com.cource.exception.UnauthorizedException;
 import com.cource.repository.*;
 import com.cource.service.CourseService;
 import com.cource.service.LecturerService;
@@ -247,6 +248,31 @@ public class LecturerServiceImpl implements LecturerService {
     @Override
     public Map<String, Double> getCourseAverageGradeByLecturer(long lecturerId) {
         return Collections.emptyMap();
+    }
+
+    @Override
+    @Transactional
+    public void updateStudentGrade(Long lecturerId, Long enrollmentId, String grade) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+
+        boolean isAuthorized = courseLecturerRepository.existsByLecturerIdAndOfferingId(
+                lecturerId,
+                enrollment.getOffering().getId()
+        );
+
+        if (!isAuthorized) {
+            throw new UnauthorizedException("You are not the lecturer for this course.");
+        }
+
+        enrollment.setGrade(grade);
+        if ("F".equalsIgnoreCase(grade)) {
+            enrollment.setStatus("FAILED");
+        } else {
+            enrollment.setStatus("COMPLETED");
+        }
+
+        enrollmentRepository.save(enrollment);
     }
 
     private void verifyOwnership(long offeringId, long lecturerId) {

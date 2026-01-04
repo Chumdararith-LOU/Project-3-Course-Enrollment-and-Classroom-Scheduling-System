@@ -34,6 +34,7 @@ public interface LecturerService {
     // Schedules & Students
     List<ClassSchedule> getClassSchedulesByLecturerId(long offeringId, long lecturerId);
     List<Student> getEnrolledStudents(long offeringId, long lecturerId);
+    void updateStudentGrade(Long lecturerId, Long enrollmentId, String grade);
 
     // Attendance
     void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status);
