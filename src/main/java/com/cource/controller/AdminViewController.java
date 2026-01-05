@@ -296,7 +296,7 @@ public class AdminViewController {
 
         for (var enrollment : enrollments) {
             csv.append(String.format("%s,%s %s,%s,%s,%s,%s,%s\n",
-                    enrollment.getStudent().getStudentId(),
+                    enrollment.getStudent().getIdCard(),
                     enrollment.getStudent().getFirstName(),
                     enrollment.getStudent().getLastName(),
                     enrollment.getStudent().getEmail(),
