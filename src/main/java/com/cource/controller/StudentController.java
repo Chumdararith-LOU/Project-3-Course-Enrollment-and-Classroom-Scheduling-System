@@ -8,7 +8,6 @@ import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.Attendance;
 import com.cource.entity.Enrollment;
 import com.cource.entity.User;
-import com.cource.repository.EnrollmentRepository;
 import com.cource.service.CourseService;
 import com.cource.service.EnrollmentService;
 import com.cource.service.ScheduleService;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +31,6 @@ public class StudentController {
 
     private final CourseService courseService;
     private final UserService userService;
-    private final EnrollmentRepository enrollmentRepository;
     private final EnrollmentService enrollmentService;
     private final ScheduleService scheduleService;
 
@@ -60,7 +57,7 @@ public class StudentController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model){
+    public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = getUserByDetails(userDetails);
 
         model.addAttribute("user", user);
@@ -72,8 +69,8 @@ public class StudentController {
 
     @GetMapping("/catalog")
     public String catalog(@AuthenticationPrincipal UserDetails userDetails,
-                          @RequestParam(required = false) String search,
-                          Model model) {
+            @RequestParam(required = false) String search,
+            Model model) {
         User user = getUserByDetails(userDetails);
         model.addAttribute("user", user);
 

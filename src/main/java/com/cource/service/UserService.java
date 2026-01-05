@@ -9,6 +9,8 @@ import com.cource.entity.UserProfile;
 import com.cource.repository.RoleRepository;
 import com.cource.repository.UserProfileRepository;
 import com.cource.repository.UserRepository;
+import com.cource.repository.EnrollmentRepository;
+import com.cource.repository.AttendanceRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +37,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final RoleRepository roleRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final AttendanceRepository attendanceRepository;
     private final PasswordEncoder passwordEncoder;
     @Value("${app.avatar.dir:uploads/avatars}")
     private String avatarDir;
@@ -43,6 +47,11 @@ public class UserService {
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
+        }
+
+        // Check if ID card already exists
+        if (request.getIdCard() != null && userRepository.existsByIdCard(request.getIdCard())) {
+            throw new RuntimeException("ID card already exists");
         }
 
         User user = new User();
@@ -86,10 +95,10 @@ public class UserService {
             user.setIdCard(request.getIdCard());
         }
 
-        // if (request.getActive() != null) {
-        //     user.setActive(request.getActive());
-        // }
-        user.setActive(request.isActive());
+        if (request.getActive() != null) {
+            user.setActive(request.getActive());
+        }
+        // user.setActive(request.isActive());
 
         if (request.getRoleId() != null) {
             Role role = roleRepository.findById(request.getRoleId())
@@ -150,10 +159,26 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("User not found");
         }
+
+        // Check for enrollments
+        long enrollmentCount = enrollmentRepository.countByStudentId(id);
+        if (enrollmentCount > 0) {
+            throw new RuntimeException("Cannot delete user: has " + enrollmentCount
+                    + " enrollment(s). Please delete enrollments first or deactivate the user instead.");
+        }
+
+        // Check for attendance records
+        long attendanceCount = attendanceRepository.countByEnrollment_StudentId(id);
+        if (attendanceCount > 0) {
+            throw new RuntimeException("Cannot delete user: has " + attendanceCount
+                    + " attendance record(s). Please delete attendance records first or deactivate the user instead.");
+        }
+
+        // User profile will be deleted automatically via CASCADE
+        // Safe to delete
         userRepository.deleteById(id);
     }
 
-    @Transactional(readOnly = true)
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -210,5 +235,10 @@ public class UserService {
         var p = opt.get();
         return new UserProfileDTO(p.getId(), userId, p.getPhone(), p.getDateOfBirth(), p.getBio(),
                 p.getAvatarUrl());
+    }
+
+    public User getUserByEmail(String username) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUserByEmail'");
     }
 }

@@ -1,19 +1,12 @@
 package com.cource.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
 @Table(name = "courses")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Course {
 
     @Id
@@ -22,6 +15,9 @@ public class Course {
 
     @Column(name = "course_code", nullable = false, unique = true)
     private String courseCode;
+
+    @Column(name = "enrollment_code", unique = true)
+    private String enrollmentCode;
 
     @Column(nullable = false)
     private String title;
@@ -37,4 +33,64 @@ public class Course {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public Course() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
+
+    public String getEnrollmentCode() {
+        return enrollmentCode;
+    }
+
+    public void setEnrollmentCode(String enrollmentCode) {
+        this.enrollmentCode = enrollmentCode;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getCredits() {
+        return credits;
+    }
+
+    public void setCredits(int credits) {
+        this.credits = credits;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
 }

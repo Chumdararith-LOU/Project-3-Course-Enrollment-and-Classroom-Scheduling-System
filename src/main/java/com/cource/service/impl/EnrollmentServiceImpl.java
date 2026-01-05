@@ -1,210 +1,190 @@
 package com.cource.service.impl;
 
-import com.cource.dto.enrollment.EnrollmentResult;
-import com.cource.entity.*;
-import com.cource.exception.ConflictException;
-import com.cource.exception.ResourceNotFoundException;
-import com.cource.repository.*;
-import com.cource.service.EnrollmentService;
-import com.cource.util.TimeConflictChecker;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+// import com.cource.dto.enrollment.EnrollmentResult;
+// import com.cource.entity.Attendance;
+// import com.cource.entity.CourseOffering;
+// import com.cource.entity.Enrollment;
+// import com.cource.entity.Student;
+// import com.cource.entity.Waitlist;
+// import com.cource.repository.AttendanceRepository;
+// import com.cource.repository.CourseOfferingRepository;
+// import com.cource.repository.EnrollmentRepository;
+// import com.cource.repository.StudentRepository;
+// import com.cource.repository.WaitlistRepository;
+// import com.cource.service.EnrollmentService;
+// import lombok.RequiredArgsConstructor;
+// import org.springframework.stereotype.Service;
+// import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+// import java.time.LocalDateTime;
+// import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class EnrollmentServiceImpl implements EnrollmentService {
-    private final EnrollmentRepository enrollmentRepository;
-    private final CourseOfferingRepository courseOfferingRepository;
-    private final StudentRepository studentRepository;
-    private final WaitlistRepository waitlistRepository;
-    private final AttendanceRepository attendanceRepository;
+// @Service
+// @Transactional
+// @RequiredArgsConstructor
+public class EnrollmentServiceImpl { // implements EnrollmentService
 
-    private final ClassScheduleRepository classScheduleRepository;
-    private final TimeConflictChecker timeConflictChecker;
+    // private final EnrollmentRepository enrollmentRepository;
+    // private final CourseOfferingRepository courseOfferingRepository;
+    // private final StudentRepository studentRepository;
+    // private final WaitlistRepository waitlistRepository;
+    // private final AttendanceRepository attendanceRepository;
 
-    @Override
-    public long getEnrolledCourseCount(Long studentId) {
-        return enrollmentRepository.countByStudentIdAndStatus(studentId, "ENROLLED");
-    }
+    // @Override
+    // @Transactional(readOnly = true)
+    // public long getEnrolledCourseCount(Long studentId) {
+    // return enrollmentRepository.findByStudentId(studentId)
+    // .stream()
+    // .filter(e -> e.getStatus() != null &&
+    // e.getStatus().equalsIgnoreCase("ENROLLED"))
+    // .count();
+    // }
 
-    @Override
-    @Transactional
-    public EnrollmentResult enrollByCode(Long studentId, String code) {
-        CourseOffering offering = courseOfferingRepository.findByEnrollmentCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid enrollment code"));
+    // @Override
+    // public EnrollmentResult enrollStudent(Long studentId, Long offeringId) {
+    // Student student = studentRepository.findById(studentId)
+    // .orElseThrow(() -> new RuntimeException("Student not found"));
+    // CourseOffering offering = courseOfferingRepository.findById(offeringId)
+    // .orElseThrow(() -> new RuntimeException("Course offering not found"));
 
-        if (offering.getEnrollmentCodeExpiresAt() != null &&
-                offering.getEnrollmentCodeExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new ConflictException("This enrollment code has expired. Please ask your lecturer for a new code.");
-        }
+    // var existing = enrollmentRepository.findByStudentIdAndOfferingId(studentId,
+    // offeringId);
+    // if (existing.isPresent()) {
+    // Enrollment e = existing.get();
+    // if (e.getStatus() != null && e.getStatus().equalsIgnoreCase("ENROLLED")) {
+    // return new EnrollmentResult("ENROLLED", "Already enrolled in this course");
+    // }
+    // e.setStatus("ENROLLED");
+    // e.setEnrolledAt(LocalDateTime.now());
+    // enrollmentRepository.save(e);
+    // return new EnrollmentResult("ENROLLED", "Enrolled successfully");
+    // }
 
-        if (!offering.getTerm().isActive()) {
-            throw new ConflictException("Cannot enroll in a course from an inactive term");
-        }
+    // long enrolledCount =
+    // enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
+    // if (enrolledCount < offering.getCapacity()) {
+    // Enrollment enrollment = Enrollment.builder()
+    // .student(student)
+    // .offering(offering)
+    // .enrolledAt(LocalDateTime.now())
+    // .status("ENROLLED")
+    // .build();
+    // enrollmentRepository.save(enrollment);
+    // return new EnrollmentResult("ENROLLED", "Enrolled successfully");
+    // }
 
-        return enrollStudent(studentId, offering.getId());
-    }
+    // if (waitlistRepository.existsByStudentIdAndOfferingId(studentId, offeringId))
+    // {
+    // return new EnrollmentResult("WAITLISTED", "You are already on the waitlist");
+    // }
 
-    @Override
-    @Transactional
-    @PreAuthorize("hasRole('STUDENT')")
-    public EnrollmentResult enrollStudent(Long studentId, Long offeringId) {
-        CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
+    // Integer maxPosition =
+    // waitlistRepository.findMaxPositionByOfferingId(offeringId);
+    // int nextPosition = (maxPosition == null ? 1 : maxPosition + 1);
 
-        if (enrollmentRepository.existsByStudentIdAndOfferingId(studentId, offeringId)) {
-            throw new ConflictException("You are already enrolled in this course.");
-        }
+    // Waitlist wait = new Waitlist();
+    // wait.setStudent(student);
+    // wait.setOffering(offering);
+    // wait.setPosition(nextPosition);
+    // wait.setStatus("PENDING");
+    // waitlistRepository.save(wait);
 
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+    // return new EnrollmentResult("WAITLISTED", "Course is full; you have been
+    // added to the waitlist");
+    // }
 
-        List<ClassSchedule> newCourseSchedules = classScheduleRepository.findByOfferingId(offeringId);
+    // @Override
+    // public EnrollmentResult dropCourse(Long studentId, Long offeringId) {
+    // Enrollment enrollment =
+    // enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
+    // .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+    // enrollment.setStatus("DROPPED");
+    // enrollmentRepository.save(enrollment);
 
-        List<Enrollment> existingEnrollments = enrollmentRepository.findByStudentIdAndStatus(studentId, "ENROLLED");
-        List<Long> enrolledOfferingIds = existingEnrollments.stream()
-                .map(e -> e.getOffering().getId())
-                .collect(Collectors.toList());
+    // processWaitlist(offeringId);
+    // return new EnrollmentResult("DROPPED", "Course dropped successfully");
+    // }
 
-        if (!enrolledOfferingIds.isEmpty()) {
-            List<ClassSchedule> studentCurrentSchedules = classScheduleRepository.findByOfferingIdIn(enrolledOfferingIds);
+    // @Override
+    // public EnrollmentResult enrollByCode(Long studentId, String enrollmentCode) {
+    // CourseOffering offering =
+    // courseOfferingRepository.findByEnrollmentCode(enrollmentCode)
+    // .orElseThrow(() -> new RuntimeException("Invalid enrollment code"));
 
-            for (ClassSchedule newSched : newCourseSchedules) {
-                if (timeConflictChecker.hasConflict(newSched, studentCurrentSchedules)) {
-                    throw new ConflictException("Time conflict detected with course: " + newSched.getOffering().getCourse().getCourseCode());
-                }
-            }
-        }
+    // if (offering.getEnrollmentCodeExpiresAt() != null
+    // && offering.getEnrollmentCodeExpiresAt().isBefore(LocalDateTime.now())) {
+    // throw new RuntimeException("Enrollment code has expired");
+    // }
 
-        long currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
+    // return enrollStudent(studentId, offering.getId());
+    // }
 
-        if (currentEnrolled < offering.getCapacity()) {
-            Enrollment enrollment = new Enrollment();
-            enrollment.setStudent(student);
-            enrollment.setOffering(offering);
-            enrollment.setStatus("ENROLLED");
+    // @Override
+    // public void processWaitlist(Long offeringId) {
+    // CourseOffering offering = courseOfferingRepository.findById(offeringId)
+    // .orElseThrow(() -> new RuntimeException("Course offering not found"));
 
-            enrollmentRepository.save(enrollment);
-            return new EnrollmentResult("ENROLLED", "Successfully enrolled in course");
-        } else {
-            return addToWaitlist(studentId, offeringId);
-        }
-    }
+    // while (enrollmentRepository.countByOfferingIdAndStatus(offeringId,
+    // "ENROLLED") < offering.getCapacity()) {
+    // var next =
+    // waitlistRepository.findFirstByOfferingIdOrderByPosition(offeringId);
+    // if (next.isEmpty()) {
+    // return;
+    // }
 
-    @Transactional
-    public EnrollmentResult addToWaitlist(Long studentId, Long offeringId) {
-        CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
+    // Waitlist w = next.get();
+    // if (w.getStudent() == null) {
+    // w.setStatus("EXPIRED");
+    // waitlistRepository.save(w);
+    // continue;
+    // }
 
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+    // Long studentId = w.getStudent().getId();
 
-        int maxPosition = waitlistRepository.findMaxPositionByOfferingId(offeringId);
-        int nextPosition = (maxPosition > 0) ? maxPosition + 1 : 1;
+    // if (enrollmentRepository.findByStudentIdAndOfferingId(studentId,
+    // offeringId).isPresent()) {
+    // w.setStatus("EXPIRED");
+    // waitlistRepository.save(w);
+    // continue;
+    // }
 
-        Waitlist waitlist = new Waitlist();
-        waitlist.setStudent(student);
-        waitlist.setOffering(offering);
-        waitlist.setPosition(nextPosition);
-        waitlist.setStatus("PENDING");
+    // Enrollment enrollment = Enrollment.builder()
+    // .student(w.getStudent())
+    // .offering(offering)
+    // .enrolledAt(LocalDateTime.now())
+    // .status("ENROLLED")
+    // .build();
+    // enrollmentRepository.save(enrollment);
 
-        waitlistRepository.save(waitlist);
-        return new EnrollmentResult("WAITLISTED", "Course is full. Added to waitlist at position " + nextPosition);
-    }
+    // w.setStatus("NOTIFIED");
+    // w.setNotifiedAt(LocalDateTime.now());
+    // waitlistRepository.save(w);
+    // }
+    // }
 
-    @Override
-    @Transactional
-    public EnrollmentResult dropCourse(Long studentId, Long offeringId) {
-        CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<Enrollment> getStudentGrades(Long studentId) {
+    // return enrollmentRepository.findByStudentIdAndGradeIsNotNull(studentId);
+    // }
 
-        Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<Attendance> getStudentAttendance(Long studentId) {
+    // return attendanceRepository.findByStudentId(studentId);
+    // }
 
-        if (enrollment.getStatus().equals("COMPLETED") || enrollment.getStatus().equals("FAILED")) {
-            throw new ConflictException("Cannot drop a course that is already " + enrollment.getStatus());
-        }
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<Enrollment> getEnrollmentsByOffering(Long offeringId) {
+    // return enrollmentRepository.findByOfferingId(offeringId);
+    // }
 
-        enrollment.setStatus("DROPPED");
-        enrollmentRepository.save(enrollment);
-
-        processWaitlist(offeringId);
-
-        return new EnrollmentResult("DROPPED", "Successfully dropped course");
-    }
-
-    @Override
-    @Transactional
-    public void processWaitlist(Long offeringId) {
-        CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
-
-        long currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
-
-        if (currentEnrolled < offering.getCapacity()) {
-            Optional<Waitlist> nextWaitlist = waitlistRepository.findFirstByOfferingIdOrderByPosition(offeringId);
-
-            if (nextWaitlist.isPresent()) {
-                Waitlist waitlist = nextWaitlist.get();
-
-                // Enroll the waitlisted student
-                Enrollment enrollment = new Enrollment();
-                enrollment.setStudent(waitlist.getStudent());
-                enrollment.setOffering(offering);
-                enrollment.setStatus("ENROLLED");
-
-                enrollmentRepository.save(enrollment);
-
-                // Remove from waitlist
-                waitlist.setStatus("ENROLLED");
-                waitlistRepository.save(waitlist);
-
-                // Notification for promoted student
-                System.out.println("NOTIFICATION: Waitlisted student promoted: " + waitlist.getStudent().getEmail() +
-                                 " - Now enrolled in " + offering.getCourse().getTitle());
-            }
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Enrollment> getStudentGrades(Long studentId) {
-        return enrollmentRepository.findByStudentIdAndGradeIsNotNull(studentId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Attendance> getStudentAttendance(Long studentId) {
-        return attendanceRepository.findByEnrollmentStudentIdOrderByAttendanceDateDesc(studentId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Enrollment> getEnrollmentsByOffering(Long offeringId) {
-        return enrollmentRepository.findByOfferingId(offeringId);
-    }
-
-    @Override
-    @Transactional
-    public void updateGrade(Long enrollmentId, String grade) {
-        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
-
-        enrollment.setGrade(grade);
-
-        if ("F".equalsIgnoreCase(grade)) {
-            enrollment.setStatus("FAILED");
-        } else if (grade != null && !grade.isEmpty()) {
-            enrollment.setStatus("COMPLETED");
-        }
-
-        enrollmentRepository.save(enrollment);
-    }
+    // @Override
+    // public void updateGrade(Long enrollmentId, String grade) {
+    // Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+    // .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+    // enrollment.setGrade(grade);
+    // enrollmentRepository.save(enrollment);
+    // }
 }

@@ -63,4 +63,14 @@ public class Student {
 
     @OneToMany(mappedBy = "student")
     private List<Enrollment> enrollments;
+
+    public String getFullName() {
+        String fn = firstName == null ? "" : firstName;
+        String ln = lastName == null ? "" : lastName;
+        return (fn + " " + ln).trim();
+    }
+
+    public boolean isActive() {
+        return Boolean.TRUE.equals(isActive);
+    }
 }
