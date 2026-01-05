@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.Course;
-import com.cource.entity.Student;
 import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.LecturerService;
@@ -48,7 +47,7 @@ public class LecturerController {
     }
 
     @GetMapping("/courses/{offeringId}/students")
-    public List<Student> getEnrolledStudents(
+    public List<User> getEnrolledStudents(
             @PathVariable long offeringId,
             @RequestParam long lecturerId) {
         // TODO: After enabling security, get lecturerId from Authentication

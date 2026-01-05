@@ -144,7 +144,7 @@ public class LecturerViewController {
             model.addAttribute("userLabels", new java.util.ArrayList<String>());
             model.addAttribute("userData", new java.util.ArrayList<Number>());
         }
-        return "lecturer/dashboard";
+        return "views/lecturer/dashboard";
     }
 
     /**
@@ -174,7 +174,7 @@ public class LecturerViewController {
         } catch (Exception ex) {
             model.addAttribute("error", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
         }
-        return "lecturer/courses";
+        return "views/lecturer/courses";
     }
 
     /**
@@ -197,7 +197,7 @@ public class LecturerViewController {
                 var enrollments = enrollmentRepository.findByOfferingIdWithStudentFiltered(offeringId, "ENROLLED");
                 model.addAttribute("enrollments", enrollments);
 
-                java.util.List<com.cource.entity.Student> students = new java.util.ArrayList<>();
+                java.util.List<com.cource.entity.User> students = new java.util.ArrayList<>();
                 java.util.Map<Long, com.cource.entity.Enrollment> enrollmentMap = new java.util.HashMap<>();
                 if (enrollments != null) {
                     for (com.cource.entity.Enrollment e : enrollments) {
@@ -218,7 +218,7 @@ public class LecturerViewController {
                 model.addAttribute("error", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
             }
         }
-        return "lecturer/students";
+        return "views/lecturer/students";
     }
 
     /**
@@ -302,7 +302,7 @@ public class LecturerViewController {
                 model.addAttribute("students", new java.util.ArrayList<>());
             }
         }
-        return "lecturer/attendance";
+        return "views/lecturer/attendance";
     }
 
     /**
@@ -347,7 +347,7 @@ public class LecturerViewController {
         } else {
             model.addAttribute("terms", new java.util.ArrayList<>());
         }
-        return "lecturer/schedule";
+        return "views/lecturer/schedule";
     }
 
     /**
@@ -504,6 +504,6 @@ public class LecturerViewController {
             model.addAttribute("courseLabels", new java.util.ArrayList<String>());
             model.addAttribute("courseData", new java.util.ArrayList<Number>());
         }
-        return "lecturer/reports";
+        return "views/lecturer/reports";
     }
 }

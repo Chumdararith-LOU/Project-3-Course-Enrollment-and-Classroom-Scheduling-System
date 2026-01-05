@@ -1,10 +1,8 @@
 package com.cource.entity;
 
-import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
@@ -112,6 +110,6 @@ public class User {
     }
 
     public String getFullName() {
-        return this.firstName + " " + this.lastName;
+    return firstName + " " + lastName;
     }
 }
