@@ -11,6 +11,7 @@ import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.Course;
 import com.cource.entity.Enrollment;
+import com.cource.entity.Student;
 import com.cource.entity.User;
 import com.cource.dto.lecturer.LecturerCourseDetailDTO;
 import com.cource.dto.lecturer.LecturerCourseReportDTO;
@@ -73,15 +74,15 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public List<User> getEnrolledStudents(long offeringId, long lecturerId) {
+    public List<Student> getEnrolledStudents(long offeringId, long lecturerId) {
         verifyOwnership(offeringId, lecturerId);
-        List<User> students = enrollmentRepository.findByOfferingId(offeringId).stream()
+        List<Student> students = enrollmentRepository.findByOfferingId(offeringId).stream()
                 // Include students with null status (default) or ENROLLED status
                 .filter(e -> e.getStatus() == null || "ENROLLED".equalsIgnoreCase(e.getStatus()))
                 .map(Enrollment::getStudent)
                 .collect(Collectors.toList());
         System.out.println("[DEBUG] getEnrolledStudents for offeringId=" + offeringId + ", lecturerId=" + lecturerId);
-        for (User s : students) {
+        for (Student s : students) {
             System.out.println("[DEBUG] Student: id=" + s.getId() + ", email=" + s.getEmail() + ", firstName="
                     + s.getFirstName() + ", lastName=" + s.getLastName() + ", active=" + s.isActive() + ", role="
                     + (s.getRole() != null ? s.getRole().getRoleName() : "null"));

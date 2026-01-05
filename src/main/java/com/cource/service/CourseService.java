@@ -2,6 +2,8 @@ package com.cource.service;
 
 import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseUpdateRequest;
+import com.cource.dto.course.CourseResponseDTO;
+import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.entity.Course;
 import com.cource.entity.User;
 
@@ -30,4 +32,9 @@ public interface CourseService {
     void assignLecturersToCourse(Long courseId, List<Long> lecturerIds);
 
     List<User> getLecturersForCourse(Long courseId);
+
+    // Student-facing views
+    List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId);
+
+    List<CourseResponseDTO> getCatalogForStudent(Long studentId);
 }
