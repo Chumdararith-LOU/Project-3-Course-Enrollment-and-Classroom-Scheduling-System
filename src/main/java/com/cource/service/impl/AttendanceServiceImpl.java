@@ -275,7 +275,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .recordedAt(a.getRecordedAt());
 
         if (a.getEnrollment() != null) {
-            Student student = a.getEnrollment().getStudent();
+            User student = a.getEnrollment().getStudent();
             if (student != null) {
                 builder.studentId(student.getId())
                         .studentName(student.getFullName())
