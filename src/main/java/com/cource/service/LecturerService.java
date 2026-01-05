@@ -5,7 +5,6 @@ import java.util.List;
 import com.cource.dto.attendance.AttendanceRequestDTO;
 import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
 import com.cource.entity.User;
 
 public interface LecturerService {

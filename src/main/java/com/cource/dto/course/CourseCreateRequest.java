@@ -11,6 +11,7 @@ public class CourseCreateRequest {
     private String description;
     private int credits;
     private int capacity;
+    private int credits;
     private boolean active = true;
 
     private List<Long> lectureIds;

@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
 import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.LecturerService;

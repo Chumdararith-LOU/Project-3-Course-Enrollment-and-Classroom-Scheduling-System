@@ -36,6 +36,8 @@ public interface AdminService {
 
     void deleteOffering(Long id);
 
+    void deleteMultipleOfferings(List<Long> offeringIds);
+
     CourseOffering toggleOfferingStatus(Long id);
 
     List<Enrollment> getAllEnrollments();
@@ -63,10 +65,10 @@ public interface AdminService {
     AcademicTerm getTermById(Long id);
 
     AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
-                            java.time.LocalDate endDate);
+            java.time.LocalDate endDate);
 
     AcademicTerm updateTerm(Long id, String termCode, String termName, java.time.LocalDate startDate,
-                            java.time.LocalDate endDate);
+            java.time.LocalDate endDate);
 
     void deleteTerm(Long id);
 
@@ -77,7 +79,7 @@ public interface AdminService {
     Room createRoom(String roomNumber, String building, Integer capacity, String roomType, Boolean isActive);
 
     Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
-                    Boolean isActive);
+            Boolean isActive);
 
     void deleteRoom(Long id);
 
@@ -86,11 +88,11 @@ public interface AdminService {
     ClassSchedule getScheduleById(Long id);
 
     ClassSchedule createSchedule(Long offeringId, Long roomId, String dayOfWeek, java.time.LocalTime startTime,
-                                 java.time.LocalTime endTime);
+            java.time.LocalTime endTime);
 
     ClassSchedule updateSchedule(Long id, Long offeringId, Long roomId, String dayOfWeek,
-                                 java.time.LocalTime startTime,
-                                 java.time.LocalTime endTime);
+            java.time.LocalTime startTime,
+            java.time.LocalTime endTime);
 
     void deleteSchedule(Long id);
 
