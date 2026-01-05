@@ -5,9 +5,7 @@ import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.User;
 import com.cource.repository.UserRepository;
 import com.cource.service.UserService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -23,12 +21,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controller for user profile operations accessible by any authenticated user.
+ * These endpoints allow users to view and update their own profile.
+ */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
+
     private final UserRepository userRepository;
+    private final UserService userService;
 
     /**
      * Get the current authenticated user's basic info
@@ -117,15 +120,33 @@ public class UserController {
             userService.updateAvatar(user.getId(), file);
             return ResponseEntity.ok(Collections.singletonMap("status", "success"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
+            // Log the full error for debugging
+            e.printStackTrace();
+            String errorMsg = e.getMessage();
+            if (errorMsg == null || errorMsg.isEmpty()) {
+                errorMsg = "Avatar upload failed: " + e.getClass().getSimpleName();
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", errorMsg));
         }
     }
 
     /**
      * Get avatar image for the current authenticated user
+     * 
+     * @deprecated Use /me/avatar-image?userId={id} or /avatar/{userId} instead for
+     *             user-specific avatars
      */
     @GetMapping("/me/avatar-image")
-    public ResponseEntity<Resource> getCurrentUserAvatarImage(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Resource> getCurrentUserAvatarImage(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) Long userId) {
+
+        // If userId is provided, show that user's avatar (for viewing other profiles)
+        if (userId != null) {
+            return getUserAvatarById(userId);
+        }
+
+        // Otherwise, show current authenticated user's avatar
         if (userDetails == null) {
             return ResponseEntity.status(401).build();
         }
@@ -134,8 +155,23 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+        return getUserAvatarById(user.getId());
+    }
+
+    /**
+     * Get avatar image for any user by ID (public endpoint)
+     */
+    @GetMapping("/avatar/{userId}")
+    public ResponseEntity<Resource> getUserAvatar(@PathVariable Long userId) {
+        return getUserAvatarById(userId);
+    }
+
+    /**
+     * Helper method to get avatar by user ID
+     */
+    private ResponseEntity<Resource> getUserAvatarById(Long userId) {
         try {
-            Resource res = userService.loadAvatarResource(user.getId());
+            Resource res = userService.loadAvatarResource(userId);
             if (res == null) {
                 // serve default avatar
                 ClassPathResource def = new ClassPathResource("static/images/default-avatar.svg");

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "attendance_codes", indexes = { @Index(columnList = "schedule_id") })
 public class AttendanceCode {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

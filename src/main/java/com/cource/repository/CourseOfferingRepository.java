@@ -11,22 +11,19 @@ import java.util.Optional;
 
 @Repository
 public interface CourseOfferingRepository extends JpaRepository<CourseOffering, Long> {
-
-    @Query("SELECT co FROM CourseOffering co JOIN co.term t WHERE co.active = true AND t.active = true")
-    List<CourseOffering> findAllActiveOfferings();
-
+    // Leverage idx_offerings_term index
     List<CourseOffering> findByTermId(Long termId);
 
+    // Leverage idx_offerings_course index
     List<CourseOffering> findByCourseId(Long courseId);
 
+    // Leverage idx_offerings_active index
     List<CourseOffering> findByActive(Boolean active);
 
-    List<CourseOffering> findByActiveAndTermId(Boolean active, Long termId);
+    // Leverage idx_offerings_term_active index
+    List<CourseOffering> findByTermIdAndActive(Long termId, Boolean active);
 
-    Optional<CourseOffering> findByEnrollmentCode(String enrollmentCode);
-
-    boolean existsByEnrollmentCode(String enrollmentCode);
-
+    // Uses uk_offering unique constraint
     @Query("SELECT co FROM CourseOffering co WHERE co.course.id = :courseId AND co.term.id = :termId")
     Optional<CourseOffering> findByCourseIdAndTermId(@Param("courseId") Long courseId, @Param("termId") Long termId);
 
@@ -43,6 +40,9 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
     @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.offering.id = :offeringId AND e.status = 'ENROLLED'")
     Long countEnrolledStudents(@Param("offeringId") Long offeringId);
 
-    @Query("SELECT co FROM CourseOffering co LEFT JOIN FETCH co.course LEFT JOIN FETCH co.term WHERE co.id = :id")
-    Optional<CourseOffering> findByIdWithDetails(@Param("id") Long id);
+    // Check existence of an enrollment code (used to validate uniqueness before
+    // update)
+    boolean existsByEnrollmentCode(String enrollmentCode);
+
+    Optional<CourseOffering> findByEnrollmentCode(String enrollmentCode);
 }

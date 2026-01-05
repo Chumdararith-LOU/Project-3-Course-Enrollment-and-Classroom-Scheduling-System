@@ -9,6 +9,7 @@ public class CourseCreateRequest {
     private String courseCode;
     private String title;
     private String description;
+    private int credits;
     private int capacity;
     private int credits;
     private boolean active = true;

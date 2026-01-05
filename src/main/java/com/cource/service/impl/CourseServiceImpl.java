@@ -1,206 +1,71 @@
 package com.cource.service.impl;
 
+import com.cource.repository.CourseOfferingRepository;
+import com.cource.repository.EnrollmentRepository;
+import com.cource.repository.CourseLecturerRepository;
+import com.cource.repository.ClassScheduleRepository;
+import com.cource.entity.CourseOffering;
+import com.cource.entity.Enrollment;
+import com.cource.entity.User;
+import com.cource.entity.CourseLecturer;
+import com.cource.entity.ClassSchedule;
+
 import com.cource.dto.course.CourseCreateRequest;
-import com.cource.dto.course.CourseRequestDTO;
 import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.course.CourseUpdateRequest;
 import com.cource.dto.enrollment.StudentEnrollmentDTO;
-import com.cource.entity.*;
-import com.cource.exception.ConflictException;
+import com.cource.entity.Course;
 import com.cource.exception.ResourceNotFoundException;
-import com.cource.repository.*;
+import com.cource.repository.CourseRepository;
 import com.cource.service.CourseService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CourseServiceImpl implements CourseService {
 
+    private final CourseRepository courseRepository;
     private final CourseOfferingRepository courseOfferingRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final CourseLecturerRepository courseLecturerRepository;
     private final ClassScheduleRepository classScheduleRepository;
-    private final EnrollmentRepository enrollmentRepository;
-    private final CourseRepository courseRepository;
-    private final AcademicTermRepository termRepository;
-    private final UserRepository userRepository;
 
     @Override
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('STUDENT')")
-    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
-        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
-        List<StudentEnrollmentDTO> dtos = new ArrayList<>();
-
-        for (Enrollment en : enrollments) {
-            CourseOffering offering = en.getOffering();
-            Course course = offering.getCourse();
-
-            // 1. Basic Info
-            StudentEnrollmentDTO dto = StudentEnrollmentDTO.builder()
-                    .enrollmentId(en.getId())
-                    .offeringId(offering.getId())
-                    .courseCode(course.getCourseCode())
-                    .title(course.getTitle())
-                    .credits(course.getCredits())
-                    .termName(offering.getTerm().getTermName())
-                    .status(en.getStatus())
-                    .grade(en.getGrade())
-                    .enrolledAt(en.getEnrolledAt())
-                    .build();
-
-            // 2. Fetch Lecturer (Helper Logic)
-            courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId())
-                    .stream().findFirst()
-                    .ifPresentOrElse(
-                            cl -> dto.setLecturer(cl.getLecturer().getFullName()),
-                            () -> dto.setLecturer("TBA"));
-
-            // 3. Fetch Schedule (Helper Logic)
-            classScheduleRepository.findByOfferingId(offering.getId())
-                    .stream().findFirst()
-                    .ifPresentOrElse(
-                            sched -> {
-                                dto.setSchedule(
-                                        sched.getDayOfWeek() + " " + sched.getStartTime() + "-" + sched.getEndTime());
-                                if (sched.getRoom() != null) {
-                                    dto.setLocation(
-                                            sched.getRoom().getBuilding() + " - " + sched.getRoom().getRoomNumber());
-                                } else {
-                                    dto.setLocation("TBA");
-                                }
-                            },
-                            () -> {
-                                dto.setSchedule("TBA");
-                                dto.setLocation("TBA");
-                            });
-
-            dtos.add(dto);
-        }
-        return dtos;
+    public List<Course> getAllCourses() {
+        return courseRepository.findAll();
     }
 
     @Override
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('STUDENT')")
-    public List<CourseResponseDTO> getCatalogForStudent(Long studentId) {
-        List<CourseOffering> offerings = courseOfferingRepository.findAllActiveOfferings();
-        List<CourseResponseDTO> catalog = new ArrayList<>();
-
-        for (CourseOffering offering : offerings) {
-            CourseResponseDTO dto = mapToDTO(offering);
-
-            // Check enrollment status for this specific student
-            boolean isEnrolled = enrollmentRepository.existsByStudentIdAndOfferingId(studentId, offering.getId());
-            dto.setEnrolledStatus(isEnrolled);
-
-            catalog.add(dto);
-        }
-
-        return catalog;
-    }
-
-    @Override
-    @Transactional
-    // Only Lecturers can create, and they can only create for themselves (email
-    // match)
-    @PreAuthorize("hasRole('LECTURER') and #lecturerEmail == authentication.name")
-    public void createCourse(CourseRequestDTO dto, String lecturerEmail) {
-        if (courseRepository.existsByCourseCode(dto.getCourseCode())) {
-            throw new ConflictException("Course code " + dto.getCourseCode() + " already exists");
-        }
-
-        AcademicTerm term = termRepository.findById(dto.getTermId())
-                .orElseThrow(() -> new ResourceNotFoundException("Academic Term not found"));
-
-        User lecturer = userRepository.findByEmail(lecturerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
-
-        Course course = new Course();
-        course.setCourseCode(dto.getCourseCode());
-        course.setTitle(dto.getTitle());
-        course.setDescription(dto.getDescription());
-        course.setCredits(dto.getCredits());
-        courseRepository.save(course);
-
-        // Create Offering
-        CourseOffering offering = new CourseOffering();
-        offering.setCourse(course);
-        offering.setTerm(term);
-        offering.setCapacity(dto.getCapacity());
-        offering.setEnrollmentCode(UUID.randomUUID().toString().substring(0, 6).toUpperCase());
-        offering.setEnrollmentCodeExpiresAt(LocalDateTime.now().plusDays(7));
-        courseOfferingRepository.save(offering);
-
-        // Link Lecturer
-        CourseLecturer courseLecturer = new CourseLecturer();
-        courseLecturer.setOffering(offering);
-        courseLecturer.setLecturer(lecturer);
-        courseLecturer.setPrimary(true);
-        courseLecturerRepository.save(courseLecturer);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('LECTURER')") // Only Lecturers can view their managed courses
-    public List<CourseResponseDTO> getCoursesByLecturerId(Long lecturerId) {
-        List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
-        List<CourseResponseDTO> myCourses = new ArrayList<>();
-        for (CourseLecturer assignment : assignments) {
-            myCourses.add(mapToDTO(assignment.getOffering()));
-        }
-        return myCourses;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Course> searchCourses(String search) {
-        return courseRepository.findByCourseCodeContainingIgnoreCaseOrTitleContainingIgnoreCase(search, search);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Course getCourseById(Long id) {
         return courseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Course createCourse(CourseCreateRequest request) {
-        if (courseRepository.existsByCourseCode(request.getCourseCode())) {
-            throw new ConflictException("Course code already exists");
-        }
         Course course = new Course();
         course.setCourseCode(request.getCourseCode());
+        course.setEnrollmentCode(generateEnrollmentCode(request.getCourseCode()));
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
-        course.setCredits(request.getCredits() > 0 ? request.getCredits() : 3);
+        course.setCredits(request.getCredits());
         course.setActive(request.isActive());
         return courseRepository.save(course);
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Course updateCourse(Long id, CourseUpdateRequest request) {
         Course course = getCourseById(id);
 
         if (request.getCourseCode() != null) {
-            // Check uniqueness if changed
-            if (!course.getCourseCode().equals(request.getCourseCode()) &&
-                    courseRepository.existsByCourseCode(request.getCourseCode())) {
-                throw new ConflictException("Course code already exists");
-            }
             course.setCourseCode(request.getCourseCode());
         }
         if (request.getTitle() != null) {
@@ -209,8 +74,11 @@ public class CourseServiceImpl implements CourseService {
         if (request.getDescription() != null) {
             course.setDescription(request.getDescription());
         }
-        if (request.getCredits() > 0) {
+        if (request.getCredits() != null) {
             course.setCredits(request.getCredits());
+        }
+        if (request.getActive() != null) {
+            course.setActive(request.getActive());
         }
 
         return courseRepository.save(course);
@@ -218,183 +86,134 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
-    public void toggleCourseStatus(Long id) {
-        Course course = getCourseById(id);
-        course.setActive(!course.isActive());
-        courseRepository.save(course);
-    }
-
-    @Override
-    @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
-    public void regenerateEnrollmentCode(Long id) {
-        Course course = getCourseById(id);
-
-        // Find all offerings for this course and regenerate their enrollment codes
-        List<CourseOffering> offerings = courseOfferingRepository.findByCourseId(id);
-
-        if (offerings.isEmpty()) {
-            throw new ResourceNotFoundException("No offerings found for this course");
-        }
-
-        // Regenerate codes for all offerings of this course
-        for (CourseOffering offering : offerings) {
-            String newCode = generateEnrollmentCode();
-            // Ensure uniqueness
-            while (courseOfferingRepository.existsByEnrollmentCode(newCode)) {
-                newCode = generateEnrollmentCode();
-            }
-            offering.setEnrollmentCode(newCode);
-            offering.setEnrollmentCodeExpiresAt(LocalDateTime.now().plusDays(90));
-            courseOfferingRepository.save(offering);
-        }
-    }
-
-    @Override
-    @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteCourse(Long id) {
         Course course = getCourseById(id);
-
-        // Check if course has any offerings
+        // Find all offerings for this course
         List<CourseOffering> offerings = courseOfferingRepository.findByCourseId(id);
-        if (!offerings.isEmpty()) {
-            throw new ConflictException(
-                    "Cannot delete course with existing course offerings. Please delete all offerings first.");
+        for (CourseOffering offering : offerings) {
+            Long offeringId = offering.getId();
+            // Delete all enrollments for this offering
+            List<Enrollment> enrollments = enrollmentRepository.findByOfferingId(offeringId);
+            enrollmentRepository.deleteAll(enrollments);
+            // Delete all lecturer assignments for this offering
+            List<CourseLecturer> lecturers = offering.getLecturers();
+            courseLecturerRepository.deleteAll(lecturers);
+            // Delete all class schedules for this offering
+            List<ClassSchedule> schedules = classScheduleRepository.findByOfferingId(offeringId);
+            classScheduleRepository.deleteAll(schedules);
         }
-
+        // Delete all offerings for this course
+        courseOfferingRepository.deleteAll(offerings);
+        // Now delete the course
         courseRepository.delete(course);
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
-    public void deleteMultipleCourses(List<Long> courseIds) {
-        if (courseIds == null || courseIds.isEmpty()) {
-            return;
-        }
-
-        for (Long id : courseIds) {
-            try {
-                deleteCourse(id);
-            } catch (Exception e) {
-                // Log error but continue with other deletions
-                throw new RuntimeException("Failed to delete course with id " + id + ": " + e.getMessage());
-            }
-        }
-    }
-
-    // --- Helper to Map Entity to DTO ---
-    private CourseResponseDTO mapToDTO(CourseOffering offering) {
-        CourseResponseDTO dto = new CourseResponseDTO();
-        Course course = offering.getCourse();
-
-        dto.setId(offering.getId());
-        dto.setCourseCode(course.getCourseCode());
-        dto.setTitle(course.getTitle());
-        dto.setDescription(course.getDescription());
-        dto.setCredits(course.getCredits());
-        dto.setCapacity(offering.getCapacity());
-
-        if (offering.getTerm() != null) {
-            dto.setActive(offering.getTerm().isActive());
-        }
-        dto.setEnrollmentCode(offering.getEnrollmentCode());
-        dto.setEnrollmentCodeExpiresAt(offering.getEnrollmentCodeExpiresAt());
-
-        boolean expired = offering.getEnrollmentCodeExpiresAt() != null &&
-                offering.getEnrollmentCodeExpiresAt().isBefore(java.time.LocalDateTime.now());
-        dto.setCodeExpired(expired);
-
-        setLecturerInfo(dto, offering);
-        setScheduleInfo(dto, offering);
-        setEnrollmentCount(dto, offering);
-
-        return dto;
-    }
-
-    private String generateEnrollmentCode() {
-        return UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-    }
-
-    private void validateCourseCodeUniqueness(String courseCode) {
-        if (courseRepository.existsByCourseCode(courseCode)) {
-            throw new ConflictException("Course code " + courseCode + " already exists");
-        }
-    }
-
-    private AcademicTerm fetchAcademicTerm(Long termId) {
-        return termRepository.findById(termId)
-                .orElseThrow(() -> new ResourceNotFoundException("Academic Term not found with id: " + termId));
-    }
-
-    private User fetchLecturerByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found with email: " + email));
-    }
-
-    private Course createAndSaveCourse(CourseRequestDTO dto) {
-        Course course = new Course();
-        course.setCourseCode(dto.getCourseCode());
-        course.setTitle(dto.getTitle());
-        course.setDescription(dto.getDescription());
-        course.setCredits(dto.getCredits());
+    public Course toggleCourseStatus(Long id) {
+        Course course = getCourseById(id);
+        course.setActive(!course.isActive());
         return courseRepository.save(course);
     }
 
-    private CourseOffering createAndSaveCourseOffering(CourseRequestDTO dto, Course course, AcademicTerm term) {
-        CourseOffering offering = new CourseOffering();
-        offering.setCourse(course);
-        offering.setTerm(term);
-        offering.setCapacity(dto.getCapacity());
-        offering.setEnrollmentCode(generateEnrollmentCode());
-        offering.setEnrollmentCodeExpiresAt(java.time.LocalDateTime.now().plusDays(7));
-        return courseOfferingRepository.save(offering);
+    @Override
+    public List<Course> searchCourses(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllCourses();
+        }
+        return courseRepository.findByCourseCodeContainingIgnoreCaseOrTitleContainingIgnoreCase(keyword, keyword);
     }
 
-    private void assignLecturerToOffering(User lecturer, CourseOffering offering) {
-        CourseLecturer courseLecturer = new CourseLecturer();
-        courseLecturer.setOffering(offering);
-        courseLecturer.setLecturer(lecturer);
-        courseLecturer.setPrimary(true);
-        courseLecturerRepository.save(courseLecturer);
-    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
+        if (studentId == null) {
+            return java.util.Collections.emptyList();
+        }
 
-    private void setLecturerInfo(CourseResponseDTO dto, CourseOffering offering) {
-        courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId())
-                .stream()
-                .findFirst()
-                .ifPresentOrElse(
-                        courseLecturer -> dto.setLecturer(courseLecturer.getLecturer().getFullName()),
-                        () -> dto.setLecturer("TBA"));
-    }
+        return enrollmentRepository.findByStudentId(studentId).stream()
+                .map(e -> {
+                    var offering = e.getOffering();
+                    var course = offering != null ? offering.getCourse() : null;
+                    var term = offering != null ? offering.getTerm() : null;
 
-    private void setScheduleInfo(CourseResponseDTO dto, CourseOffering offering) {
-        classScheduleRepository.findByOfferingId(offering.getId())
-                .stream()
-                .findFirst()
-                .ifPresentOrElse(
-                        schedule -> {
-                            dto.setSchedule(schedule.getDayOfWeek() + " " +
-                                    schedule.getStartTime() + "-" + schedule.getEndTime());
-
-                            // Check if room is not null to avoid NullPointerException
-                            if (schedule.getRoom() != null) {
-                                dto.setLocation(schedule.getRoom().getBuilding() +
-                                        " - " + schedule.getRoom().getRoomNumber());
-                            } else {
-                                dto.setLocation("TBA");
+                    String lecturerName = "";
+                    try {
+                        if (offering != null && offering.getLecturers() != null && !offering.getLecturers().isEmpty()) {
+                            var cl = offering.getLecturers().get(0);
+                            if (cl != null && cl.getLecturer() != null) {
+                                lecturerName = cl.getLecturer().getFullName();
                             }
-                        },
-                        () -> {
-                            dto.setSchedule("TBA");
-                            dto.setLocation("TBA");
-                        });
+                        }
+                    } catch (Exception ignore) {
+                    }
+
+                    return StudentEnrollmentDTO.builder()
+                            .enrollmentId(e.getId())
+                            .offeringId(offering != null ? offering.getId() : null)
+                            .courseCode(course != null ? course.getCourseCode() : "")
+                            .title(course != null ? course.getTitle() : "")
+                            .credits(course != null ? course.getCredits() : 0)
+                            .termName(term != null ? term.getTermName() : "")
+                            .status(e.getStatus())
+                            .grade(e.getGrade())
+                            .lecturer(lecturerName)
+                            .enrolledAt(e.getEnrolledAt())
+                            .build();
+                })
+                .toList();
     }
 
-    private void setEnrollmentCount(CourseResponseDTO dto, CourseOffering offering) {
-        long currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ENROLLED");
-        dto.setEnrolled((int) currentEnrolled);
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseResponseDTO> getCatalogForStudent(Long studentId) {
+        // Minimal catalog: list courses with basic properties.
+        // (Offering/schedule/enrollment-status enrichment can be added later.)
+        return courseRepository.findAll().stream()
+                .map(c -> new CourseResponseDTO(
+                        c.getId(),
+                        c.getCourseCode(),
+                        c.getTitle(),
+                        c.getDescription(),
+                        c.getCredits(),
+                        0,
+                        c.isActive(),
+                        "",
+                        "",
+                        "",
+                        c.getEnrollmentCode(),
+                        null,
+                        false,
+                        0,
+                        false))
+                .toList();
+    }
+
+    @Override
+    public String generateEnrollmentCode(String courseCode) {
+        String prefix = courseCode.length() >= 3 ? courseCode.substring(0, 3).toUpperCase() : courseCode.toUpperCase();
+        Random random = new Random();
+        int number = random.nextInt(10000);
+        return String.format("%s%04d", prefix, number);
+    }
+
+    @Override
+    @Transactional
+    public Course regenerateEnrollmentCode(Long id) {
+        Course course = getCourseById(id);
+        course.setEnrollmentCode(generateEnrollmentCode(course.getCourseCode()));
+        return courseRepository.save(course);
+    }
+
+    @Override
+    public void assignLecturersToCourse(Long courseId, List<Long> lecturerIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'assignLecturersToCourse'");
+    }
+
+    @Override
+    public List<User> getLecturersForCourse(Long courseId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getLecturersForCourse'");
     }
 }

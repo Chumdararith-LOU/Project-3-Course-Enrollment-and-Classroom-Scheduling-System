@@ -1,16 +1,21 @@
 package com.cource.service;
 
+import com.cource.entity.Attendance;
+import com.cource.entity.ClassSchedule;
 import com.cource.dto.attendance.AttendanceRequestDTO;
 import com.cource.dto.attendance.AttendanceResponseDTO;
 import com.cource.dto.attendance.AttendanceSummaryDTO;
-import com.cource.entity.Attendance;
-import com.cource.entity.ClassSchedule;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Service interface for managing attendance operations.
+ * Provides methods for recording, querying, and managing student attendance.
+ */
 public interface AttendanceService {
+
     /**
      * Record attendance for a student in a specific schedule
      */

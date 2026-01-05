@@ -8,21 +8,23 @@ import com.cource.entity.ClassSchedule;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.AttendanceService;
 import com.cource.util.SecurityHelper;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 
+/**
+ * REST API Controller for Attendance Management.
+ * Provides endpoints for recording, querying, and managing attendance.
+ */
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/attendance")
+@RequiredArgsConstructor
 public class AttendanceController {
 
     private final AttendanceService attendanceService;

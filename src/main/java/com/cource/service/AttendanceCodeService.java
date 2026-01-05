@@ -1,18 +1,17 @@
 package com.cource.service;
 
 import java.time.Instant;
-
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.cource.entity.AttendanceCode;
 import com.cource.repository.AttendanceCodeRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class AttendanceCodeService {
+
     private final AttendanceCodeRepository repo;
 
     // expiry seconds for a code (default 2 hours)
@@ -53,6 +52,10 @@ public class AttendanceCodeService {
         public Integer getLateWindowMinutes() {
             return lateWindowMinutes;
         }
+    }
+
+    public AttendanceCodeService(AttendanceCodeRepository repo) {
+        this.repo = repo;
     }
 
     public CodeInfo generate(Long scheduleId, Long creatorId) {

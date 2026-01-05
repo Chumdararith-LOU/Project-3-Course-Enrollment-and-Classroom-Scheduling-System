@@ -1,13 +1,13 @@
 package com.cource.util;
 
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.cource.repository.UserRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SecurityHelper {
+
     private final UserRepository userRepository;
 
     public SecurityHelper(UserRepository userRepository) {

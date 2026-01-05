@@ -15,4 +15,8 @@ public class CourseOfferingRequestDTO {
     private Integer capacity;
 
     private Boolean active;
+
+    // Optional: allow setting a specific enrollment code (otherwise service may
+    // generate one)
+    private String enrollmentCode;
 }

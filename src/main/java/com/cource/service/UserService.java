@@ -95,10 +95,10 @@ public class UserService {
             user.setIdCard(request.getIdCard());
         }
 
-        // if (request.getActive() != null) {
-        // user.setActive(request.getActive());
-        // }
-        user.setActive(request.isActive());
+        if (request.getActive() != null) {
+            user.setActive(request.getActive());
+        }
+        // user.setActive(request.isActive());
 
         if (request.getRoleId() != null) {
             Role role = roleRepository.findById(request.getRoleId())
@@ -237,9 +237,8 @@ public class UserService {
                 p.getAvatarUrl());
     }
 
-    @Transactional(readOnly = true)
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public User getUserByEmail(String username) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUserByEmail'");
     }
 }

@@ -1,123 +1,133 @@
 package com.cource.service.impl;
 
-import com.cource.dto.schedule.ScheduleRequestDTO;
-import com.cource.dto.schedule.ScheduleResponseDTO;
-import com.cource.entity.*;
-import com.cource.exception.ConflictException;
-import com.cource.exception.ResourceNotFoundException;
-import com.cource.exception.UnauthorizedException;
-import com.cource.repository.*;
-import com.cource.service.ScheduleService;
-import com.cource.util.TimeConflictChecker;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+// import com.cource.dto.schedule.ScheduleRequestDTO;
+// import com.cource.dto.schedule.ScheduleResponseDTO;
+// import com.cource.entity.ClassSchedule;
+// import com.cource.entity.CourseLecturer;
+// import com.cource.entity.CourseOffering;
+// import com.cource.entity.Room;
+// import com.cource.entity.User;
+// import com.cource.repository.ClassScheduleRepository;
+// import com.cource.repository.CourseLecturerRepository;
+// import com.cource.repository.CourseOfferingRepository;
+// import com.cource.repository.EnrollmentRepository;
+// import com.cource.repository.RoomRepository;
+// import com.cource.repository.UserRepository;
+// import com.cource.service.ScheduleService;
+// import lombok.RequiredArgsConstructor;
+// import org.springframework.stereotype.Service;
+// import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+// import java.util.ArrayList;
+// import java.util.List;
+// import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
-public class ScheduleServiceImpl implements ScheduleService {
-    private final ClassScheduleRepository classScheduleRepository;
-    private final CourseOfferingRepository courseOfferingRepository;
-    private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
-    private final CourseLecturerRepository courseLecturerRepository;
-    private final TimeConflictChecker timeConflictChecker;
-    private final EnrollmentRepository enrollmentRepository;
+// @Service
+// @Transactional
+// @RequiredArgsConstructor
+public class ScheduleServiceImpl { // implements ScheduleService 
 
-    @Override
-    @Transactional
-    @PreAuthorize("hasRole('LECTURER')")
-    public ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto, String lecturerEmail) {
-        User lecturer = userRepository.findByEmail(lecturerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
+    // private final ClassScheduleRepository scheduleRepository;
+    // private final CourseOfferingRepository offeringRepository;
+    // private final RoomRepository roomRepository;
+    // private final CourseLecturerRepository courseLecturerRepository;
+    // private final EnrollmentRepository enrollmentRepository;
+    // private final UserRepository userRepository;
 
-        CourseOffering offering = courseOfferingRepository.findById(dto.getOfferingId())
-                .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
+    // @Override
+    // public ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto, String lecturerEmail) {
+    //     CourseOffering offering = offeringRepository.findById(dto.getOfferingId())
+    //             .orElseThrow(() -> new RuntimeException("Course offering not found"));
+    //     Room room = roomRepository.findById(dto.getRoomId())
+    //             .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        boolean isAssigned = courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId())
-                .stream()
-                .anyMatch(cl -> cl.getLecturer().getId().equals(lecturer.getId()));
+    //     ClassSchedule schedule = new ClassSchedule();
+    //     schedule.setOffering(offering);
+    //     schedule.setRoom(room);
+    //     schedule.setDayOfWeek(dto.getDayOfWeek());
+    //     schedule.setStartTime(dto.getStartTime());
+    //     schedule.setEndTime(dto.getEndTime());
 
-        if (!isAssigned) {
-            throw new UnauthorizedException("You are not assigned to this course offering.");
-        }
+    //     schedule = scheduleRepository.save(schedule);
+    //     return mapToResponse(schedule, null);
+    // }
 
-        Room room = roomRepository.findById(dto.getRoomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<ScheduleResponseDTO> getSchedulesByLecturer(String lecturerEmail) {
+    //     User lecturer = userRepository.findByEmail(lecturerEmail)
+    //             .orElseThrow(() -> new RuntimeException("Lecturer not found"));
 
-        if (room.getCapacity() < offering.getCapacity()) {
-            throw new ConflictException("Room capacity (" + room.getCapacity() +
-                    ") is too small for course capacity (" + offering.getCapacity() + ")");
-        }
+    //     List<CourseLecturer> courseLecturers = courseLecturerRepository.findByLecturerId(lecturer.getId());
 
-        ClassSchedule newSchedule = new ClassSchedule();
-        newSchedule.setDayOfWeek(dto.getDayOfWeek());
-        newSchedule.setStartTime(dto.getStartTime());
-        newSchedule.setEndTime(dto.getEndTime());
+    //     List<ScheduleResponseDTO> result = new ArrayList<>();
+    //     for (CourseLecturer cl : courseLecturers) {
+    //         List<ClassSchedule> schedules = scheduleRepository.findByOfferingId(cl.getOffering().getId());
+    //         for (ClassSchedule cs : schedules) {
+    //             result.add(mapToResponse(cs, lecturer.getFullName()));
+    //         }
+    //     }
+    //     return result;
+    // }
 
-        List<ClassSchedule> existingRoomSchedules = classScheduleRepository.findByRoomId(room.getId());
-        if (timeConflictChecker.hasConflict(newSchedule, existingRoomSchedules)) {
-            throw new ConflictException("Room " + room.getRoomNumber() + " is already booked at this time.");
-        }
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<ScheduleResponseDTO> getStudentSchedule(Long studentId) {
+    //     List<Long> enrolledOfferingIds = enrollmentRepository.findByStudentId(studentId)
+    //             .stream()
+    //             .filter(e -> e.getStatus() != null && e.getStatus().equalsIgnoreCase("ENROLLED"))
+    //             .map(e -> e.getOffering().getId())
+    //             .collect(Collectors.toList());
 
-        newSchedule.setOffering(offering);
-        newSchedule.setRoom(room);
-        ClassSchedule saved = classScheduleRepository.save(newSchedule);
+    //     if (enrolledOfferingIds.isEmpty()) {
+    //         return new ArrayList<>();
+    //     }
 
-        return mapToDTO(saved);
-    }
+    //     List<ScheduleResponseDTO> result = new ArrayList<>();
+    //     for (Long offeringId : enrolledOfferingIds) {
+    //         List<ClassSchedule> schedules = scheduleRepository.findByOfferingId(offeringId);
+    //         for (ClassSchedule cs : schedules) {
+    //             String lecturerName = getLecturerName(cs.getOffering());
+    //             result.add(mapToResponse(cs, lecturerName));
+    //         }
+    //     }
+    //     return result;
+    // }
 
-    @Override
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('LECTURER')")
-    public List<ScheduleResponseDTO> getSchedulesByLecturer(String lecturerEmail) {
-        User lecturer = userRepository.findByEmail(lecturerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
+    // private ScheduleResponseDTO mapToResponse(ClassSchedule cs, String lecturerName) {
+    //     ScheduleResponseDTO dto = new ScheduleResponseDTO();
+    //     dto.setId(cs.getId());
+    //     dto.setDayOfWeek(cs.getDayOfWeek());
+    //     dto.setStartTime(cs.getStartTime());
+    //     dto.setEndTime(cs.getEndTime());
 
-        List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturer.getId());
-        List<Long> offeringIds = assignments.stream()
-                .map(cl -> cl.getOffering().getId())
-                .collect(Collectors.toList());
+    //     if (cs.getRoom() != null) {
+    //         dto.setRoomNumber(cs.getRoom().getRoomNumber());
+    //     }
 
-        List<ClassSchedule> schedules = classScheduleRepository.findByOfferingIdIn(offeringIds);
+    //     CourseOffering offering = cs.getOffering();
+    //     if (offering != null && offering.getCourse() != null) {
+    //         dto.setCourseName(offering.getCourse().getTitle());
+    //         dto.setCourseCode(offering.getCourse().getCode());
+    //     }
 
-        return schedules.stream().map(this::mapToDTO).collect(Collectors.toList());
-    }
+    //     dto.setLecturerName(lecturerName);
+    //     return dto;
+    // }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ScheduleResponseDTO> getStudentSchedule(Long studentId) {
-        List<Enrollment> enrollments = enrollmentRepository.findByStudentIdAndStatus(studentId, "ENROLLED");
-
-        if (enrollments.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<Long> offeringIds = enrollments.stream()
-                .map(e -> e.getOffering().getId())
-                .collect(Collectors.toList());
-
-        List<ClassSchedule> schedules = classScheduleRepository.findByOfferingIdIn(offeringIds);
-
-        return schedules.stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    private ScheduleResponseDTO mapToDTO(ClassSchedule schedule) {
-        ScheduleResponseDTO dto = new ScheduleResponseDTO();
-        dto.setId(schedule.getId());
-        dto.setCourseName(schedule.getOffering().getCourse().getTitle());
-        dto.setCourseCode(schedule.getOffering().getCourse().getCourseCode());
-        dto.setRoomNumber(schedule.getRoom().getRoomNumber());
-        dto.setDayOfWeek(schedule.getDayOfWeek());
-        dto.setStartTime(schedule.getStartTime());
-        dto.setEndTime(schedule.getEndTime());
-        return dto;
-    }
+    // private String getLecturerName(CourseOffering offering) {
+    //     if (offering.getLecturers() == null || offering.getLecturers().isEmpty()) {
+    //         return null;
+    //     }
+    //     for (CourseLecturer cl : offering.getLecturers()) {
+    //         if (cl.isPrimary() && cl.getLecturer() != null) {
+    //             return cl.getLecturer().getFullName();
+    //         }
+    //     }
+    //     CourseLecturer first = offering.getLecturers().get(0);
+    //     if (first.getLecturer() != null) {
+    //         return first.getLecturer().getFullName();
+    //     }
+    //     return null;
+    // }
 }
