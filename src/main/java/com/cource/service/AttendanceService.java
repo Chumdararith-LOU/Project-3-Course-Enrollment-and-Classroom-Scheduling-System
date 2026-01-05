@@ -12,6 +12,9 @@ import java.util.Map;
 
 public interface AttendanceService {
 
+    /**
+     * Record attendance for a student in a specific schedule
+     */
     Attendance recordAttendance(AttendanceRequestDTO request);
     List<AttendanceResponseDTO> getAttendanceBySchedule(Long scheduleId);
     List<AttendanceResponseDTO> getAttendanceByScheduleAndDate(Long scheduleId, LocalDate date);

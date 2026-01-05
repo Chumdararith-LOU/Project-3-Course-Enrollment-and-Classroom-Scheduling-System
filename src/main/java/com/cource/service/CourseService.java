@@ -33,8 +33,8 @@ public interface CourseService {
 
     List<User> getLecturersForCourse(Long courseId);
 
-    // Student-specific methods
+    // Student-facing views
     List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId);
-    
+
     List<CourseResponseDTO> getCatalogForStudent(Long studentId);
 }

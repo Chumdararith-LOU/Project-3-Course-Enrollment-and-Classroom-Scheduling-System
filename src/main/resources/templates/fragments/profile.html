@@ -1,352 +1,321 @@
-<div th:fragment="sidebar(userId, role)" xmlns:th="http://www.w3.org/1999/xhtml">
-    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
-        <div class="flex flex-col h-full">
-            <div class="px-6 py-8 border-b border-slate-700">
-                <h1 class="text-2xl font-bold tracking-tight">Course Management</h1>
-                <p class="text-sm text-slate-400 mt-1" th:text="${role} + ' Portal'">
-                    Portal
-                </p>
-            </div>
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <div th:switch="${role}">
-                    <div th:case="'ADMIN'">
-                        <a
-                                th:href="@{/admin/dashboard(adminId=${userId})}"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/dashboard')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                            Dashboard
-                        </a>
-                        <a
-                                th:href="@{/admin/users(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/users')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Users
-                        </a>
-                        <a
-                                th:href="@{/admin/courses(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/courses')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                            Courses
-                        </a>
-                        <a
-                                th:href="@{/admin/offerings(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/offerings')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            Offerings
-                        </a>
-                        <a
-                                th:href="@{/admin/enrollments(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/enrollments')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-                            Enrollments
-                        </a>
-                        <a
-                                th:href="@{/admin/rooms(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/rooms')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                            Rooms
-                        </a>
-                        <a
-                                th:href="@{/admin/schedules(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/schedules')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Schedules
-                        </a>
-                        <a
-                                th:href="@{/admin/terms(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/terms')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                            Terms
-                        </a>
-                        <a
-                                th:href="@{/admin/attendance(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/attendance')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                            Attendance
-                        </a>
-                        <a
-                                th:href="@{/admin/reports(adminId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/reports')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            Reports
-                        </a>
-                    </div>
-
-                    <div th:case="'LECTURER'">
-                        <a
-                                th:href="@{/lecturer/dashboard(lecturerId=${userId})}"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
-                        >Dashboard</a>
-                        <a
-                                th:href="@{/lecturer/courses(lecturerId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/courses')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >My Courses</a>
-                        <a
-                                th:href="@{/lecturer/schedule(lecturerId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/schedule')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >Schedule</a>
-                        <a
-                                th:href="@{/lecturer/attendance(lecturerId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/attendance')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >Attendance</a>
-                        <a
-                                th:href="@{/lecturer/reports(lecturerId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/reports')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >Reports</a>
-                    </div>
-
-                    <div th:case="'STUDENT'">
-                        <a
-                                th:href="@{/student/dashboard(studentId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/dashboard')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >Dashboard</a>
-                        <a
-                                th:href="@{/student/courses(studentId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/courses')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >Browse Courses</a>
-                        <a
-                                th:href="@{/student/schedule(studentId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/schedule')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >My Schedule</a>
-                        <a
-                                th:href="@{/student/attendance(studentId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/attendance')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >Attendance</a>
-                        <a
-                                th:href="@{/student/grades(studentId=${userId})}"
-                                th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/grades')} ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white transition'"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-                        >My Grades</a>
-                    </div>
-
-                    <div th:case="*">
-                        <a
-                                href="/"
-                                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
-                        >Home</a>
-                    </div>
-                </div>
-            </nav>
-
-            <div
-                    class="px-4 py-6 border-t border-slate-700"
-                    id="sidebarProfileFragment"
+<div th:fragment="sidebar(userId, role)">
+  <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-10">
+    <div class="flex flex-col h-full">
+      <div class="px-6 py-8 border-b border-slate-700">
+        <h1 class="text-2xl font-bold tracking-tight">Course Management</h1>
+        <p class="text-sm text-slate-400 mt-1" th:text="${role} + ' Portal'">
+          Portal
+        </p>
+      </div>
+      <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        <div th:switch="${role}">
+          <div th:case="'ADMIN'">
+            <a
+              th:href="@{/admin/dashboard(adminId=${userId})}"
+              class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Dashboard</a
             >
-                <div class="flex items-center">
-                    <div
-                            id="profileAvatarFrag"
-                            class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center"
-                    >
-                        <img
-                                id="profileAvatarSmallImg"
-                                src="/images/default-avatar.svg"
-                                alt="avatar"
-                                class="w-full h-full rounded-full object-cover"
-                                style="display: none"
-                        />
-                        <span id="profileInitialFrag" class="text-sm font-semibold">U</span>
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <p id="profileNameFrag" class="text-sm font-medium">User</p>
-                        <p id="profileEmailFrag" class="text-xs text-slate-400">
-                            user@example.com
-                        </p>
-                    </div>
-                    <div class="ml-2">
-                        <button
-                                id="editProfileBtnFrag"
-                                onclick="openProfileModal()"
-                                class="text-sm text-slate-300 hover:text-white"
-                        >
-                            Edit
-                        </button>
-                    </div>
-                </div>
-                <div class="mt-3 flex space-x-2">
-                    <form th:action="@{/perform_logout}" method="post" class="w-full">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button
-                                type="submit"
-                                class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700"
-                        >Sign out</button>
-                    </form>
-                </div>
-            </div>
+            <a
+              th:href="@{/admin/users(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/users')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Users</a
+            >
+            <a
+              th:href="@{/admin/courses(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Courses</a
+            >
+            <a
+              th:href="@{/admin/offerings(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/offerings')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Offering</a
+            >
+            <a
+              th:href="@{/admin/enrollments(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/enrollments')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Enrollments</a
+            >
+            <a
+              th:href="@{/admin/rooms(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/rooms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Rooms</a
+            >
+            <a
+              th:href="@{/admin/schedules(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/schedules')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Schedules</a
+            >
+            <a
+              th:href="@{/admin/terms(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/terms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Terms</a
+            >
+            <a
+              th:href="@{/admin/attendance(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Attendance</a
+            >
+            <a
+              th:href="@{/admin/reports(adminId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Reports</a
+            >
+          </div>
+          <div th:case="'LECTURER'">
+            <a
+              th:href="@{/lecturer/dashboard(lecturerId=${userId})}"
+              class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
+              >Dashboard</a
+            >
+            <a
+              th:href="@{/lecturer/courses(lecturerId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >My Courses</a
+            >
+            <a
+              th:href="@{/lecturer/schedule(lecturerId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Schedule</a
+            >
+            <a
+              th:href="@{/lecturer/attendance(lecturerId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Attendance</a
+            >
+            <a
+              th:href="@{/lecturer/reports(lecturerId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Reports</a
+            >
+          </div>
+          <div th:case="'STUDENT'">
+            <a
+              th:href="@{/student/dashboard(studentId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Dashboard</a
+            >
+            <a
+              th:href="@{/student/courses(studentId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Browse Courses</a
+            >
+            <a
+              th:href="@{/student/schedule(studentId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >My Schedule</a
+            >
+            <a
+              th:href="@{/student/attendance(studentId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Attendance</a
+            >
+            <a
+              th:href="@{/student/grades(studentId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/grades')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >My Grades</a
+            >
+          </div>
+          <div th:case="*">
+            <a
+              href="/"
+              class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
+              >Home</a
+            >
+          </div>
         </div>
-    </aside>
+      </nav>
 
-    <div
-            id="profileModal"
-            class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40"
-    >
-        <div
-                class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100"
-        >
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold">Edit Profile</h3>
-                <button
-                        type="button"
-                        onclick="closeProfileModal()"
-                        class="text-slate-400 hover:text-slate-700"
-                >
-                    &times;
-                </button>
-            </div>
-            <form id="profileForm" class="space-y-4">
-                <input type="hidden" id="profileId" />
-                <div class="flex items-center space-x-4">
-                    <img
-                            id="profileAvatarImg"
-                            src="/images/default-avatar.svg"
-                            alt="avatar"
-                            class="w-16 h-16 rounded-full object-cover"
-                    />
-                    <div>
-                        <label class="block text-sm font-semibold">Profile Image</label>
-                        <input
-                                id="profileAvatarFile"
-                                type="file"
-                                accept="image/*"
-                                class="mt-1 text-sm"
-                        />
-                        <p class="text-xs text-slate-400 mt-1">
-                            Optional - upload a new profile image
-                        </p>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold">First Name</label>
-                    <input
-                            id="profileFirstName"
-                            class="w-full px-3 py-2 border rounded"
-                    />
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold">Last Name</label>
-                    <input id="profileLastName" class="w-full px-3 py-2 border rounded" />
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold">Email</label>
-                    <input
-                            id="profileEmailInput"
-                            type="email"
-                            class="w-full px-3 py-2 border rounded"
-                    />
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold">ID Card</label>
-                    <input id="profileIdCard" class="w-full px-3 py-2 border rounded" />
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold">Date of Birth</label>
-                    <input
-                            id="profileDob"
-                            type="date"
-                            class="w-full px-3 py-2 border rounded"
-                    />
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold">Phone</label>
-                    <input id="profilePhone" class="w-full px-3 py-2 border rounded" />
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold">Bio</label>
-                    <textarea
-                            id="profileBio"
-                            class="w-full px-3 py-2 border rounded"
-                            rows="3"
-                    ></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold"
-                    >Password (leave blank to keep)</label
-                    >
-                    <input
-                            id="profilePassword"
-                            type="password"
-                            class="w-full px-3 py-2 border rounded"
-                    />
-                </div>
-                <div class="flex justify-end space-x-2">
-                    <button
-                            type="button"
-                            onclick="closeProfileModal()"
-                            class="px-4 py-2 border rounded"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                            type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded"
-                    >
-                        Save
-                    </button>
-                </div>
-            </form>
+      <div
+        class="px-4 py-6 border-t border-slate-700"
+        id="sidebarProfileFragment"
+      >
+        <div class="flex items-center">
+          <div
+            id="profileAvatarFrag"
+            class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center"
+          >
+            <img
+              id="profileAvatarSmallImg"
+              src="/images/default-avatar.svg"
+              alt="avatar"
+              class="w-full h-full rounded-full object-cover"
+              style="display: none"
+            />
+            <span id="profileInitialFrag" class="text-sm font-semibold">U</span>
+          </div>
+          <div class="ml-3 flex-1">
+            <p id="profileNameFrag" class="text-sm font-medium">User</p>
+            <p id="profileEmailFrag" class="text-xs text-slate-400">
+              user@example.com
+            </p>
+          </div>
+          <div class="ml-2">
+            <button
+              id="editProfileBtnFrag"
+              onclick="openProfileModal()"
+              class="text-sm text-slate-300 hover:text-white"
+            >
+              Edit
+            </button>
+          </div>
         </div>
+        <div class="mt-3 flex space-x-2">
+          <a
+            id="signOutBtnFrag"
+            href="/signout"
+            class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700"
+            >Sign out</a
+          >
+        </div>
+      </div>
     </div>
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        function openProfileModal() {
-          let m = document.getElementById("profileModal");
-          if (m) {
-            m.classList.remove("hidden");
-            m.classList.add("flex");
-          }
-        }
-        function closeProfileModal() {
-          let m = document.getElementById("profileModal");
-          if (m) {
-            m.classList.add("hidden");
-            m.classList.remove("flex");
-          }
-        }
-        async function loadProfileFragment() {
-          try {
-            // Use /api/users/me which works for all authenticated users
-            let res = await fetch("/api/users/me");
-            if (!res.ok) return;
-            let u = await res.json();
-            document.getElementById("profileId").value = u.id;
-            document.getElementById("profileFirstName").value = u.firstName || "";
-            document.getElementById("profileLastName").value = u.lastName || "";
-            document.getElementById("profileEmailInput").value = u.email || "";
-            document.getElementById("profileIdCard").value = u.idCard || "";
-            document.getElementById("profileNameFrag").innerText =
-              ((u.firstName || "") + " " + (u.lastName || "")).trim() || "User";
-            document.getElementById("profileEmailFrag").innerText = u.email || "";
-            if (u.firstName && u.firstName.length > 0)
-              document.getElementById("profileInitialFrag").innerText = u.firstName
-                .charAt(0)
-                .toUpperCase();
+  </aside>
+  <!-- Profile Modal (moved here for reuse) -->
+  <div
+    id="profileModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">Edit Profile</h3>
+        <button
+          type="button"
+          onclick="closeProfileModal()"
+          class="text-slate-400 hover:text-slate-700"
+        >
+          &times;
+        </button>
+      </div>
+      <form id="profileForm" class="space-y-4">
+        <input type="hidden" id="profileId" />
+        <div class="flex items-center space-x-4">
+          <img
+            id="profileAvatarImg"
+            src="/images/default-avatar.svg"
+            alt="avatar"
+            class="w-16 h-16 rounded-full object-cover"
+          />
+          <div>
+            <label class="block text-sm font-semibold">Profile Image</label>
+            <input
+              id="profileAvatarFile"
+              type="file"
+              accept="image/*"
+              class="mt-1 text-sm"
+            />
+            <p class="text-xs text-slate-400 mt-1">
+              Optional - upload a new profile image
+            </p>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">First Name</label>
+          <input
+            id="profileFirstName"
+            class="w-full px-3 py-2 border rounded"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">Last Name</label>
+          <input id="profileLastName" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">Email</label>
+          <input
+            id="profileEmailInput"
+            type="email"
+            class="w-full px-3 py-2 border rounded"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">ID Card</label>
+          <input id="profileIdCard" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">Date of Birth</label>
+          <input
+            id="profileDob"
+            type="date"
+            class="w-full px-3 py-2 border rounded"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">Phone</label>
+          <input id="profilePhone" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold">Bio</label>
+          <textarea
+            id="profileBio"
+            class="w-full px-3 py-2 border rounded"
+            rows="3"
+          ></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold"
+            >Password (leave blank to keep)</label
+          >
+          <input
+            id="profilePassword"
+            type="password"
+            class="w-full px-3 py-2 border rounded"
+          />
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button
+            type="button"
+            onclick="closeProfileModal()"
+            class="px-4 py-2 border rounded"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    function openProfileModal() {
+      let m = document.getElementById("profileModal");
+      if (m) {
+        m.classList.remove("hidden");
+        m.classList.add("flex");
+      }
+    }
+    function closeProfileModal() {
+      let m = document.getElementById("profileModal");
+      if (m) {
+        m.classList.add("hidden");
+        m.classList.remove("flex");
+      }
+    }
+    async function loadProfileFragment() {
+      try {
+        // Use /api/users/me which works for all authenticated users
+        let res = await fetch("/api/users/me");
+        if (!res.ok) return;
+        let u = await res.json();
+        document.getElementById("profileId").value = u.id;
+        document.getElementById("profileFirstName").value = u.firstName || "";
+        document.getElementById("profileLastName").value = u.lastName || "";
+        document.getElementById("profileEmailInput").value = u.email || "";
+        document.getElementById("profileIdCard").value = u.idCard || "";
+        document.getElementById("profileNameFrag").innerText =
+          ((u.firstName || "") + " " + (u.lastName || "")).trim() || "User";
+        document.getElementById("profileEmailFrag").innerText = u.email || "";
+        if (u.firstName && u.firstName.length > 0)
+          document.getElementById("profileInitialFrag").innerText = u.firstName
+            .charAt(0)
+            .toUpperCase();
 
             // fetch profile data (extended fields)
             try {

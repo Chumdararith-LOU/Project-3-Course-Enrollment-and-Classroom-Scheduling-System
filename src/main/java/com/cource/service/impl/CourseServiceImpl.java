@@ -11,8 +11,8 @@ import com.cource.entity.CourseLecturer;
 import com.cource.entity.ClassSchedule;
 
 import com.cource.dto.course.CourseCreateRequest;
-import com.cource.dto.course.CourseUpdateRequest;
 import com.cource.dto.course.CourseResponseDTO;
+import com.cource.dto.course.CourseUpdateRequest;
 import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.entity.Course;
 import com.cource.exception.ResourceNotFoundException;
@@ -126,6 +126,71 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
+        if (studentId == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        return enrollmentRepository.findByStudentId(studentId).stream()
+                .map(e -> {
+                    var offering = e.getOffering();
+                    var course = offering != null ? offering.getCourse() : null;
+                    var term = offering != null ? offering.getTerm() : null;
+
+                    String lecturerName = "";
+                    try {
+                        if (offering != null && offering.getLecturers() != null && !offering.getLecturers().isEmpty()) {
+                            var cl = offering.getLecturers().get(0);
+                            if (cl != null && cl.getLecturer() != null) {
+                                lecturerName = cl.getLecturer().getFullName();
+                            }
+                        }
+                    } catch (Exception ignore) {
+                    }
+
+                    return StudentEnrollmentDTO.builder()
+                            .enrollmentId(e.getId())
+                            .offeringId(offering != null ? offering.getId() : null)
+                            .courseCode(course != null ? course.getCourseCode() : "")
+                            .title(course != null ? course.getTitle() : "")
+                            .credits(course != null ? course.getCredits() : 0)
+                            .termName(term != null ? term.getTermName() : "")
+                            .status(e.getStatus())
+                            .grade(e.getGrade())
+                            .lecturer(lecturerName)
+                            .enrolledAt(e.getEnrolledAt())
+                            .build();
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseResponseDTO> getCatalogForStudent(Long studentId) {
+        // Minimal catalog: list courses with basic properties.
+        // (Offering/schedule/enrollment-status enrichment can be added later.)
+        return courseRepository.findAll().stream()
+                .map(c -> new CourseResponseDTO(
+                        c.getId(),
+                        c.getCourseCode(),
+                        c.getTitle(),
+                        c.getDescription(),
+                        c.getCredits(),
+                        0,
+                        c.isActive(),
+                        "",
+                        "",
+                        "",
+                        c.getEnrollmentCode(),
+                        null,
+                        false,
+                        0,
+                        false))
+                .toList();
+    }
+
+    @Override
     public String generateEnrollmentCode(String courseCode) {
         String prefix = courseCode.length() >= 3 ? courseCode.substring(0, 3).toUpperCase() : courseCode.toUpperCase();
         Random random = new Random();
@@ -151,64 +216,5 @@ public class CourseServiceImpl implements CourseService {
     public List<User> getLecturersForCourse(Long courseId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getLecturersForCourse'");
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
-        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
-        return enrollments.stream()
-                .map(this::mapToStudentEnrollmentDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseResponseDTO> getCatalogForStudent(Long studentId) {
-        // Get active course offerings - using a simple approach for now
-        List<CourseOffering> offerings = courseOfferingRepository.findByActive(true);
-        return offerings.stream()
-                .map(this::mapToCourseResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    private StudentEnrollmentDTO mapToStudentEnrollmentDTO(Enrollment enrollment) {
-        return StudentEnrollmentDTO.builder()
-                .enrollmentId(enrollment.getId())
-                .offeringId(enrollment.getOffering().getId())
-                .courseCode(enrollment.getOffering().getCourse().getCourseCode())
-                .title(enrollment.getOffering().getCourse().getTitle())
-                .credits(enrollment.getOffering().getCourse().getCredits())
-                .termName(enrollment.getOffering().getTerm().getTermName())
-                .status(enrollment.getStatus())
-                .grade(enrollment.getGrade())
-                .schedule("") // TODO: Build schedule string from ClassSchedule
-                .location("") // TODO: Get location from ClassSchedule
-                .enrolledAt(enrollment.getEnrolledAt())
-                .build();
-    }
-
-    private CourseResponseDTO mapToCourseResponseDTO(CourseOffering offering) {
-        long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ENROLLED");
-        boolean isEnrolled = enrolledCount > 0; // TODO: Check if current student is enrolled
-        
-        return CourseResponseDTO.builder()
-                .id(offering.getCourse().getId())
-                .courseCode(offering.getCourse().getCourseCode())
-                .title(offering.getCourse().getTitle())
-                .description(offering.getCourse().getDescription())
-                .credits(offering.getCourse().getCredits())
-                .capacity(offering.getCapacity())
-                .active(offering.getCourse().isActive())
-                .lecturer("")
-                .schedule("")
-                .location("")
-                .enrollmentCode(offering.getEnrollmentCode())
-                .enrollmentCodeExpiresAt(offering.getEnrollmentCodeExpiresAt())
-                .isCodeExpired(offering.getEnrollmentCodeExpiresAt() != null && 
-                              offering.getEnrollmentCodeExpiresAt().isBefore(java.time.LocalDateTime.now()))
-                .enrolled((int) enrolledCount)
-                .enrolledStatus(isEnrolled)
-                .build();
     }
 }

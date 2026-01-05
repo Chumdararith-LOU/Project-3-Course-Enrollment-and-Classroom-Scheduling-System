@@ -14,5 +14,5 @@ public class UserUpdateRequest {
     private String dob;
     private String phone;
     private String bio;
-    
+
 }
