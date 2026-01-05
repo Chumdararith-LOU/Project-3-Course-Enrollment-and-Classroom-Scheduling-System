@@ -22,7 +22,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByOfferingId(Long offeringId);
 
     @Query("SELECT e FROM Enrollment e WHERE e.student.id = :studentId AND e.offering.id = :offeringId")
-    Optional<Enrollment> findByStudentIdAndOfferingId(@Param("studentId") Long studentId, @Param("offeringId") Long offeringId);
+    Optional<Enrollment> findByStudentIdAndOfferingId(@Param("studentId") Long studentId,
+            @Param("offeringId") Long offeringId);
 
     boolean existsByStudentIdAndOfferingId(Long studentId, Long offeringId);
 
@@ -36,4 +37,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     long countByOffering_Term_Id(Long termId);
 
     long countByOffering_Course_Id(Long courseId);
+
+    long countByStudentId(Long studentId);
+
 }

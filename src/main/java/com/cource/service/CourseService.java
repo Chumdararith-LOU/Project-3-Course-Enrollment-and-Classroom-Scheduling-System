@@ -4,6 +4,7 @@ import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseRequestDTO;
 import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.course.CourseUpdateRequest;
+import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.entity.Course;
 
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.List;
 public interface CourseService {
 
     List<CourseResponseDTO> getCatalogForStudent(Long studentId);
+
+    List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId);
 
     void createCourse(CourseRequestDTO dto, String lecturerEmail);
 
@@ -27,4 +30,8 @@ public interface CourseService {
     void toggleCourseStatus(Long id);
 
     void regenerateEnrollmentCode(Long id);
+
+    void deleteCourse(Long id);
+
+    void deleteMultipleCourses(List<Long> courseIds);
 }

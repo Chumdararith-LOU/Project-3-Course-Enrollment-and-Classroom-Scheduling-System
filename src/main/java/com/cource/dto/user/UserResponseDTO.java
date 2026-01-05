@@ -17,8 +17,4 @@ public class UserResponseDTO {
     private String idCard;
     private String role;
     private boolean isActive;
-
-    public String getFullName() {
-        return firstName + " " + lastName;
-    }
 }

@@ -1,21 +1,28 @@
 package com.cource.controller;
 
 import com.cource.dto.course.CourseResponseDTO;
+import com.cource.dto.enrollment.StudentEnrollmentDTO;
+import com.cource.dto.schedule.ScheduleResponseDTO;
 import com.cource.dto.user.UserResponseDTO;
 import com.cource.dto.user.UserUpdateRequest;
+import com.cource.entity.Attendance;
+import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.service.CourseService;
 import com.cource.service.EnrollmentService;
+import com.cource.service.ScheduleService;
 import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/student")
@@ -25,6 +32,7 @@ public class StudentController {
     private final CourseService courseService;
     private final UserService userService;
     private final EnrollmentService enrollmentService;
+    private final ScheduleService scheduleService;
 
     private Long getCurrentUserId() {
         return 3L;
@@ -32,103 +40,135 @@ public class StudentController {
 
     @GetMapping("/profile")
     public ResponseEntity<UserResponseDTO> getProfile(Authentication authentication) {
-        Long userId = (authentication != null) ? 0L : getCurrentUserId();
-        User user = userService.getUserById(userId);
+        User user = userService.getUserById(getCurrentUserId());
         return ResponseEntity.ok(mapToResponseDTO(user));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/info/{id}")
     public ResponseEntity<UserResponseDTO> getStudentById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(mapToResponseDTO(user));
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<UserResponseDTO> updateProfile(@RequestBody UserUpdateRequest request, Authentication authentication) {
-        Long userId = (authentication != null) ? 0L : getCurrentUserId();
-        User updatedUser = userService.updateUser(userId, request);
+    public ResponseEntity<UserResponseDTO> updateProfile(@RequestBody UserUpdateRequest request) {
+        User updatedUser = userService.updateUser(getCurrentUserId(), request);
         return ResponseEntity.ok(mapToResponseDTO(updatedUser));
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        Long userId = getCurrentUserId();
+    public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User user = getUserByDetails(userDetails);
 
-        User userEntity = userService.getUserById(userId);
-        UserResponseDTO userDTO = mapToResponseDTO(userEntity);
-        model.addAttribute("user", userDTO);
+        model.addAttribute("user", user);
+        model.addAttribute("enrolledCount", enrollmentService.getEnrolledCourseCount(user.getId()));
 
-        long enrolledCount = enrollmentService.getEnrolledCourseCount(userId);
-        model.addAttribute("enrolledCount", enrolledCount);
-
-        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
-        model.addAttribute("courses", courses);
-
-        model.addAttribute("todaysClasses", java.util.Collections.emptyList());
-        model.addAttribute("currentPage", "dashboard");
-
+        model.addAttribute("enrollments", courseService.getStudentEnrollments(user.getId()));
         return "student/dashboard";
     }
 
     @GetMapping("/catalog")
-    public String courseCatalog(Model model) {
-        Long userId = getCurrentUserId();
+    public String catalog(@AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) String search,
+            Model model) {
+        User user = getUserByDetails(userDetails);
+        model.addAttribute("user", user);
 
-        User userEntity = userService.getUserById(userId);
-        UserResponseDTO userDTO = mapToResponseDTO(userEntity);
-        model.addAttribute("user", userDTO);
-
-        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
+        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(user.getId());
         model.addAttribute("courses", courses);
-
-        model.addAttribute("currentPage", "catalog");
         return "student/catalog";
     }
 
     @GetMapping("/my-courses")
-    public String myCourses(Model model) {
-        Long userId = getCurrentUserId();
+    public String myCourses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User student = getUserByDetails(userDetails);
+        model.addAttribute("user", student);
 
-        User userEntity = userService.getUserById(userId);
-        UserResponseDTO userDTO = mapToResponseDTO(userEntity);
-        model.addAttribute("user", userDTO);
+        List<StudentEnrollmentDTO> allEnrollments = courseService.getStudentEnrollments(student.getId());
 
-        List<CourseResponseDTO> courses = courseService.getCatalogForStudent(userId);
-        model.addAttribute("courses", courses);
+        List<StudentEnrollmentDTO> active = allEnrollments.stream()
+                .filter(e -> "ENROLLED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
 
-        model.addAttribute("currentPage", "my-courses");
+        List<StudentEnrollmentDTO> waitlist = allEnrollments.stream()
+                .filter(e -> "WAITLIST".equalsIgnoreCase(e.getStatus()) || "WAITLISTED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> completed = allEnrollments.stream()
+                .filter(e -> "COMPLETED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        List<StudentEnrollmentDTO> dropped = allEnrollments.stream()
+                .filter(e -> "DROPPED".equalsIgnoreCase(e.getStatus()))
+                .collect(Collectors.toList());
+
+        model.addAttribute("activeEnrollments", active);
+        model.addAttribute("waitlistEnrollments", waitlist);
+        model.addAttribute("completedEnrollments", completed);
+        model.addAttribute("droppedEnrollments", dropped);
 
         return "student/my-courses";
     }
 
+    @GetMapping("/courses")
+    public ResponseEntity<List<CourseResponseDTO>> getCourses(@RequestParam(required = false) Long studentId) {
+        Long id = (studentId != null) ? studentId : getCurrentUserId();
+        return ResponseEntity.ok(courseService.getCatalogForStudent(id));
+    }
+
     @GetMapping("/schedule")
-    public String schedule(Model model) {
+    public String schedule(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User student = getUserByDetails(userDetails);
+        model.addAttribute("user", student);
+        List<ScheduleResponseDTO> schedules = scheduleService.getStudentSchedule(student.getId());
+        model.addAttribute("schedules", schedules);
         model.addAttribute("currentPage", "schedule");
         return "student/schedule";
     }
 
     @GetMapping("/grades")
-    public String grades(Model model) {
+    public String grades(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User student = getUserByDetails(userDetails);
+        model.addAttribute("user", student);
+
+        List<Enrollment> grades = enrollmentService.getStudentGrades(student.getId());
+        model.addAttribute("grades", grades);
         model.addAttribute("currentPage", "grades");
         return "student/grades";
     }
 
     @GetMapping("/attendance")
-    public String attendance(Model model) {
+    public String attendance(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User student = getUserByDetails(userDetails);
+        model.addAttribute("user", student);
+        List<Attendance> attendanceList = enrollmentService.getStudentAttendance(student.getId());
+        model.addAttribute("attendanceList", attendanceList);
+
+        long present = attendanceList.stream().filter(a -> "PRESENT".equalsIgnoreCase(a.getStatus())).count();
+        long absent = attendanceList.stream().filter(a -> "ABSENT".equalsIgnoreCase(a.getStatus())).count();
+        long late = attendanceList.stream().filter(a -> "LATE".equalsIgnoreCase(a.getStatus())).count();
+
+        model.addAttribute("statsPresent", present);
+        model.addAttribute("statsAbsent", absent);
+        model.addAttribute("statsLate", late);
         model.addAttribute("currentPage", "attendance");
         return "student/attendance";
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getIdCard(),
-                user.getRole().getRoleName(),
-                user.isActive()
-        );
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .idCard(user.getIdCard())
+                .role(user.getRole().getRoleName())
+                .isActive(user.isActive())
+                .build();
+
     }
 
+    private User getUserByDetails(UserDetails userDetails) {
+        return userService.getUserByEmail(userDetails.getUsername());
+    }
 }

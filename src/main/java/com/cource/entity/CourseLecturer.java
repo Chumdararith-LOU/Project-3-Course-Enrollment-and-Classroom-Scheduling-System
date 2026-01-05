@@ -1,11 +1,19 @@
 package com.cource.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "course_lecturers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"offering_id", "lecturer_id"})
 })
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CourseLecturer {
 
     @Id
@@ -23,20 +31,4 @@ public class CourseLecturer {
     @Column(name = "is_primary")
     private boolean primary = true;
 
-    public CourseLecturer() {}
-
-    public CourseLecturer(CourseOffering offering, User lecturer, boolean primary) {
-        this.offering = offering;
-        this.lecturer = lecturer;
-        this.primary = primary;
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public CourseOffering getOffering() { return offering; }
-    public void setOffering(CourseOffering offering) { this.offering = offering; }
-    public User getLecturer() { return lecturer; }
-    public void setLecturer(User lecturer) { this.lecturer = lecturer; }
-    public boolean isPrimary() { return primary; }
-    public void setPrimary(boolean primary) { this.primary = primary; }
 }

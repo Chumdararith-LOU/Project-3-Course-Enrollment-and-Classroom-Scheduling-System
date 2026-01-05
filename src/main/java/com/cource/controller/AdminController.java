@@ -1,11 +1,16 @@
 package com.cource.controller;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
 import com.cource.dto.course.AcademicTermRequestDTO;
 import com.cource.dto.schedule.RoomRequestDTO;
 import jakarta.validation.Valid;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseUpdateRequest;
 import com.cource.dto.user.UserCreateRequest;
+import com.cource.dto.user.UserProfileDTO;
 import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.AcademicTerm;
 import com.cource.entity.ClassSchedule;
@@ -89,6 +95,51 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/users/{id}/profile")
+    public ResponseEntity<UserProfileDTO> getUserProfile(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserProfile(id));
+    }
+
+    @PostMapping(path = "/users/{id}/avatar", consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadAvatar(@PathVariable Long id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            userService.updateAvatar(id, file);
+            return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping(path = "/users/{id}/avatar-image")
+    public ResponseEntity<org.springframework.core.io.Resource> getAvatarImage(@PathVariable Long id) {
+        try {
+            org.springframework.core.io.Resource res = userService.loadAvatarResource(id);
+            if (res == null) {
+                // serve default avatar from classpath
+                ClassPathResource def = new ClassPathResource("static/images/default-avatar.svg");
+                if (!def.exists())
+                    return ResponseEntity.notFound().build();
+                return ResponseEntity.ok()
+                        .header("Cache-Control", "max-age=3600")
+                        .contentType(MediaType.parseMediaType("image/svg+xml"))
+                        .body(def);
+            }
+            String contentType = null;
+            try {
+                contentType = Files.probeContentType(Paths.get(res.getURI()));
+            } catch (Exception ex) {
+                // ignore
+            }
+            if (contentType == null)
+                contentType = "application/octet-stream";
+            return ResponseEntity.ok().header("Cache-Control", "max-age=3600")
+                    .contentType(org.springframework.http.MediaType.parseMediaType(contentType)).body(res);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     // ===== Course Management =====
     @GetMapping("/courses")
     public ResponseEntity<List<Course>> getAllCourses(@RequestParam(required = false) String search) {
@@ -124,6 +175,18 @@ public class AdminController {
     @PostMapping("/courses/{id}/regenerate-code")
     public ResponseEntity<?> regenerateEnrollmentCode(@PathVariable Long id) {
         courseService.regenerateEnrollmentCode(id);
+        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+    }
+
+    @DeleteMapping("/courses/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+        courseService.deleteCourse(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/courses/delete-multiple")
+    public ResponseEntity<?> deleteMultipleCourses(@RequestBody List<Long> courseIds) {
+        courseService.deleteMultipleCourses(courseIds);
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
@@ -212,6 +275,12 @@ public class AdminController {
     public ResponseEntity<Void> deleteOffering(@PathVariable Long id) {
         adminService.deleteOffering(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/offerings/delete-multiple")
+    public ResponseEntity<?> deleteMultipleOfferings(@RequestBody List<Long> offeringIds) {
+        adminService.deleteMultipleOfferings(offeringIds);
+        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
     @PatchMapping("/offerings/{id}/toggle")
@@ -324,7 +393,6 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== Room Management =====
     @GetMapping("/rooms")
     public ResponseEntity<List<Room>> getAllRooms() {
         return ResponseEntity.ok(adminService.getAllRooms());
@@ -342,8 +410,7 @@ public class AdminController {
                 request.getBuilding(),
                 request.getCapacity(),
                 request.getRoomType(),
-                request.getIsActive()
-        );
+                request.getIsActive());
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
@@ -355,8 +422,7 @@ public class AdminController {
                 request.getBuilding(),
                 request.getCapacity(),
                 request.getRoomType(),
-                request.getIsActive()
-        );
+                request.getIsActive());
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
@@ -388,8 +454,7 @@ public class AdminController {
                 request.getTermCode(),
                 request.getTermName(),
                 request.getStartDate(),
-                request.getEndDate()
-        );
+                request.getEndDate());
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
@@ -400,8 +465,7 @@ public class AdminController {
                 request.getTermCode(),
                 request.getTermName(),
                 request.getStartDate(),
-                request.getEndDate()
-        );
+                request.getEndDate());
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 

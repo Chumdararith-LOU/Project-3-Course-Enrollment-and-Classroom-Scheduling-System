@@ -10,6 +10,7 @@ public class CourseUpdateRequest {
     private String title;
     private String description;
     private int capacity;
+    private int credits;
     private boolean active;
 
     private List<Long> lectureIds;

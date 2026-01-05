@@ -3,7 +3,11 @@ package com.cource.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cource.dto.course.CourseResponseDTO;
+import com.cource.exception.ConflictException;
 import com.cource.repository.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,10 +17,13 @@ import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.Course;
 import com.cource.entity.CourseLecturer;
+import com.cource.entity.CourseOffering;
 import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.LecturerService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -27,24 +34,41 @@ public class LecturerServiceImpl implements LecturerService {
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final CourseOfferingRepository courseOfferingRepository;
 
     public LecturerServiceImpl(CourseLecturerRepository courseLecturerRepository,
                                AttendanceRepository attendanceRepository,
                                ClassScheduleRepository classScheduleRepository,
                                EnrollmentRepository enrollmentRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                                CourseOfferingRepository courseOfferingRepository) {
         this.courseLecturerRepository = courseLecturerRepository;
         this.attendanceRepository = attendanceRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
+        this.courseOfferingRepository = courseOfferingRepository;
     }
 
     @Override
-    public List<Course> getCoursesByLecturerId(long lecturerId) {
-        return courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering().getCourse())
-                .distinct()
+    public List<CourseResponseDTO> getCoursesByLecturerId(long lecturerId) {
+        List<CourseLecturer> assignments = courseLecturerRepository.findByLecturerId(lecturerId);
+
+        return assignments.stream()
+                .map(cl -> {
+                    CourseOffering offering = cl.getOffering();
+                    Course course = offering.getCourse();
+
+                    CourseResponseDTO dto = new CourseResponseDTO();
+                    dto.setId(offering.getId()); // IMPORTANT: Use Offering ID, not Course ID
+                    dto.setCourseCode(course.getCourseCode());
+                    dto.setTitle(course.getTitle());
+                    dto.setDescription(course.getDescription());
+                    dto.setCredits(course.getCredits());
+                    dto.setEnrollmentCode(offering.getEnrollmentCode()); // <--- THE MISSING PIECE
+                    dto.setActive(offering.getTerm().isActive());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -111,6 +135,17 @@ public class LecturerServiceImpl implements LecturerService {
                         studentId, schedule.getOffering().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
 
+        boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
+                studentId,
+                schedule.getId(),
+                enrollment.getId(),
+                attendanceRequestDTO.getAttendanceDate()
+        );
+
+        if (exists) {
+            throw new ConflictException("Attendance already recorded for this student on this date.");
+        }
+
         Attendance attendance = new Attendance();
         attendance.setEnrollment(enrollment);
         attendance.setSchedule(schedule);
@@ -135,6 +170,22 @@ public class LecturerServiceImpl implements LecturerService {
 
         verifyOwnership(schedule.getOffering().getId(), lecturerId);
         return attendanceRepository.findByScheduleId(scheduleId);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('LECTURER')")
+    public String regenerateOfferingCode(Long offeringId) {
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+
+        String newCode = java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+
+        offering.setEnrollmentCode(newCode);
+        offering.setEnrollmentCodeExpiresAt(java.time.LocalDateTime.now().plusDays(7));
+
+        courseOfferingRepository.save(offering);
+        return newCode;
     }
 
     private void verifyOwnership(long offeringId, long lecturerId) {

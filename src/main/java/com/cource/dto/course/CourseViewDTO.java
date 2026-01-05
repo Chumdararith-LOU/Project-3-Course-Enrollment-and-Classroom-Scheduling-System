@@ -1,25 +1,19 @@
 package com.cource.dto.course;
 
-public class CourseViewDTO {
-    public String code;
-    public String level;
-    public String title;
-    public String lecturer;
-    public String description;
-    public int enrolled;
-    public int capacity;
-    public int credits;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    public CourseViewDTO(String code, String level, String title,
-                          String lecturer, String description,
-                          int enrolled, int capacity, int credits) {
-        this.code = code;
-        this.level = level;
-        this.title = title;
-        this.lecturer = lecturer;
-        this.description = description;
-        this.enrolled = enrolled;
-        this.capacity = capacity;
-        this.credits = credits;
-    }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CourseViewDTO {
+    private String code;
+    private String level;
+    private String title;
+    private String lecturer;
+    private String description;
+    private int enrolled;
+    private int capacity;
+    private int credits;
 }

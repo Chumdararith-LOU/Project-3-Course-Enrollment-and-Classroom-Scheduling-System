@@ -4,6 +4,7 @@ import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseRequestDTO;
 import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.course.CourseUpdateRequest;
+import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.entity.*;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
@@ -17,10 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CourseServiceImpl implements CourseService {
 
     private final CourseOfferingRepository courseOfferingRepository;
@@ -30,6 +32,61 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final AcademicTermRepository termRepository;
     private final UserRepository userRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('STUDENT')")
+    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+        List<StudentEnrollmentDTO> dtos = new ArrayList<>();
+
+        for (Enrollment en : enrollments) {
+            CourseOffering offering = en.getOffering();
+            Course course = offering.getCourse();
+
+            // 1. Basic Info
+            StudentEnrollmentDTO dto = StudentEnrollmentDTO.builder()
+                    .enrollmentId(en.getId())
+                    .offeringId(offering.getId())
+                    .courseCode(course.getCourseCode())
+                    .title(course.getTitle())
+                    .credits(course.getCredits())
+                    .termName(offering.getTerm().getTermName())
+                    .status(en.getStatus())
+                    .grade(en.getGrade())
+                    .enrolledAt(en.getEnrolledAt())
+                    .build();
+
+            // 2. Fetch Lecturer (Helper Logic)
+            courseLecturerRepository.findByOfferingIdAndPrimaryTrue(offering.getId())
+                    .stream().findFirst()
+                    .ifPresentOrElse(
+                            cl -> dto.setLecturer(cl.getLecturer().getFullName()),
+                            () -> dto.setLecturer("TBA"));
+
+            // 3. Fetch Schedule (Helper Logic)
+            classScheduleRepository.findByOfferingId(offering.getId())
+                    .stream().findFirst()
+                    .ifPresentOrElse(
+                            sched -> {
+                                dto.setSchedule(
+                                        sched.getDayOfWeek() + " " + sched.getStartTime() + "-" + sched.getEndTime());
+                                if (sched.getRoom() != null) {
+                                    dto.setLocation(
+                                            sched.getRoom().getBuilding() + " - " + sched.getRoom().getRoomNumber());
+                                } else {
+                                    dto.setLocation("TBA");
+                                }
+                            },
+                            () -> {
+                                dto.setSchedule("TBA");
+                                dto.setLocation("TBA");
+                            });
+
+            dtos.add(dto);
+        }
+        return dtos;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -53,7 +110,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    // Only Lecturers can create, and they can only create for themselves (email match)
+    // Only Lecturers can create, and they can only create for themselves (email
+    // match)
     @PreAuthorize("hasRole('LECTURER') and #lecturerEmail == authentication.name")
     public void createCourse(CourseRequestDTO dto, String lecturerEmail) {
         if (courseRepository.existsByCourseCode(dto.getCourseCode())) {
@@ -78,6 +136,8 @@ public class CourseServiceImpl implements CourseService {
         offering.setCourse(course);
         offering.setTerm(term);
         offering.setCapacity(dto.getCapacity());
+        offering.setEnrollmentCode(UUID.randomUUID().toString().substring(0, 6).toUpperCase());
+        offering.setEnrollmentCodeExpiresAt(LocalDateTime.now().plusDays(7));
         courseOfferingRepository.save(offering);
 
         // Link Lecturer
@@ -124,7 +184,7 @@ public class CourseServiceImpl implements CourseService {
         course.setCourseCode(request.getCourseCode());
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
-        course.setCredits(request.getCapacity()); // Mapping capacity to credits based on DTO
+        course.setCredits(request.getCredits() > 0 ? request.getCredits() : 3);
         course.setActive(request.isActive());
         return courseRepository.save(course);
     }
@@ -149,8 +209,8 @@ public class CourseServiceImpl implements CourseService {
         if (request.getDescription() != null) {
             course.setDescription(request.getDescription());
         }
-        if (request.getCapacity() > 0) {
-            course.setCredits(request.getCapacity());
+        if (request.getCredits() > 0) {
+            course.setCredits(request.getCredits());
         }
 
         return courseRepository.save(course);
@@ -170,8 +230,59 @@ public class CourseServiceImpl implements CourseService {
     @PreAuthorize("hasRole('ADMIN')")
     public void regenerateEnrollmentCode(Long id) {
         Course course = getCourseById(id);
-        String newCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        courseRepository.save(course);
+
+        // Find all offerings for this course and regenerate their enrollment codes
+        List<CourseOffering> offerings = courseOfferingRepository.findByCourseId(id);
+
+        if (offerings.isEmpty()) {
+            throw new ResourceNotFoundException("No offerings found for this course");
+        }
+
+        // Regenerate codes for all offerings of this course
+        for (CourseOffering offering : offerings) {
+            String newCode = generateEnrollmentCode();
+            // Ensure uniqueness
+            while (courseOfferingRepository.existsByEnrollmentCode(newCode)) {
+                newCode = generateEnrollmentCode();
+            }
+            offering.setEnrollmentCode(newCode);
+            offering.setEnrollmentCodeExpiresAt(LocalDateTime.now().plusDays(90));
+            courseOfferingRepository.save(offering);
+        }
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteCourse(Long id) {
+        Course course = getCourseById(id);
+
+        // Check if course has any offerings
+        List<CourseOffering> offerings = courseOfferingRepository.findByCourseId(id);
+        if (!offerings.isEmpty()) {
+            throw new ConflictException(
+                    "Cannot delete course with existing course offerings. Please delete all offerings first.");
+        }
+
+        courseRepository.delete(course);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteMultipleCourses(List<Long> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) {
+            return;
+        }
+
+        for (Long id : courseIds) {
+            try {
+                deleteCourse(id);
+            } catch (Exception e) {
+                // Log error but continue with other deletions
+                throw new RuntimeException("Failed to delete course with id " + id + ": " + e.getMessage());
+            }
+        }
     }
 
     // --- Helper to Map Entity to DTO ---
@@ -189,11 +300,22 @@ public class CourseServiceImpl implements CourseService {
         if (offering.getTerm() != null) {
             dto.setActive(offering.getTerm().isActive());
         }
+        dto.setEnrollmentCode(offering.getEnrollmentCode());
+        dto.setEnrollmentCodeExpiresAt(offering.getEnrollmentCodeExpiresAt());
+
+        boolean expired = offering.getEnrollmentCodeExpiresAt() != null &&
+                offering.getEnrollmentCodeExpiresAt().isBefore(java.time.LocalDateTime.now());
+        dto.setCodeExpired(expired);
+
         setLecturerInfo(dto, offering);
         setScheduleInfo(dto, offering);
         setEnrollmentCount(dto, offering);
 
         return dto;
+    }
+
+    private String generateEnrollmentCode() {
+        return UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }
 
     private void validateCourseCodeUniqueness(String courseCode) {
@@ -226,6 +348,8 @@ public class CourseServiceImpl implements CourseService {
         offering.setCourse(course);
         offering.setTerm(term);
         offering.setCapacity(dto.getCapacity());
+        offering.setEnrollmentCode(generateEnrollmentCode());
+        offering.setEnrollmentCodeExpiresAt(java.time.LocalDateTime.now().plusDays(7));
         return courseOfferingRepository.save(offering);
     }
 
@@ -243,8 +367,7 @@ public class CourseServiceImpl implements CourseService {
                 .findFirst()
                 .ifPresentOrElse(
                         courseLecturer -> dto.setLecturer(courseLecturer.getLecturer().getFullName()),
-                        () -> dto.setLecturer("TBA")
-                );
+                        () -> dto.setLecturer("TBA"));
     }
 
     private void setScheduleInfo(CourseResponseDTO dto, CourseOffering offering) {
@@ -267,8 +390,7 @@ public class CourseServiceImpl implements CourseService {
                         () -> {
                             dto.setSchedule("TBA");
                             dto.setLocation("TBA");
-                        }
-                );
+                        });
     }
 
     private void setEnrollmentCount(CourseResponseDTO dto, CourseOffering offering) {

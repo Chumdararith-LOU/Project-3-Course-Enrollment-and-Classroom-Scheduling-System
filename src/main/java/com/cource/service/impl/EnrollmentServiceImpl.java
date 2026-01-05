@@ -1,6 +1,6 @@
 package com.cource.service.impl;
 
-import com.cource.dto.EnrollmentResult;
+import com.cource.dto.enrollment.EnrollmentResult;
 import com.cource.entity.*;
 import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,9 +22,9 @@ import java.util.stream.Collectors;
 public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseOfferingRepository courseOfferingRepository;
-    private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final WaitlistRepository waitlistRepository;
+    private final AttendanceRepository attendanceRepository;
 
     private final ClassScheduleRepository classScheduleRepository;
     private final TimeConflictChecker timeConflictChecker;
@@ -35,12 +36,29 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     @Transactional
+    public EnrollmentResult enrollByCode(Long studentId, String code) {
+        CourseOffering offering = courseOfferingRepository.findByEnrollmentCode(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid enrollment code"));
+
+        if (offering.getEnrollmentCodeExpiresAt() != null &&
+                offering.getEnrollmentCodeExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ConflictException("This enrollment code has expired. Please ask your lecturer for a new code.");
+        }
+
+        if (!offering.getTerm().isActive()) {
+            throw new ConflictException("Cannot enroll in a course from an inactive term");
+        }
+
+        return enrollStudent(studentId, offering.getId());
+    }
+
+    @Override
+    @Transactional
     @PreAuthorize("hasRole('STUDENT')")
     public EnrollmentResult enrollStudent(Long studentId, Long offeringId) {
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course Offering not found"));
 
-        // Check if already enrolled or waitlisted
         if (enrollmentRepository.existsByStudentIdAndOfferingId(studentId, offeringId)) {
             throw new ConflictException("You are already enrolled in this course.");
         }
@@ -48,10 +66,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-        // Fetch schedule for the new course
         List<ClassSchedule> newCourseSchedules = classScheduleRepository.findByOfferingId(offeringId);
 
-        // Fetch schedules for courses the student is ALREADY enrolled in
         List<Enrollment> existingEnrollments = enrollmentRepository.findByStudentIdAndStatus(studentId, "ENROLLED");
         List<Long> enrolledOfferingIds = existingEnrollments.stream()
                 .map(e -> e.getOffering().getId())
@@ -62,7 +78,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
             for (ClassSchedule newSched : newCourseSchedules) {
                 if (timeConflictChecker.hasConflict(newSched, studentCurrentSchedules)) {
-                    throw new ConflictException("Time conflict detected with course: " + newSched.getCourseOffering().getCourse().getCourseCode());
+                    throw new ConflictException("Time conflict detected with course: " + newSched.getOffering().getCourse().getCourseCode());
                 }
             }
         }
@@ -70,7 +86,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         long currentEnrolled = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ENROLLED");
 
         if (currentEnrolled < offering.getCapacity()) {
-            // Course has space - enroll directly
             Enrollment enrollment = new Enrollment();
             enrollment.setStudent(student);
             enrollment.setOffering(offering);
@@ -156,5 +171,40 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                                  " - Now enrolled in " + offering.getCourse().getTitle());
             }
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Enrollment> getStudentGrades(Long studentId) {
+        return enrollmentRepository.findByStudentIdAndGradeIsNotNull(studentId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Attendance> getStudentAttendance(Long studentId) {
+        return attendanceRepository.findByEnrollmentStudentIdOrderByAttendanceDateDesc(studentId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Enrollment> getEnrollmentsByOffering(Long offeringId) {
+        return enrollmentRepository.findByOfferingId(offeringId);
+    }
+
+    @Override
+    @Transactional
+    public void updateGrade(Long enrollmentId, String grade) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+
+        enrollment.setGrade(grade);
+
+        if ("F".equalsIgnoreCase(grade)) {
+            enrollment.setStatus("FAILED");
+        } else if (grade != null && !grade.isEmpty()) {
+            enrollment.setStatus("COMPLETED");
+        }
+
+        enrollmentRepository.save(enrollment);
     }
 }
