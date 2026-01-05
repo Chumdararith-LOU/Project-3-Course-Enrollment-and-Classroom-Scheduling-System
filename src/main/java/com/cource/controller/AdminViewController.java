@@ -94,9 +94,12 @@ public class AdminViewController {
     public String courses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("courses", adminService.getAllCourses());
         model.addAttribute("lecturers", adminService.getUsersByRole("LECTURER"));
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "courses");
-        return "admin/courses";
+        return "/admin/courses";
+        // model.addAttribute("courses", adminService.getAllCourses());
+        // model.addAttribute("lecturers", adminService.getUsersByRole("LECTURER"));
+        // addUserInfoToModel(userDetails, model);
+        // model.addAttribute("currentPage", "courses");
+        // return "admin/courses";
     }
 
     @GetMapping("/offerings")
