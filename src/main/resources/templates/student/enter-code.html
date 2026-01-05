@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link th:href="@{/css/output.css}" rel="stylesheet" />
+    <title>Enter Attendance Code</title>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <div class="max-w-xl mx-auto mt-12 bg-white p-6 rounded shadow">
+      <h2 class="text-lg font-semibold">Enter Attendance Code</h2>
+      <p class="text-sm text-gray-500 mt-1">
+        Enter the schedule ID and code provided by your lecturer.
+      </p>
+      <div class="mt-4">
+        <label class="block text-sm">Schedule ID</label>
+        <input
+          id="scheduleId"
+          class="mt-1 block w-full rounded border-gray-300"
+        />
+      </div>
+      <div class="mt-4">
+        <label class="block text-sm">Code</label>
+        <input id="code" class="mt-1 block w-full rounded border-gray-300" />
+      </div>
+      <div class="mt-6 text-right">
+        <button id="submit" class="px-4 py-2 bg-indigo-600 text-white rounded">
+          Submit
+        </button>
+      </div>
+      <div id="result" class="mt-4 text-sm"></div>
+    </div>
+    <script>
+      document
+        .getElementById("submit")
+        .addEventListener("click", async function () {
+          const sid = document.getElementById("scheduleId").value;
+          const code = document.getElementById("code").value;
+          if (!sid || !code) {
+            alert("Fill both");
+            return;
+          }
+          try {
+            const res = await fetch("/api/attendance-code/enter", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ scheduleId: parseInt(sid), code: code }),
+            });
+            const j = await res.json();
+            if (!res.ok) {
+              document.getElementById("result").innerText =
+                "Error: " + (j.error || JSON.stringify(j));
+            } else {
+              document.getElementById("result").innerText =
+                "Result: " + JSON.stringify(j);
+            }
+          } catch (e) {
+            document.getElementById("result").innerText = "Error: " + e;
+          }
+        });
+    </script>
+  </body>
+</html>

@@ -1,25 +1,28 @@
-package com.cource.service;
+package com.cource.service.impl;
 
 import com.cource.dto.user.UserCreateRequest;
 import com.cource.dto.user.UserProfileDTO;
 import com.cource.dto.user.UserUpdateRequest;
+import com.cource.entity.Role;
 import com.cource.entity.User;
 import com.cource.entity.UserProfile;
 import com.cource.repository.RoleRepository;
 import com.cource.repository.UserProfileRepository;
 import com.cource.repository.UserRepository;
-import com.cource.repository.EnrollmentRepository;
-import com.cource.repository.AttendanceRepository;
-
+import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -27,26 +30,20 @@ import java.time.format.DateTimeParseException;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final RoleRepository roleRepository;
-    private final EnrollmentRepository enrollmentRepository;
-    private final AttendanceRepository attendanceRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Value("${app.avatar.dir:uploads/avatars}")
     private String avatarDir;
 
+    @Override
     public User createUser(UserCreateRequest request) {
-        // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
-        }
-
-        // Check if ID card already exists
-        if (request.getIdCard() != null && userRepository.existsByIdCard(request.getIdCard())) {
-            throw new RuntimeException("ID card already exists");
         }
 
         User user = new User();
@@ -57,7 +54,6 @@ public class UserService {
         user.setIdCard(request.getIdCard());
         user.setActive(request.isActive());
 
-        // Set role
         Role role = roleRepository.findById(request.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
         user.setRole(role);
@@ -65,12 +61,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Override
     public User updateUser(Long id, UserUpdateRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (request.getEmail() != null) {
-            // Check if new email is already taken by another user
             if (!user.getEmail().equals(request.getEmail()) &&
                     userRepository.existsByEmail(request.getEmail())) {
                 throw new RuntimeException("Email already exists");
@@ -93,7 +89,6 @@ public class UserService {
         if (request.getActive() != null) {
             user.setActive(request.getActive());
         }
-        // user.setActive(request.isActive());
 
         if (request.getRoleId() != null) {
             Role role = roleRepository.findById(request.getRoleId())
@@ -137,12 +132,12 @@ public class UserService {
             }
             userProfileRepository.save(profile);
         } catch (Exception ex) {
-            // do not fail whole update for profile issues
         }
 
         return userRepository.save(user);
     }
 
+    @Override
     public User toggleUserStatus(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -150,35 +145,29 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("User not found");
         }
-
-        // Check for enrollments
-        long enrollmentCount = enrollmentRepository.countByStudentId(id);
-        if (enrollmentCount > 0) {
-            throw new RuntimeException("Cannot delete user: has " + enrollmentCount
-                    + " enrollment(s). Please delete enrollments first or deactivate the user instead.");
-        }
-
-        // Check for attendance records
-        long attendanceCount = attendanceRepository.countByEnrollment_StudentId(id);
-        if (attendanceCount > 0) {
-            throw new RuntimeException("Cannot delete user: has " + attendanceCount
-                    + " attendance record(s). Please delete attendance records first or deactivate the user instead.");
-        }
-
-        // User profile will be deleted automatically via CASCADE
-        // Safe to delete
         userRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
     public User updateAvatar(Long id, MultipartFile file) throws IOException {
         User user = getUserById(id);
         if (file == null || file.isEmpty())
@@ -194,7 +183,6 @@ public class UserService {
         String filename = "user_" + id + "_" + System.currentTimeMillis() + ext;
         Path target = uploadDir.resolve(filename);
         file.transferTo(target.toFile());
-        // move avatar storage into user_profiles.avatar_url
         UserProfile profile = userProfileRepository.findByUserId(id)
                 .orElseGet(() -> {
                     UserProfile p = new UserProfile();
@@ -206,8 +194,8 @@ public class UserService {
         return user;
     }
 
+    @Override
     public Resource loadAvatarResource(Long id) throws IOException {
-        // load filename from user_profiles.avatar_url
         var opt = userProfileRepository.findByUserId(id);
         if (opt.isEmpty())
             return null;
@@ -221,6 +209,7 @@ public class UserService {
         return new UrlResource(target.toUri());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public UserProfileDTO getUserProfile(Long userId) {
         var opt = userProfileRepository.findByUserId(userId);
@@ -230,10 +219,5 @@ public class UserService {
         var p = opt.get();
         return new UserProfileDTO(p.getId(), userId, p.getPhone(), p.getDateOfBirth(), p.getBio(),
                 p.getAvatarUrl());
-    }
-
-    public User getUserByEmail(String username) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getUserByEmail'");
     }
 }

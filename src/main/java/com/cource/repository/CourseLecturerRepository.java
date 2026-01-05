@@ -10,6 +10,7 @@ import com.cource.entity.CourseLecturer;
 
 public interface CourseLecturerRepository extends JpaRepository<CourseLecturer, Long> {
     List<CourseLecturer> findByLecturerId(Long lecturerId);
+    List<CourseLecturer> findByOfferingIdAndPrimaryTrue(Long offeringId);
 
     @Query("SELECT (COUNT(cl) > 0) FROM CourseLecturer cl WHERE cl.offering.id = :offeringId AND cl.lecturer.id = :lecturerId")
     boolean existsByOfferingIdAndLecturerId(@Param("offeringId") Long offeringId, @Param("lecturerId") Long lecturerId);

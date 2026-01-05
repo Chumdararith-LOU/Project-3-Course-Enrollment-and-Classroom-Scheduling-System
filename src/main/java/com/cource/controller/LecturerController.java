@@ -1,5 +1,8 @@
 package com.cource.controller;
 
+import com.cource.dto.course.CourseResponseDTO;
+import com.cource.entity.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,45 +25,33 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/lecturer")
-// @PreAuthorize("hasRole('LECTURER')") // DISABLED FOR TESTING
+@RequiredArgsConstructor
 public class LecturerController {
 
     private final LecturerService lecturerService;
 
-    public LecturerController(LecturerService lecturerService) {
-        this.lecturerService = lecturerService;
-    }
-
     @GetMapping("/courses")
-    public List<Course> getCourses(@RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
+    public List<CourseResponseDTO> getCourses(@RequestParam long lecturerId) {
         return lecturerService.getCoursesByLecturerId(lecturerId);
     }
 
     @GetMapping("/courses/{offeringId}/schedule")
-    public List<ClassSchedule> getClassSchedules(
-            @PathVariable long offeringId,
-            @RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
+    public List<ClassSchedule> getClassSchedules(@PathVariable long offeringId, @RequestParam long lecturerId) {
         return lecturerService.getClassSchedulesByLecturerId(offeringId, lecturerId);
     }
 
     @GetMapping("/courses/{offeringId}/students")
-    public List<User> getEnrolledStudents(
-            @PathVariable long offeringId,
-            @RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
+    public List<Student> getEnrolledStudents(@PathVariable long offeringId, @RequestParam long lecturerId) {
         return lecturerService.getEnrolledStudents(offeringId, lecturerId);
     }
 
     @PostMapping("/attendance")
     public ResponseEntity<String> recordAttendance(
-            @RequestBody com.cource.dto.attendance.AttendanceRequestDTO attendanceRequestDTO,
+            @RequestBody com.cource.dto.attendance.AttendanceRequestDTO dto,
             @RequestParam long studentId,
             @RequestParam String status) {
-        // TODO: After enabling security, validate lecturerId from Authentication
-        lecturerService.recordAttendance(attendanceRequestDTO, studentId, status);
-        return ResponseEntity.ok("Attendance recorded successfully.");
+        lecturerService.recordAttendance(dto, studentId, status);
+        return ResponseEntity.ok("Attendance recorded.");
     }
 
     @PutMapping("/attendance/{id}")
@@ -116,7 +107,6 @@ public class LecturerController {
         }
     }
 
-    // --- Course offering CRUD for lecturers ---
     @PostMapping("/offerings")
     public ResponseEntity<?> createOffering(
             @RequestBody com.cource.dto.course.CourseOfferingRequestDTO dto,
@@ -175,7 +165,6 @@ public class LecturerController {
     public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getAttendanceRecords(
             @PathVariable long scheduleId,
             @RequestParam(required = false) Long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         try {
             var list = lecturerService.getAttendanceRecordsAsDto(scheduleId, lecturerId);
             return ResponseEntity.ok(list);
@@ -187,7 +176,6 @@ public class LecturerController {
         }
     }
 
-    // Attendance counts by date (last N days) for lecturer's offerings
     @GetMapping("/attendance/trends")
     public ResponseEntity<java.util.Map<String, Long>> getAttendanceTrends(
             @RequestParam long lecturerId,
@@ -196,7 +184,6 @@ public class LecturerController {
         return ResponseEntity.ok(map);
     }
 
-    // Course average grades for lecturer
     @GetMapping("/courses/averages")
     public ResponseEntity<java.util.Map<String, Double>> getCourseAverages(@RequestParam long lecturerId) {
         var map = lecturerService.getCourseAverageGradeByLecturer(lecturerId);

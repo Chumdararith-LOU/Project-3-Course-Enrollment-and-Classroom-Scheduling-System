@@ -179,7 +179,6 @@ public class AdminViewController {
         var enrollmentList = new java.util.ArrayList<java.util.Map.Entry<String, Object>>(enrollmentMap.entrySet());
         model.addAttribute("enrollmentStats", enrollmentList);
 
-        // Also provide arrays for charts
         var enrollmentLabels = new java.util.ArrayList<String>(enrollmentMap.keySet());
         var enrollmentData = new java.util.ArrayList<Number>();
         for (String k : enrollmentLabels) {
@@ -197,7 +196,6 @@ public class AdminViewController {
         model.addAttribute("enrollmentLabels", enrollmentLabels);
         model.addAttribute("enrollmentData", enrollmentData);
 
-        // User distribution by role
         var roles = roleRepository.findAll();
         var userLabels = new java.util.ArrayList<String>();
         var userData = new java.util.ArrayList<Number>();
@@ -353,8 +351,6 @@ public class AdminViewController {
 
     @GetMapping("/activities")
     public String activities(Model model) {
-        // This would show system activity logs
-        // For now, redirect to dashboard
         return "redirect:/admin/dashboard";
     }
 

@@ -3,8 +3,6 @@ package com.cource.service;
 import java.time.Instant;
 import java.util.Optional;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.cource.entity.AttendanceCode;
 import com.cource.repository.AttendanceCodeRepository;
@@ -23,35 +21,6 @@ public class AttendanceCodeService {
         private final Long createdBy;
         private final Integer presentWindowMinutes;
         private final Integer lateWindowMinutes;
-
-        public CodeInfo(String code, long issuedAt, Long createdBy, Integer presentWindowMinutes,
-                Integer lateWindowMinutes) {
-            this.code = code;
-            this.issuedAt = issuedAt;
-            this.createdBy = createdBy;
-            this.presentWindowMinutes = presentWindowMinutes;
-            this.lateWindowMinutes = lateWindowMinutes;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public long getIssuedAt() {
-            return issuedAt;
-        }
-
-        public Long getCreatedBy() {
-            return createdBy;
-        }
-
-        public Integer getPresentWindowMinutes() {
-            return presentWindowMinutes;
-        }
-
-        public Integer getLateWindowMinutes() {
-            return lateWindowMinutes;
-        }
     }
 
     public AttendanceCodeService(AttendanceCodeRepository repo) {
@@ -62,17 +31,7 @@ public class AttendanceCodeService {
         return generate(scheduleId, creatorId, null, null);
     }
 
-    public CodeInfo generate(Long scheduleId, Long creatorId, Integer presentWindowMinutes, Integer lateWindowMinutes) {
-        String code = generateShortCode();
-        long now = Instant.now().getEpochSecond();
-        // remove existing
-        repo.deleteByScheduleId(scheduleId);
-        AttendanceCode ac = new AttendanceCode(scheduleId, code, now, creatorId, presentWindowMinutes,
-                lateWindowMinutes);
-        ac = repo.save(ac);
-        return new CodeInfo(ac.getCode(), ac.getIssuedAt(), ac.getCreatedBy(), ac.getPresentWindowMinutes(),
-                ac.getLateWindowMinutes());
-    }
+    
 
     public CodeInfo get(Long scheduleId) {
         Optional<AttendanceCode> o = repo.findByScheduleId(scheduleId);

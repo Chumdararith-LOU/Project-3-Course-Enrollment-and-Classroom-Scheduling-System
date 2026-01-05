@@ -261,7 +261,6 @@
           <input
             id="profilePassword"
             type="password"
-            autocomplete="new-password"
             class="w-full px-3 py-2 border rounded"
           />
         </div>
@@ -318,137 +317,137 @@
             .charAt(0)
             .toUpperCase();
 
-        // fetch profile data (extended fields)
-        try {
-          const pRes = await fetch("/api/users/me/profile");
-          if (pRes && pRes.ok) {
-            const p = await pRes.json();
+            // fetch profile data (extended fields)
             try {
-              const dobEl = document.getElementById("profileDob");
-              if (dobEl && p.dateOfBirth) dobEl.value = p.dateOfBirth;
-              const phoneEl = document.getElementById("profilePhone");
-              if (phoneEl) phoneEl.value = p.phone || "";
-              const bioEl = document.getElementById("profileBio");
-              if (bioEl) bioEl.value = p.bio || "";
-            } catch (e) {}
+              const pRes = await fetch("/api/users/me/profile");
+              if (pRes && pRes.ok) {
+                const p = await pRes.json();
+                try {
+                  const dobEl = document.getElementById("profileDob");
+                  if (dobEl && p.dateOfBirth) dobEl.value = p.dateOfBirth;
+                  const phoneEl = document.getElementById("profilePhone");
+                  if (phoneEl) phoneEl.value = p.phone || "";
+                  const bioEl = document.getElementById("profileBio");
+                  if (bioEl) bioEl.value = p.bio || "";
+                } catch (e) {}
 
-            // avatar present on profile? show it
-            if (p.avatarUrl) {
-              const avatarUrl = "/api/users/me/avatar-image";
-              const big = document.getElementById("profileAvatarImg");
-              const small = document.getElementById("profileAvatarSmallImg");
-              if (big) big.src = avatarUrl;
-              if (small) {
-                small.src = avatarUrl;
-                small.style.display = "block";
+                // avatar present on profile? show it
+                if (p.avatarUrl) {
+                  const avatarUrl = "/api/users/me/avatar-image";
+                  const big = document.getElementById("profileAvatarImg");
+                  const small = document.getElementById("profileAvatarSmallImg");
+                  if (big) big.src = avatarUrl;
+                  if (small) {
+                    small.src = avatarUrl;
+                    small.style.display = "block";
+                  }
+                  const initial = document.getElementById("profileInitialFrag");
+                  if (initial) initial.style.display = "none";
+                } else {
+                  // no avatar
+                  const small = document.getElementById("profileAvatarSmallImg");
+                  if (small) small.style.display = "none";
+                  const initial = document.getElementById("profileInitialFrag");
+                  if (initial) initial.style.display = "flex";
+                }
               }
-              const initial = document.getElementById("profileInitialFrag");
-              if (initial) initial.style.display = "none";
-            } else {
-              // no avatar
-              const small = document.getElementById("profileAvatarSmallImg");
-              if (small) small.style.display = "none";
-              const initial = document.getElementById("profileInitialFrag");
-              if (initial) initial.style.display = "flex";
+            } catch (e) {
+              // ignore profile load errors
             }
+          } catch (e) {
+            console.warn("loadProfileFragment failed", e);
           }
-        } catch (e) {
-          // ignore profile load errors
         }
-      } catch (e) {
-        console.warn("loadProfileFragment failed", e);
-      }
-    }
-    // Submit handler for profile form
-    document.addEventListener("DOMContentLoaded", function () {
-      const form = document.getElementById("profileForm");
-      const fileInput = document.getElementById("profileAvatarFile");
-      if (fileInput) {
-        fileInput.addEventListener("change", function (ev) {
-          if (fileInput.files && fileInput.files.length > 0) {
-            const url = URL.createObjectURL(fileInput.files[0]);
-            const img = document.getElementById("profileAvatarImg");
-            if (img) img.src = url;
-            const small = document.getElementById("profileAvatarSmallImg");
-            const initial = document.getElementById("profileInitialFrag");
-            if (small) {
-              small.src = url;
-              small.style.display = "block";
-            }
-            if (initial) initial.style.display = "none";
-          }
-        });
-      }
-      if (form) {
-        form.addEventListener("submit", async function (e) {
-          e.preventDefault();
-          const payload = {
-            firstName: document.getElementById("profileFirstName").value,
-            lastName: document.getElementById("profileLastName").value,
-            email: document.getElementById("profileEmailInput").value,
-            idCard: document.getElementById("profileIdCard").value,
-          };
-          const pwd = document.getElementById("profilePassword").value;
-          if (pwd && pwd.length > 0) payload.password = pwd;
-          // include new fields if present
-          try {
-            const dobVal = document.getElementById("profileDob").value;
-            if (dobVal) payload.dob = dobVal;
-          } catch (e) {}
-          try {
-            const phoneVal = document.getElementById("profilePhone").value;
-            if (phoneVal) payload.phone = phoneVal;
-          } catch (e) {}
-          try {
-            const bioVal = document.getElementById("profileBio").value;
-            if (bioVal) payload.bio = bioVal;
-          } catch (e) {}
-          try {
-            // Use /api/users/me which works for all authenticated users
-            const res = await fetch("/api/users/me", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-            if (!res.ok) throw new Error((await res.text()) || "Update failed");
-            // if a new avatar file is selected, upload it
-            const fileInput = document.getElementById("profileAvatarFile");
-            if (fileInput && fileInput.files && fileInput.files.length > 0) {
-              try {
-                const fd = new FormData();
-                fd.append("file", fileInput.files[0]);
-                const up = await fetch("/api/users/me/avatar", {
-                  method: "POST",
-                  body: fd,
-                });
-                if (!up.ok) console.warn("Avatar upload failed");
-              } catch (e) {
-                console.warn("Avatar upload error", e);
+        // Submit handler for profile form
+        document.addEventListener("DOMContentLoaded", function () {
+          const form = document.getElementById("profileForm");
+          const fileInput = document.getElementById("profileAvatarFile");
+          if (fileInput) {
+            fileInput.addEventListener("change", function (ev) {
+              if (fileInput.files && fileInput.files.length > 0) {
+                const url = URL.createObjectURL(fileInput.files[0]);
+                const img = document.getElementById("profileAvatarImg");
+                if (img) img.src = url;
+                const small = document.getElementById("profileAvatarSmallImg");
+                const initial = document.getElementById("profileInitialFrag");
+                if (small) {
+                  small.src = url;
+                  small.style.display = "block";
+                }
+                if (initial) initial.style.display = "none";
               }
-            }
-            // simple toast
-            const toast = document.createElement("div");
-            toast.className =
-              "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-green-600";
-            toast.innerText = "Profile saved.";
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 1800);
-            closeProfileModal();
-            loadProfileFragment();
-          } catch (err) {
-            console.error("Error saving profile", err);
-            const toast = document.createElement("div");
-            toast.className =
-              "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-red-600";
-            toast.innerText = "Error saving profile: " + err.message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            });
           }
+          if (form) {
+            form.addEventListener("submit", async function (e) {
+              e.preventDefault();
+              const payload = {
+                firstName: document.getElementById("profileFirstName").value,
+                lastName: document.getElementById("profileLastName").value,
+                email: document.getElementById("profileEmailInput").value,
+                idCard: document.getElementById("profileIdCard").value,
+              };
+              const pwd = document.getElementById("profilePassword").value;
+              if (pwd && pwd.length > 0) payload.password = pwd;
+              // include new fields if present
+              try {
+                const dobVal = document.getElementById("profileDob").value;
+                if (dobVal) payload.dob = dobVal;
+              } catch (e) {}
+              try {
+                const phoneVal = document.getElementById("profilePhone").value;
+                if (phoneVal) payload.phone = phoneVal;
+              } catch (e) {}
+              try {
+                const bioVal = document.getElementById("profileBio").value;
+                if (bioVal) payload.bio = bioVal;
+              } catch (e) {}
+              try {
+                // Use /api/users/me which works for all authenticated users
+                const res = await fetch("/api/users/me", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                });
+                if (!res.ok) throw new Error((await res.text()) || "Update failed");
+                // if a new avatar file is selected, upload it
+                const fileInput = document.getElementById("profileAvatarFile");
+                if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                  try {
+                    const fd = new FormData();
+                    fd.append("file", fileInput.files[0]);
+                    const up = await fetch("/api/users/me/avatar", {
+                      method: "POST",
+                      body: fd,
+                    });
+                    if (!up.ok) console.warn("Avatar upload failed");
+                  } catch (e) {
+                    console.warn("Avatar upload error", e);
+                  }
+                }
+                // simple toast
+                const toast = document.createElement("div");
+                toast.className =
+                  "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-green-600";
+                toast.innerText = "Profile saved.";
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 1800);
+                closeProfileModal();
+                loadProfileFragment();
+              } catch (err) {
+                console.error("Error saving profile", err);
+                const toast = document.createElement("div");
+                toast.className =
+                  "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-red-600";
+                toast.innerText = "Error saving profile: " + err.message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+              }
+            });
+          }
+          // Load profile on page load for any authenticated user
+          loadProfileFragment();
         });
-      }
-      // Load profile on page load for any authenticated user
-      loadProfileFragment();
-    });
-    /*]]>*/
-  </script>
+        /*]]>*/
+    </script>
 </div>

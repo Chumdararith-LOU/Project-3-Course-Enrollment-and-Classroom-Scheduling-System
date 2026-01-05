@@ -18,10 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST API Controller for Attendance Management.
- * Provides endpoints for recording, querying, and managing attendance.
- */
 @RestController
 @RequestMapping("/api/attendance")
 @RequiredArgsConstructor
@@ -30,13 +26,9 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
     private final SecurityHelper securityHelper;
 
-    /**
-     * Record attendance for a single student
-     */
     @PostMapping
     public ResponseEntity<?> recordAttendance(@RequestBody AttendanceRequestDTO request) {
         try {
-            // Set the current user as recorder if not specified
             if (request.getLecturerId() == null) {
                 request.setLecturerId(securityHelper.getCurrentUserId());
             }
@@ -54,9 +46,6 @@ public class AttendanceController {
         }
     }
 
-    /**
-     * Bulk record attendance for multiple students
-     */
     @PostMapping("/bulk")
     public ResponseEntity<?> bulkRecordAttendance(
             @RequestParam Long scheduleId,
@@ -76,17 +65,11 @@ public class AttendanceController {
         }
     }
 
-    /**
-     * Get attendance records by schedule
-     */
     @GetMapping("/schedule/{scheduleId}")
     public ResponseEntity<List<AttendanceResponseDTO>> getBySchedule(@PathVariable Long scheduleId) {
         return ResponseEntity.ok(attendanceService.getAttendanceBySchedule(scheduleId));
     }
 
-    /**
-     * Get attendance records by schedule and date
-     */
     @GetMapping("/schedule/{scheduleId}/date/{date}")
     public ResponseEntity<List<AttendanceResponseDTO>> getByScheduleAndDate(
             @PathVariable Long scheduleId,
@@ -94,9 +77,6 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.getAttendanceByScheduleAndDate(scheduleId, date));
     }
 
-    /**
-     * Get student attendance for an offering
-     */
     @GetMapping("/student/{studentId}/offering/{offeringId}")
     public ResponseEntity<List<AttendanceResponseDTO>> getStudentAttendance(
             @PathVariable Long studentId,
@@ -104,9 +84,6 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.getStudentAttendance(studentId, offeringId));
     }
 
-    /**
-     * Get student attendance summary for an offering
-     */
     @GetMapping("/student/{studentId}/offering/{offeringId}/summary")
     public ResponseEntity<AttendanceSummaryDTO> getStudentSummary(
             @PathVariable Long studentId,
@@ -118,17 +95,11 @@ public class AttendanceController {
         }
     }
 
-    /**
-     * Get attendance statistics for a schedule
-     */
     @GetMapping("/schedule/{scheduleId}/stats")
     public ResponseEntity<Map<String, Object>> getScheduleStats(@PathVariable Long scheduleId) {
         return ResponseEntity.ok(attendanceService.getScheduleAttendanceStats(scheduleId));
     }
 
-    /**
-     * Get attendance rate for a student in an offering
-     */
     @GetMapping("/student/{studentId}/offering/{offeringId}/rate")
     public ResponseEntity<Map<String, Object>> getAttendanceRate(
             @PathVariable Long studentId,
@@ -137,9 +108,6 @@ public class AttendanceController {
         return ResponseEntity.ok(Map.of("studentId", studentId, "offeringId", offeringId, "rate", rate));
     }
 
-    /**
-     * Get today's schedules for current lecturer
-     */
     @GetMapping("/today")
     public ResponseEntity<List<ClassSchedule>> getTodaySchedules(@RequestParam(required = false) Long lecturerId) {
         Long id = lecturerId != null ? lecturerId : securityHelper.getCurrentUserId();
@@ -149,9 +117,6 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.getTodaySchedulesForLecturer(id));
     }
 
-    /**
-     * Check if attendance exists
-     */
     @GetMapping("/exists")
     public ResponseEntity<Map<String, Boolean>> checkExists(
             @RequestParam Long studentId,
@@ -161,9 +126,6 @@ public class AttendanceController {
         return ResponseEntity.ok(Map.of("exists", exists));
     }
 
-    /**
-     * Update attendance record
-     */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAttendance(
             @PathVariable Long id,
@@ -180,9 +142,6 @@ public class AttendanceController {
         }
     }
 
-    /**
-     * Delete attendance record
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAttendance(@PathVariable Long id) {
         try {
@@ -193,9 +152,6 @@ public class AttendanceController {
         }
     }
 
-    /**
-     * Get offering attendance with date range
-     */
     @GetMapping("/offering/{offeringId}")
     public ResponseEntity<List<AttendanceResponseDTO>> getOfferingAttendance(
             @PathVariable Long offeringId,
