@@ -52,5 +52,5 @@ public interface StudentService {
 
     int getCreditsEarned(Long studentId);
 
-    int getCoursesCompleted(Long studentId);
+    int getcourcesCompleted(Long studentId);
 }
