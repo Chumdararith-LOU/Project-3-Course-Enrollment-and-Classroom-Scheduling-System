@@ -46,9 +46,8 @@ public class LecturerViewController {
         // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
-            // You can fetch dashboard data here if needed
-            // model.addAttribute("courses",
-            // lecturerService.getCoursesByLecturerId(lecturerId));
+            model.addAttribute("userId", lecturerId);
+            model.addAttribute("role", "LECTURER");
         }
 
         // Dashboard totals for the lecturer: total courses, total students, classes
@@ -144,7 +143,7 @@ public class LecturerViewController {
             model.addAttribute("userLabels", new java.util.ArrayList<String>());
             model.addAttribute("userData", new java.util.ArrayList<Number>());
         }
-        return "views/lecturer/dashboard";
+        return "lecturer/dashboard";
     }
 
     /**
@@ -156,6 +155,8 @@ public class LecturerViewController {
         try {
             if (lecturerId != null) {
                 model.addAttribute("lecturerId", lecturerId);
+                model.addAttribute("userId", lecturerId); // ADD THIS LINE
+                model.addAttribute("role", "LECTURER");
                 model.addAttribute("offerings", lecturerService.getOfferingsByLecturerId(lecturerId));
             }
             // Only fetch admin-level lists if the current user has ADMIN role
@@ -174,7 +175,7 @@ public class LecturerViewController {
         } catch (Exception ex) {
             model.addAttribute("error", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
         }
-        return "views/lecturer/courses";
+        return "lecturer/courses";
     }
 
     /**
@@ -190,6 +191,8 @@ public class LecturerViewController {
             try {
                 model.addAttribute("offeringId", offeringId);
                 model.addAttribute("lecturerId", lecturerId);
+                model.addAttribute("userId", lecturerId); // ADD THIS LINE
+                model.addAttribute("role", "LECTURER");
                 // Verify lecturer owns this offering (throws if not)
                 lecturerService.getEnrolledStudents(offeringId, lecturerId);
 
@@ -218,7 +221,7 @@ public class LecturerViewController {
                 model.addAttribute("error", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
             }
         }
-        return "views/lecturer/students";
+        return "lecturer/students";
     }
 
     /**
@@ -286,6 +289,8 @@ public class LecturerViewController {
         if (scheduleId != null && lecturerId != null) {
             model.addAttribute("scheduleId", scheduleId);
             model.addAttribute("lecturerId", lecturerId);
+            model.addAttribute("userId", lecturerId); // ADD THIS LINE
+            model.addAttribute("role", "LECTURER");
             model.addAttribute("attendanceRecords", lecturerService.getAttendanceRecords(scheduleId, lecturerId));
             // Also load enrolled students for this schedule's offering so lecturer can mark
             // attendance
@@ -302,7 +307,7 @@ public class LecturerViewController {
                 model.addAttribute("students", new java.util.ArrayList<>());
             }
         }
-        return "views/lecturer/attendance";
+        return "lecturer/attendance";
     }
 
     /**
@@ -312,6 +317,8 @@ public class LecturerViewController {
     public String schedule(@RequestParam(required = false) Long lecturerId, Model model) {
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
+            model.addAttribute("userId", lecturerId); // ADD THIS LINE
+            model.addAttribute("role", "LECTURER");
             // Fetch all offerings for this lecturer
             var offerings = lecturerService.getOfferingsByLecturerId(lecturerId);
             System.out.println("[DEBUG] Offerings for lecturerId=" + lecturerId + ":");
@@ -347,7 +354,7 @@ public class LecturerViewController {
         } else {
             model.addAttribute("terms", new java.util.ArrayList<>());
         }
-        return "views/lecturer/schedule";
+        return "lecturer/schedule";
     }
 
     /**
@@ -364,6 +371,8 @@ public class LecturerViewController {
         // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
+            model.addAttribute("userId", lecturerId); // ADD THIS LINE
+            model.addAttribute("role", "LECTURER");
         }
 
         java.time.LocalDate fromDate;
@@ -504,6 +513,6 @@ public class LecturerViewController {
             model.addAttribute("courseLabels", new java.util.ArrayList<String>());
             model.addAttribute("courseData", new java.util.ArrayList<Number>());
         }
-        return "views/lecturer/reports";
+        return "lecturer/reports";
     }
 }

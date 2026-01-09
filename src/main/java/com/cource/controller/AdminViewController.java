@@ -1,11 +1,8 @@
 package com.cource.controller;
 
-import com.cource.entity.User;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.cource.repository.RoleRepository;
 import com.cource.service.AdminService;
 import com.cource.service.UserService;
+import com.cource.util.SecurityHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,13 +25,22 @@ public class AdminViewController {
     private final AdminService adminService;
     private final UserService userService;
     private final RoleRepository roleRepository;
+    private final SecurityHelper securityHelper;
 
     @GetMapping("/dashboard")
-    public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String dashboard(@RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("totalStudents", adminService.getTotalStudents());
         model.addAttribute("totalLecturers", adminService.getTotalLecturers());
         model.addAttribute("totalCourses", adminService.getTotalCourses());
         model.addAttribute("totalEnrollments", adminService.getTotalEnrollments());
+
         var enrollmentMap = adminService.getEnrollmentStatsByTerm();
         var enrollmentLabels = new java.util.ArrayList<String>(enrollmentMap.keySet());
         var enrollmentData = new java.util.ArrayList<Number>();
@@ -63,14 +70,24 @@ public class AdminViewController {
         model.addAttribute("userLabels", userLabels);
         model.addAttribute("userData", userData);
 
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "dashboard");
         return "admin/dashboard";
+    }
+
+    @GetMapping("")
+    public String index() {
+        return "redirect:/admin/dashboard";
     }
 
     @GetMapping("/users")
     public String users(@RequestParam(required = false) String roleCode,
-            @AuthenticationPrincipal UserDetails userDetails, Model model) {
+            @RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         if (roleCode != null && !roleCode.isEmpty()) {
             model.addAttribute("users", adminService.getUsersByRole(roleCode));
             model.addAttribute("roleCode", roleCode);
@@ -78,35 +95,51 @@ public class AdminViewController {
             model.addAttribute("users", adminService.getAllUsers());
         }
         model.addAttribute("roles", roleRepository.findAll());
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "users");
         return "admin/users";
     }
 
     @GetMapping("/users/{id}/edit")
-    public String editUser(@PathVariable Long id, Model model) {
+    public String editUser(@PathVariable Long id,
+            @RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("user", userService.getUserById(id));
         model.addAttribute("roles", roleRepository.findAll());
         return "admin/user-edit";
     }
 
     @GetMapping("/courses")
-    public String courses(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String courses(@RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("courses", adminService.getAllCourses());
         model.addAttribute("lecturers", adminService.getUsersByRole("LECTURER"));
-        return "/admin/courses";
-        // model.addAttribute("courses", adminService.getAllCourses());
-        // model.addAttribute("lecturers", adminService.getUsersByRole("LECTURER"));
-        // addUserInfoToModel(userDetails, model);
-        // model.addAttribute("currentPage", "courses");
-        // return "admin/courses";
+        return "admin/courses";
     }
 
     @GetMapping("/offerings")
     public String offerings(@RequestParam(required = false) Long termId,
-            @AuthenticationPrincipal UserDetails userDetails, Model model) {
+            @RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("terms", adminService.getAllTerms());
         model.addAttribute("courses", adminService.getAllCourses());
+
         var lecturers = new java.util.ArrayList<>(adminService.getUsersByRole("LECTURER"));
         var admins = adminService.getUsersByRole("ADMIN");
         for (var admin : admins) {
@@ -115,46 +148,67 @@ public class AdminViewController {
             }
         }
         model.addAttribute("lecturers", lecturers);
+
         if (termId != null) {
             model.addAttribute("offerings", adminService.getCourseOfferingsByTerm(termId));
             model.addAttribute("termId", termId);
         } else {
             model.addAttribute("offerings", adminService.getAllCourseOfferings());
         }
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "offerings");
         return "admin/offerings";
     }
 
     @GetMapping("/rooms")
-    public String rooms(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String rooms(@RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("rooms", adminService.getAllRooms());
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "rooms");
         return "admin/rooms";
     }
 
     @GetMapping("/schedules")
-    public String schedules(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String schedules(@RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("schedules", adminService.getAllSchedules());
         model.addAttribute("offerings", adminService.getAllCourseOfferings());
         model.addAttribute("rooms", adminService.getAllRooms());
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "schedules");
         return "admin/schedules";
     }
 
     @GetMapping("/terms")
-    public String terms(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String terms(@RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("terms", adminService.getAllTerms());
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "terms");
         return "admin/terms";
     }
 
     @GetMapping("/enrollments")
     public String enrollments(@RequestParam(required = false) Long offeringId,
-            @AuthenticationPrincipal UserDetails userDetails, Model model) {
+            @RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         if (offeringId != null) {
             model.addAttribute("enrollments", adminService.getEnrollmentsByOffering(offeringId));
             model.addAttribute("offeringId", offeringId);
@@ -163,13 +217,18 @@ public class AdminViewController {
         }
         model.addAttribute("offerings", adminService.getAllCourseOfferings());
         model.addAttribute("students", adminService.getUsersByRole("STUDENT"));
-        addUserInfoToModel(userDetails, model);
-        model.addAttribute("currentPage", "enrollments");
         return "admin/enrollments";
     }
 
     @GetMapping("/reports")
-    public String reports(Model model) {
+    public String reports(@RequestParam(required = false) Long adminId, Model model) {
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("adminId", userId);
+            model.addAttribute("userId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
         model.addAttribute("totalStudents", adminService.getTotalStudents());
         model.addAttribute("totalLecturers", adminService.getTotalLecturers());
         model.addAttribute("totalCourses", adminService.getTotalCourses());
@@ -280,7 +339,6 @@ public class AdminViewController {
                 : adminService.getAllCourseOfferings();
 
         for (var offering : offerings) {
-            // Get enrollment count (you might need to add this to AdminService)
             var enrollments = adminService.getEnrollmentsByOffering(offering.getId());
             int enrolledCount = enrollments.size();
             int available = offering.getCapacity() - enrolledCount;
@@ -352,25 +410,5 @@ public class AdminViewController {
     @GetMapping("/activities")
     public String activities(Model model) {
         return "redirect:/admin/dashboard";
-    }
-
-    // Helper method to add user info to model
-    private void addUserInfoToModel(UserDetails userDetails, Model model) {
-        model.addAttribute("userId", 1L);
-        model.addAttribute("role", "ADMIN");
-
-        if (userDetails != null) {
-            try {
-                User user = userService.getUserByEmail(userDetails.getUsername());
-                if (user != null) {
-                    model.addAttribute("userId", user.getId());
-                    if (user.getRole() != null) {
-                        model.addAttribute("role", user.getRole().getRoleCode());
-                    }
-                }
-            } catch (Exception e) {
-                // Use defaults if unable to fetch user
-            }
-        }
     }
 }

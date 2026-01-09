@@ -26,6 +26,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final EnrollmentRepository enrollmentRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final UserRepository userRepository;
+    private final CourseLecturerRepository courseLecturerRepository;
 
     @Override
     public Attendance recordAttendance(AttendanceRequestDTO request) {
@@ -178,24 +179,6 @@ public class AttendanceServiceImpl implements AttendanceService {
             Long recordedBy) {
         ClassSchedule schedule = classScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
-        User recorder = userRepository.findById(recordedBy)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
-        List<Attendance> attendances = new java.util.ArrayList<>();
-        for (Long studentId : studentIds) {
-            Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, schedule.getOffering().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Student enrollment not found"));
-            
-            Attendance attendance = new Attendance();
-            attendance.setEnrollment(enrollment);
-            attendance.setSchedule(schedule);
-            attendance.setAttendanceDate(date);
-            attendance.setStatus(status);
-            attendance.setRecordedBy(recorder);
-            attendances.add(attendanceRepository.save(attendance));
-        }
-        return attendances;
-    }
 
         Long offeringId = schedule.getOffering().getId();
         List<Attendance> results = new ArrayList<>();

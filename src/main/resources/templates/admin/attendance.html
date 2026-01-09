@@ -7,9 +7,7 @@
     <title>Admin Attendance</title>
   </head>
   <body class="bg-slate-100 font-sans">
-    <div
-      th:replace="~{fragments/profile :: sidebar(${userId}, ${role}, 'dashboard')}"
-    ></div>
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
     <main class="ml-64 p-8">
       <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-lg font-bold">All Attendance Records</h2>

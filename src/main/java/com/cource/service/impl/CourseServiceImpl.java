@@ -1,3 +1,4 @@
+
 package com.cource.service.impl;
 
 import com.cource.repository.CourseOfferingRepository;
@@ -11,9 +12,7 @@ import com.cource.entity.CourseLecturer;
 import com.cource.entity.ClassSchedule;
 
 import com.cource.dto.course.CourseCreateRequest;
-import com.cource.dto.course.CourseResponseDTO;
 import com.cource.dto.course.CourseUpdateRequest;
-import com.cource.dto.enrollment.StudentEnrollmentDTO;
 import com.cource.entity.Course;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.CourseRepository;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +55,7 @@ public class CourseServiceImpl implements CourseService {
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
         course.setCredits(request.getCredits());
-        course.setActive(request.getActive());
+        course.setActive(request.isActive());
         return courseRepository.save(course);
     }
 
@@ -123,71 +121,6 @@ public class CourseServiceImpl implements CourseService {
             return getAllCourses();
         }
         return courseRepository.findByCourseCodeContainingIgnoreCaseOrTitleContainingIgnoreCase(keyword, keyword);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<StudentEnrollmentDTO> getStudentEnrollments(Long studentId) {
-        if (studentId == null) {
-            return java.util.Collections.emptyList();
-        }
-
-        return enrollmentRepository.findByStudentId(studentId).stream()
-                .map(e -> {
-                    var offering = e.getOffering();
-                    var course = offering != null ? offering.getCourse() : null;
-                    var term = offering != null ? offering.getTerm() : null;
-
-                    String lecturerName = "";
-                    try {
-                        if (offering != null && offering.getLecturers() != null && !offering.getLecturers().isEmpty()) {
-                            var cl = offering.getLecturers().get(0);
-                            if (cl != null && cl.getLecturer() != null) {
-                                lecturerName = cl.getLecturer().getFullName();
-                            }
-                        }
-                    } catch (Exception ignore) {
-                    }
-
-                    return StudentEnrollmentDTO.builder()
-                            .enrollmentId(e.getId())
-                            .offeringId(offering != null ? offering.getId() : null)
-                            .courseCode(course != null ? course.getCourseCode() : "")
-                            .title(course != null ? course.getTitle() : "")
-                            .credits(course != null ? course.getCredits() : 0)
-                            .termName(term != null ? term.getTermName() : "")
-                            .status(e.getStatus())
-                            .grade(e.getGrade())
-                            .lecturer(lecturerName)
-                            .enrolledAt(e.getEnrolledAt())
-                            .build();
-                })
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseResponseDTO> getCatalogForStudent(Long studentId) {
-        // Minimal catalog: list courses with basic properties.
-        // (Offering/schedule/enrollment-status enrichment can be added later.)
-        return courseRepository.findAll().stream()
-                .map(c -> new CourseResponseDTO(
-                        c.getId(),
-                        c.getCourseCode(),
-                        c.getTitle(),
-                        c.getDescription(),
-                        c.getCredits(),
-                        0,
-                        c.isActive(),
-                        "",
-                        "",
-                        "",
-                        c.getEnrollmentCode(),
-                        null,
-                        false,
-                        0,
-                        false))
-                .toList();
     }
 
     @Override

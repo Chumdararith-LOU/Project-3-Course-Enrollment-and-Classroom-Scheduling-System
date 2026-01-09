@@ -3,20 +3,24 @@ package com.cource.controller;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
 
 import com.cource.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 
-@Controller
-@RequestMapping("/admin/export")
+@RestController
+@RequestMapping("/api/admin/export")
 @RequiredArgsConstructor
 public class AdminExportController {
 
     private final AdminService adminService;
+    private final com.cource.repository.AttendanceRepository attendanceRepository;
 
     @GetMapping("/users")
     public ResponseEntity<String> exportUsers() {
@@ -108,6 +112,47 @@ public class AdminExportController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=schedules.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv.toString());
+    }
+
+    @GetMapping("/attendance")
+    public ResponseEntity<String> exportAttendance(@RequestParam Long offeringId,
+            @RequestParam String from,
+            @RequestParam String to) {
+        LocalDate fromDate = LocalDate.parse(from);
+        LocalDate toDate = LocalDate.parse(to);
+        var attendances = attendanceRepository.findByOfferingIdBetweenDates(offeringId, fromDate, toDate);
+
+        StringBuilder csv = new StringBuilder();
+        csv.append(
+                "attendanceId,offeringId,scheduleId,attendanceDate,status,notes,studentId,studentFullName,recordedById,recordedByFullName,recordedAt\n");
+
+        attendances.forEach(a -> {
+            var e = a.getEnrollment();
+            var s = e.getStudent();
+            var rb = a.getRecordedBy();
+            csv.append(a.getId()).append(",");
+            csv.append(e.getOffering().getId()).append(",");
+            csv.append(a.getSchedule().getId()).append(",");
+            csv.append(a.getAttendanceDate()).append(",");
+            csv.append("\"").append(a.getStatus()).append("\",");
+            csv.append("\"").append(a.getNotes() != null ? a.getNotes().replace("\"", "\"\"") : "").append("\",");
+            csv.append(s.getId()).append(",");
+            csv.append("\"").append(s.getFirstName()).append(" ").append(s.getLastName()).append("\",");
+            if (rb != null) {
+                csv.append(rb.getId()).append(",");
+                csv.append("\"").append(rb.getFirstName()).append(" ").append(rb.getLastName()).append("\",");
+            } else {
+                csv.append(",");
+                csv.append("\"").append("\"").append(",");
+            }
+            csv.append(a.getRecordedAt() != null ? a.getRecordedAt() : "").append("\n");
+        });
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=attendance_offering_" + offeringId + ".csv")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csv.toString());
     }

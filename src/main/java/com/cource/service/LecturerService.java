@@ -1,7 +1,6 @@
 package com.cource.service;
 
 import java.util.List;
-import java.util.Map;
 
 import com.cource.dto.attendance.AttendanceRequestDTO;
 import com.cource.entity.Attendance;
@@ -76,4 +75,5 @@ public interface LecturerService {
         com.cource.entity.CourseOffering getOfferingById(long lecturerId, long offeringId);
 
         com.cource.entity.CourseOffering regenerateOfferingEnrollmentCode(long lecturerId, long offeringId);
-        }
+
+}

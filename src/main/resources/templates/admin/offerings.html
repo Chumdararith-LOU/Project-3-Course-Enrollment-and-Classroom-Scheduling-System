@@ -39,9 +39,7 @@
   </head>
   <body class="bg-slate-100 font-sans">
     <!-- Sidebar Navigation -->
-    <div
-      th:replace="~{fragments/profile :: sidebar(${userId}, ${role}, ${currentPage})}"
-    ></div>
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
     <!-- Main Content -->
     <main class="ml-64 min-h-screen">
@@ -104,6 +102,28 @@
               </svg>
               Add Offering
             </button>
+            <!-- Bulk assign lecturer control -->
+            <div class="flex items-center gap-2">
+              <input
+                id="bulkLecturerId"
+                type="number"
+                min="1"
+                placeholder="Lecturer ID"
+                class="w-28 px-3 py-2 border border-slate-300 rounded-lg text-sm"
+              />
+              <button
+                onclick="assignLecturerToAll()"
+                style="
+                  background-color: #7c3aed !important;
+                  color: white !important;
+                "
+                class="flex items-center gap-2 px-4 py-2 font-semibold rounded-lg transition shadow-lg hover:shadow-xl"
+                onmouseover="this.style.backgroundColor='#6d28d9'"
+                onmouseout="this.style.backgroundColor='#7c3aed'"
+              >
+                Assign To All
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -379,7 +399,6 @@
             <select
               id="lecturerIds"
               name="lecturerIds"
-              multiple
               required
               class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px] max-h-44 overflow-y-auto"
             >
@@ -648,9 +667,62 @@
       <div id="toastMessage" class="text-sm font-medium text-slate-900"></div>
     </div>
 
+    <!-- Bulk Assign Confirmation Modal -->
+    <div
+      id="bulkAssignModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm items-center justify-center z-50 p-4 animate-fadeIn"
+      onclick="if(event.target === this) cancelBulkAssign()"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp transform transition-all"
+      >
+        <div class="px-6 py-4 border-b">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold">Confirm Bulk Assign</h3>
+            <button
+              onclick="cancelBulkAssign()"
+              class="text-slate-500 hover:text-slate-800"
+            >
+              &times;
+            </button>
+          </div>
+        </div>
+        <div class="p-6">
+          <p class="mb-4 text-slate-700">
+            You are about to assign lecturer
+            <span id="bulkAssignLecturerSpan" class="font-semibold"></span> to
+            <span id="bulkAssignCountPlaceholder" class="font-semibold"
+              >all</span
+            >
+            offerings.
+          </p>
+          <p class="text-sm text-slate-500 mb-6">
+            This action is idempotent and will not duplicate existing
+            assignments. Proceed?
+          </p>
+          <div class="flex justify-end gap-3">
+            <button
+              onclick="cancelBulkAssign()"
+              class="px-4 py-2 rounded-lg bg-slate-200 text-slate-700"
+            >
+              Cancel
+            </button>
+            <button
+              id="confirmBulkAssignBtn"
+              onclick="confirmBulkAssign()"
+              class="px-4 py-2 rounded-lg bg-indigo-600 text-white"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       /*<![CDATA[*/
       let deleteOfferingId = null;
+      let bulkLecturerCandidate = null;
 
       // Load enrollment counts on page load
       document.addEventListener("DOMContentLoaded", function () {
@@ -823,21 +895,6 @@
             document.getElementById("capacity").value = offering.capacity;
             document.getElementById("isActive").value = offering.active;
 
-            // Load and select current lecturers
-            const lecturersResponse = await fetch(
-              `/api/admin/offerings/${id}/lecturers`
-            );
-            if (lecturersResponse.ok) {
-              const lecturers = await lecturersResponse.json();
-              const lecturerSelect = document.getElementById("lecturerIds");
-              const lecturerIds = lecturers.map((l) => l.id.toString());
-
-              // Clear previous selections
-              Array.from(lecturerSelect.options).forEach((option) => {
-                option.selected = lecturerIds.includes(option.value);
-              });
-            }
-
             document.getElementById("offeringModal").classList.remove("hidden");
             document.getElementById("offeringModal").classList.add("flex");
           } else {
@@ -902,19 +959,11 @@
               closeDeleteModal();
               setTimeout(() => location.reload(), 1000);
             } else {
-              // Parse error response
-              const errorData = await response.json();
-              const errorMessage =
-                errorData.error ||
-                errorData.message ||
-                "Error deleting offering";
-              showToast(errorMessage, "error");
-              closeDeleteModal();
+              showToast("Error deleting offering", "error");
             }
           } catch (error) {
             console.error("Error:", error);
-            showToast("Error deleting offering. Please try again.", "error");
-            closeDeleteModal();
+            showToast("Error deleting offering", "error");
           }
         });
 
@@ -967,6 +1016,71 @@
             showToast("Error saving offering", "error");
           }
         });
+
+      // Bulk assign lecturer to all offerings (open confirmation)
+      function assignLecturerToAll() {
+        const input = document.getElementById("bulkLecturerId");
+        const val = input ? parseInt(input.value) : NaN;
+        if (!val || val <= 0) {
+          showToast("Please enter a valid lecturer ID", "error");
+          return;
+        }
+        bulkLecturerCandidate = val;
+        const span = document.getElementById("bulkAssignLecturerSpan");
+        if (span) span.textContent = val;
+        const modal = document.getElementById("bulkAssignModal");
+        if (modal) {
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        }
+      }
+
+      async function confirmBulkAssign() {
+        if (!bulkLecturerCandidate) return;
+        const btn = document.getElementById("confirmBulkAssignBtn");
+        const orig = btn ? btn.innerHTML : null;
+        if (btn) btn.innerHTML = "Processing...";
+        try {
+          const resp = await fetch(
+            `/api/admin/offerings/assign-all?lecturerId=${bulkLecturerCandidate}`,
+            { method: "POST" }
+          );
+          if (resp.ok) {
+            const data = await resp.json();
+            const created = data && data.created != null ? data.created : null;
+            showToast(
+              created != null
+                ? `Created ${created} assignments`
+                : "Lecturer assigned to all offerings",
+              "success"
+            );
+            const modal = document.getElementById("bulkAssignModal");
+            if (modal) {
+              modal.classList.add("hidden");
+              modal.classList.remove("flex");
+            }
+            setTimeout(() => location.reload(), 900);
+          } else {
+            const txt = await resp.text();
+            showToast(txt || "Error assigning lecturer", "error");
+          }
+        } catch (err) {
+          console.error(err);
+          showToast("Error assigning lecturer: " + err.message, "error");
+        } finally {
+          if (btn && orig) btn.innerHTML = orig;
+          bulkLecturerCandidate = null;
+        }
+      }
+
+      function cancelBulkAssign() {
+        bulkLecturerCandidate = null;
+        const modal = document.getElementById("bulkAssignModal");
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+      }
       /*]]>*/
     </script>
   </body>

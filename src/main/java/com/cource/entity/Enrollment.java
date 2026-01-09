@@ -27,7 +27,6 @@ public class Enrollment {
     @Column(name = "enrolled_at", insertable = false, updatable = false)
     private LocalDateTime enrolledAt;
 
-    @Builder.Default
     @Column(name = "status")
     private String status = "ENROLLED"; // Values: ENROLLED, DROPPED, COMPLETED, FAILED
 

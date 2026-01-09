@@ -8,11 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
   </head>
   <body class="bg-slate-100 font-sans">
-    <!-- Sidebar Navigation -->
-    <div
-      th:replace="~{fragments/profile :: sidebar(${userId}, ${role}, ${currentPage})}"
-    ></div>
 
+    <!-- Sidebar Navigation -->
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
+
+    <!-- Main Content -->
     <main class="ml-64 p-8">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-slate-900">Academic Terms</h1>
@@ -37,6 +37,7 @@
         </button>
       </div>
 
+      <!-- Terms Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           th:each="term : ${terms}"
@@ -50,7 +51,10 @@
               >
                 Fall 2025
               </h3>
-              <p class="text-sm text-gray-500 mt-1" th:text="${term.termCode}">
+              <p
+                class="text-sm text-gray-500 mt-1"
+                th:text="${term.termCode}"
+              >
                 FALL2025
               </p>
             </div>
@@ -136,226 +140,146 @@
           Create Your First Term
         </button>
       </div>
-    </main>
+    </div>
 
-    <div
-      id="termModal"
-      tabindex="-1"
-      class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-    >
+    <!-- Modal for Create/Edit Term -->
+    <div id="termModal" tabindex="-1" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-        <button
-          onclick="closeTermModal()"
-          class="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
+        <button onclick="closeTermModal()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
         <h2 id="termModalTitle" class="text-xl font-bold mb-4">Add New Term</h2>
         <form id="termForm" class="space-y-4">
           <input type="hidden" id="termId" />
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Term Name *</label
-            >
-            <input
-              type="text"
-              id="termName"
-              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-              placeholder="e.g. Spring 2025"
-              required
-            />
+            <label class="block text-sm font-medium text-gray-700">Term Name *</label>
+            <input type="text" id="termName" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Term Code *</label
-            >
-            <input
-              type="text"
-              id="termCode"
-              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-              placeholder="e.g. SP2025"
-              required
-            />
+            <label class="block text-sm font-medium text-gray-700">Term Code *</label>
+            <input type="text" id="termCode" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Start Date *</label
-            >
-            <input
-              type="date"
-              id="startDate"
-              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-              required
-            />
+            <label class="block text-sm font-medium text-gray-700">Start Date *</label>
+            <input type="date" id="startDate" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >End Date *</label
-            >
-            <input
-              type="date"
-              id="endDate"
-              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-              required
-            />
+            <label class="block text-sm font-medium text-gray-700">End Date *</label>
+            <input type="date" id="endDate" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required />
           </div>
-          <input type="hidden" id="isActive" value="true" />
-
           <div class="flex justify-end space-x-2">
-            <button
-              type="button"
-              onclick="closeTermModal()"
-              class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Save
-            </button>
+            <button type="button" onclick="closeTermModal()" class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div
-      id="toast"
-      class="fixed top-6 right-6 z-50 hidden px-4 py-2 rounded bg-slate-900 text-white shadow-lg"
-    ></div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-6 right-6 z-50 hidden px-4 py-2 rounded bg-slate-900 text-white shadow-lg"></div>
 
     <script>
-      function showToast(msg, color = "bg-slate-900") {
-        const toast = document.getElementById("toast");
+      function showToast(msg, color = 'bg-slate-900') {
+        const toast = document.getElementById('toast');
         toast.textContent = msg;
         toast.className = `fixed top-6 right-6 z-50 px-4 py-2 rounded text-white shadow-lg ${color}`;
-        toast.style.display = "block";
-        setTimeout(() => {
-          toast.style.display = "none";
-        }, 2500);
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2200);
       }
 
       function showCreateModal() {
-        document.getElementById("termModalTitle").textContent = "Add New Term";
-        document.getElementById("termForm").reset();
-        document.getElementById("termId").value = "";
-        document.getElementById("termModal").classList.remove("hidden");
+        document.getElementById('termModalTitle').textContent = 'Add New Term';
+        document.getElementById('termForm').reset();
+        document.getElementById('termId').value = '';
+        document.getElementById('termModal').classList.remove('hidden');
       }
 
       function closeTermModal() {
-        document.getElementById("termModal").classList.add("hidden");
+        document.getElementById('termModal').classList.add('hidden');
       }
 
       async function editTerm(id) {
         try {
           const res = await fetch(`/api/admin/terms/${id}`);
-          if (!res.ok) throw new Error("Failed to fetch term");
+          if (!res.ok) throw new Error('Failed to fetch term');
           const term = await res.json();
-          document.getElementById("termModalTitle").textContent = "Edit Term";
-          document.getElementById("termId").value = term.id;
-          document.getElementById("termName").value = term.termName;
-          document.getElementById("termCode").value = term.termCode;
-          document.getElementById("startDate").value = term.startDate;
-          document.getElementById("endDate").value = term.endDate;
-          document.getElementById("termModal").classList.remove("hidden");
+          document.getElementById('termModalTitle').textContent = 'Edit Term';
+          document.getElementById('termId').value = term.id;
+          document.getElementById('termName').value = term.termName;
+          document.getElementById('termCode').value = term.termCode;
+          document.getElementById('startDate').value = term.startDate;
+          document.getElementById('endDate').value = term.endDate;
+          document.getElementById('termModal').classList.remove('hidden');
         } catch (e) {
-          showToast("Failed to load term data", "bg-red-700");
+          showToast('Failed to load term', 'bg-red-700');
         }
       }
 
-      document.getElementById("termForm").onsubmit = async function (e) {
+      document.getElementById('termForm').onsubmit = async function (e) {
         e.preventDefault();
-        const id = document.getElementById("termId").value;
+        const id = document.getElementById('termId').value;
         const term = {
-          termName: document.getElementById("termName").value,
-          termCode: document.getElementById("termCode").value,
-          startDate: document.getElementById("startDate").value,
-          endDate: document.getElementById("endDate").value,
-          isActive: true, // Default to true as per DTO requirement
+          termName: document.getElementById('termName').value,
+          termCode: document.getElementById('termCode').value,
+          startDate: document.getElementById('startDate').value,
+          endDate: document.getElementById('endDate').value
         };
-
         try {
           let res;
           if (id) {
             res = await fetch(`/api/admin/terms/${id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(term),
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(term)
             });
           } else {
-            res = await fetch("/api/admin/terms", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(term),
+            res = await fetch('/api/admin/terms', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(term)
             });
           }
-
           if (res.ok) {
-            showToast("Term saved successfully!", "bg-green-700");
-            setTimeout(() => location.reload(), 1000);
+            showToast('Term saved!', 'bg-green-700');
+            setTimeout(() => location.reload(), 900);
           } else {
-            const data = await res.json();
-            const errorMsg =
-              data.message || data.error || "Failed to save term";
-            showToast(errorMsg, "bg-red-700");
+            const err = await res.json();
+            showToast(err.message || 'Failed to save term', 'bg-red-700');
           }
         } catch (e) {
-          console.error(e);
-          showToast("Network error occurred", "bg-red-700");
+          showToast('Failed to save term', 'bg-red-700');
         }
       };
 
       async function toggleTermStatus(id) {
-        if (!confirm("Are you sure you want to toggle this term's status?"))
-          return;
+        if (!confirm('Toggle term status?')) return;
         try {
-          const response = await fetch(`/api/admin/terms/${id}/toggle-status`, {
-            method: "PATCH",
-          });
+          const response = await fetch(`/api/admin/terms/${id}/toggle-status`, { method: 'PATCH' });
           if (response.ok) {
-            showToast("Status updated!", "bg-green-700");
+            showToast('Status updated!', 'bg-green-700');
             setTimeout(() => location.reload(), 900);
           } else {
-            showToast("Failed to toggle status", "bg-red-700");
+            showToast('Failed to toggle status', 'bg-red-700');
           }
         } catch (error) {
-          showToast("Failed to toggle status", "bg-red-700");
+          showToast('Failed to toggle status', 'bg-red-700');
         }
       }
 
       async function deleteTerm(id) {
-        if (
-          !confirm(
-            "Are you sure you want to delete this term? This cannot be undone."
-          )
-        )
-          return;
+        if (!confirm('Delete this term?')) return;
         try {
-          const response = await fetch(`/api/admin/terms/${id}`, {
-            method: "DELETE",
-          });
+          const response = await fetch(`/api/admin/terms/${id}`, { method: 'DELETE' });
           if (response.ok) {
-            showToast("Term deleted!", "bg-green-700");
+            showToast('Term deleted!', 'bg-green-700');
             setTimeout(() => location.reload(), 900);
           } else {
-            const data = await response.json().catch(() => ({}));
-            showToast(data.message || "Failed to delete term", "bg-red-700");
+            showToast('Failed to delete term', 'bg-red-700');
           }
         } catch (error) {
-          showToast("Failed to delete term", "bg-red-700");
+          showToast('Failed to delete term', 'bg-red-700');
         }
       }
     </script>

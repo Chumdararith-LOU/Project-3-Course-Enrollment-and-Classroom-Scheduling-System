@@ -1,4 +1,4 @@
-package com.cource.security;
+package com.cource.service.impl;
 
 import com.cource.entity.User;
 import com.cource.repository.UserRepository;
@@ -7,16 +7,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.context.annotation.Primary;
+// import java.util.List;
 
 // @Service
-@Service("securityUserDetailsService")
-public class CustomUserDetailsService implements UserDetailsService {
+@Service("appUserDetailsService")
+@Primary
+public class CustomUserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
