@@ -30,37 +30,45 @@ public class StudentViewController {
     public String dashboard(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("enrollments", studentService.getMyEnrollments(studentId));
             model.addAttribute("terms", studentService.getActiveTerms());
             model.addAttribute("gpa", studentService.calculateGPA(studentId));
             model.addAttribute("creditsEarned", studentService.getCreditsEarned(studentId));
             model.addAttribute("coursesCompleted", studentService.getCoursesCompleted(studentId));
         }
-        return "views/student/dashboard";
+        return "student/dashboard";
     }
 
     @GetMapping("/courses")
     public String courses(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("terms", studentService.getAllTerms());
         }
-        return "views/student/courses";
+        return "student/courses";
     }
 
     @GetMapping("/my-courses")
     public String myCourses(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("enrollments", studentService.getMyEnrollments(studentId));
         }
-        return "views/student/my-courses";
+        return "student/my-courses";
     }
 
     @GetMapping("/schedule")
     public String schedule(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             var sched = studentService.getMySchedule(studentId);
             if (sched == null || sched.isEmpty()) {
                 log.info("Student {} schedule is empty or null", studentId);
@@ -72,13 +80,15 @@ public class StudentViewController {
             }
             model.addAttribute("schedule", sched);
         }
-        return "views/student/schedule";
+        return "student/schedule";
     }
 
     @GetMapping("/grades")
     public String grades(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("grades", studentService.getMyGrades(studentId));
             // Add summary values so the grades page can display GPA, credits and completed
             // count
@@ -86,7 +96,7 @@ public class StudentViewController {
             model.addAttribute("creditsEarned", studentService.getCreditsEarned(studentId));
             model.addAttribute("coursesCompleted", studentService.getCoursesCompleted(studentId));
         }
-        return "views/student/grades";
+        return "student/grades";
     }
 
     @GetMapping("/attendance")
@@ -96,6 +106,8 @@ public class StudentViewController {
             Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             // Only invoke StudentService methods when the current principal has the STUDENT
             // role.
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -124,23 +136,28 @@ public class StudentViewController {
                 }
             }
         }
-        return "views/student/attendance";
+        return "student/attendance";
     }
 
     @GetMapping("/enter-code")
     public String enterCode(@RequestParam(required = false) Long studentId, Model model) {
-        if (studentId != null)
+        if (studentId != null) {
             model.addAttribute("studentId", studentId);
-        return "views/student/enter-code";
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
+        }
+        return "student/enter-code";
     }
 
     @GetMapping("/waitlist")
     public String waitlist(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("waitlistEntries", studentService.getMyWaitlistEntries(studentId));
         }
-        return "views/student/waitlist";
+        return "student/waitlist";
     }
 
     // Export endpoints

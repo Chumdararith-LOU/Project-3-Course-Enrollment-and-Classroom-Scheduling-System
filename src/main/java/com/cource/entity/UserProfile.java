@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_profiles")
-
 public class UserProfile {
 
     @Id
@@ -85,5 +84,4 @@ public class UserProfile {
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
     }
-
 }

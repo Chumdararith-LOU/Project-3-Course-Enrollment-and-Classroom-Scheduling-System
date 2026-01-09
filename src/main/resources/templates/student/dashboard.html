@@ -146,12 +146,29 @@
                     >
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <a th:href="@{/student/grades(studentId=${studentId})}" class="text-blue-600 hover:text-blue-900 mr-3">View Grade</a>
+                    <a
+                      th:href="@{/student/grades(studentId=${studentId})}"
+                      class="text-blue-600 hover:text-blue-900 mr-3"
+                      >View Grade</a
+                    >
                     <span th:switch="${enrollment.status}">
-                      <a th:case="'ENROLLED'" th:href="@{/student/drop(studentId=${studentId},enrollmentId=${enrollment.id})}" class="text-red-600 hover:text-red-900">Drop</a>
+                      <a
+                        th:case="'ENROLLED'"
+                        th:href="@{/student/drop(studentId=${studentId},enrollmentId=${enrollment.id})}"
+                        class="text-red-600 hover:text-red-900"
+                        >Drop</a
+                      >
                       <span th:case="'DROPPED'">
-                        <a th:href="@{/student/re-enroll(studentId=${studentId},enrollmentId=${enrollment.id})}" class="text-green-600 hover:text-green-900 mr-3">Re-enroll</a>
-                        <a th:href="@{/student/delete-enrollment(studentId=${studentId},enrollmentId=${enrollment.id})}" class="text-red-600 hover:text-red-900">Remove</a>
+                        <a
+                          th:href="@{/student/re-enroll(studentId=${studentId},enrollmentId=${enrollment.id})}"
+                          class="text-green-600 hover:text-green-900 mr-3"
+                          >Re-enroll</a
+                        >
+                        <a
+                          th:href="@{/student/delete-enrollment(studentId=${studentId},enrollmentId=${enrollment.id})}"
+                          class="text-red-600 hover:text-red-900"
+                          >Remove</a
+                        >
                       </span>
                     </span>
                   </td>

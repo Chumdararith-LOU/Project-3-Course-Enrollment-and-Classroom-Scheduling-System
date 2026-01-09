@@ -16,17 +16,29 @@ public interface AttendanceService {
      * Record attendance for a student in a specific schedule
      */
     Attendance recordAttendance(AttendanceRequestDTO request);
+
     List<AttendanceResponseDTO> getAttendanceBySchedule(Long scheduleId);
+
     List<AttendanceResponseDTO> getAttendanceByScheduleAndDate(Long scheduleId, LocalDate date);
+
     List<AttendanceResponseDTO> getStudentAttendance(Long studentId, Long offeringId);
+
     AttendanceSummaryDTO getStudentAttendanceSummary(Long studentId, Long offeringId);
+
     Map<String, Object> getScheduleAttendanceStats(Long scheduleId);
+
     Attendance updateAttendance(Long attendanceId, AttendanceRequestDTO request);
+
     void deleteAttendance(Long attendanceId);
+
     List<Attendance> bulkRecordAttendance(Long scheduleId, LocalDate date, List<Long> studentIds, String status,
-                                          Long recordedBy);
+            Long recordedBy);
+
     List<ClassSchedule> getTodaySchedulesForLecturer(Long lecturerId);
+
     boolean attendanceExists(Long studentId, Long scheduleId, LocalDate date);
+
     double getAttendanceRate(Long studentId, Long offeringId);
+
     List<AttendanceResponseDTO> getOfferingAttendance(Long offeringId, LocalDate fromDate, LocalDate toDate);
 }

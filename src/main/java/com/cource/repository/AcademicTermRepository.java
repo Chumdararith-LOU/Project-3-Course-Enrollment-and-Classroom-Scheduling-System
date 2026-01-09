@@ -10,9 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface AcademicTermRepository extends JpaRepository<AcademicTerm, Long> {
-
-    List<AcademicTerm> findByActiveTrue();
-
     Optional<AcademicTerm> findByTermCode(String termCode);
 
     List<AcademicTerm> findByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate startDate, LocalDate endDate);

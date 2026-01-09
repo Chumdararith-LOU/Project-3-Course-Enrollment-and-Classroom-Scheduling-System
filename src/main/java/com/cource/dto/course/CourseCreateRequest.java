@@ -14,4 +14,9 @@ public class CourseCreateRequest {
     private Boolean active = true;
 
     private List<Long> lectureIds;
+
+    public boolean isActive() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isActive'");
+    }
 }

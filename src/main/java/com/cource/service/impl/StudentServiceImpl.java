@@ -4,6 +4,7 @@ import com.cource.entity.*;
 import com.cource.repository.*;
 import com.cource.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -46,53 +48,83 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public java.util.List<com.cource.entity.CourseOffering> getAvailableOfferings(Long studentId, Long termId,
             String keyword) {
+        log.info("🔍 getAvailableOfferings called - studentId: {}, termId: {}, keyword: {}", studentId, termId,
+                keyword);
+
         java.util.List<com.cource.entity.CourseOffering> offerings;
         if (keyword != null && !keyword.isBlank() && termId != null) {
             offerings = courseOfferingRepository.findByCourseTitleContainingIgnoreCaseAndTermId(keyword, termId);
+            log.info("📚 Found {} offerings by keyword and term", offerings.size());
         } else if (keyword != null && !keyword.isBlank()) {
             offerings = courseOfferingRepository.findByCourseTitleContainingIgnoreCase(keyword);
+            log.info("📚 Found {} offerings by keyword", offerings.size());
         } else if (termId != null) {
             offerings = courseOfferingRepository.findActiveByTermId(termId);
+            log.info("📚 Found {} active offerings for termId {}", offerings.size(), termId);
         } else {
             // default: all active offerings
             offerings = courseOfferingRepository.findByActive(true);
+            log.info("📚 Found {} active offerings (no filters)", offerings.size());
         }
 
-        // filter out offerings where student already enrolled
+        log.info("📊 Total offerings before enrollment filter: {}", offerings.size());
+
+        // Filter out offerings where student already enrolled
         java.util.List<com.cource.entity.CourseOffering> out = new java.util.ArrayList<>();
         for (var off : offerings) {
             var exists = enrollmentRepository.findByStudentIdAndOfferingId(studentId, off.getId()).isPresent();
             if (!exists) {
                 out.add(off);
+            } else {
+                log.debug("⏭️ Hiding offering {} - student already enrolled", off.getId());
             }
         }
+
+        log.info("✨ Returning {} available offerings (hiding enrolled)", out.size());
         return out;
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional
     public com.cource.entity.Enrollment enrollInOffering(Long studentId, Long offeringId, String enrollmentCode) {
+        log.info("🎓 enrollInOffering - studentId: {}, offeringId: {}, code entered: '{}'",
+                studentId, offeringId, enrollmentCode);
+
         var off = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new com.cource.exception.ResourceNotFoundException("Offering not found"));
+
+        log.info("📝 Offering found - ID: {}, Course: {}, Expected code: '{}'",
+                off.getId(), off.getCourse().getTitle(), off.getEnrollmentCode());
+
         if (enrollmentCode == null || !off.getEnrollmentCode().equals(enrollmentCode)) {
-            throw new IllegalArgumentException("Invalid enrollment code");
+            log.warn("❌ Invalid enrollment code - Expected: '{}', Got: '{}'",
+                    off.getEnrollmentCode(), enrollmentCode);
+            throw new IllegalArgumentException("Invalid enrollment code. Expected: " + off.getEnrollmentCode());
         }
+
         var already = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId);
         if (already.isPresent()) {
+            log.warn("⚠️ Student {} already enrolled in offering {}", studentId, offeringId);
             throw new IllegalArgumentException("Student already enrolled");
         }
+
         Long enrolledCountNullable = courseOfferingRepository.countEnrolledStudents(offeringId);
         long enrolledCount = enrolledCountNullable == null ? 0L : enrolledCountNullable;
         if (enrolledCount >= off.getCapacity()) {
+            log.warn("⚠️ Offering {} is full ({}/{})", offeringId, enrolledCount, off.getCapacity());
             throw new IllegalStateException("Offering is full");
         }
+
         com.cource.entity.User student = new com.cource.entity.User();
         student.setId(studentId);
         com.cource.entity.Enrollment e = new com.cource.entity.Enrollment();
         e.setStudent(student);
         e.setOffering(off);
         e.setStatus("ENROLLED");
-        return enrollmentRepository.save(e);
+
+        var saved = enrollmentRepository.save(e);
+        log.info("✅ Successfully enrolled student {} in offering {}", studentId, offeringId);
+        return saved;
     }
 
     @Override

@@ -13,9 +13,7 @@
   </head>
   <body class="bg-slate-100 font-sans">
     <!-- Sidebar Navigation -->
-    <div
-      th:replace="~{fragments/profile :: sidebar(${userId}, ${role}, ${currentPage})}"
-    ></div>
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
     <!-- Main Content -->
     <main class="ml-64 p-8">

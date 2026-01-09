@@ -44,7 +44,8 @@ public interface StudentService {
     // Restore a previously dropped enrollment (student requests to re-enroll)
     com.cource.entity.Enrollment restoreEnrollment(Long studentId, Long enrollmentId);
 
-    // Delete an enrollment record (only allowed for the student and typically when DROPPED)
+    // Delete an enrollment record (only allowed for the student and typically when
+    // DROPPED)
     void deleteEnrollment(Long studentId, Long enrollmentId);
 
     // Academic summaries
@@ -52,5 +53,5 @@ public interface StudentService {
 
     int getCreditsEarned(Long studentId);
 
-    int getcourcesCompleted(Long studentId);
+    int getCoursesCompleted(Long studentId);
 }

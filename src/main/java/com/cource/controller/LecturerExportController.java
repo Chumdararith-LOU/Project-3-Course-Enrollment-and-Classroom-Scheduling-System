@@ -1,7 +1,6 @@
 package com.cource.controller;
 
 import com.cource.entity.CourseOffering;
-import com.cource.entity.Student;
 import com.cource.entity.User;
 import com.cource.service.LecturerService;
 import com.cource.service.AdminService;
@@ -58,21 +57,21 @@ public class LecturerExportController {
 
     @GetMapping("/students/export")
     public void exportStudents(@RequestParam Long offeringId, @RequestParam Long lecturerId,
-                               HttpServletResponse response) throws IOException {
-        List<Student> students = lecturerService.getEnrolledStudents(offeringId, lecturerId);
+            HttpServletResponse response) throws IOException {
+        List<User> students = lecturerService.getEnrolledStudents(offeringId, lecturerId);
         String filename = "students_offering_" + offeringId + ".csv";
         response.setContentType("text/csv");
         response.setHeader("Content-Disposition",
                 "attachment; filename=\"" + URLEncoder.encode(filename, StandardCharsets.UTF_8) + "\"");
         var writer = response.getWriter();
         writer.println("Student ID,First Name,Last Name,Email,Active");
-        for (Student s : students) {
+        for (User s : students) {
             writer.printf("%d,%s,%s,%s,%s\n",
                     s.getId(),
                     s.getFirstName() != null ? s.getFirstName().replaceAll(",", " ") : "",
                     s.getLastName() != null ? s.getLastName().replaceAll(",", " ") : "",
                     s.getEmail() != null ? s.getEmail() : "",
-                    s.getIsActive() != null && s.getIsActive() ? "Active" : "Inactive");
+                    s.isActive() ? "Active" : "Inactive");
         }
         writer.flush();
     }

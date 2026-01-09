@@ -15,4 +15,6 @@ public class CourseOfferingRequestDTO {
     private Integer capacity;
 
     private Boolean active;
+
+    private String enrollmentCode;
 }
