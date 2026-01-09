@@ -1,44 +1,31 @@
 package com.cource.service.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.cource.entity.*;
+import com.cource.exception.ConflictException;
+import com.cource.exception.ResourceNotFoundException;
+import com.cource.repository.*;
+import com.cource.service.AdminService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.cource.entity.AcademicTerm;
-import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
-import com.cource.entity.CourseLecturer;
-import com.cource.entity.CourseOffering;
-import com.cource.entity.Enrollment;
-import com.cource.entity.Room;
-import com.cource.entity.User;
-import com.cource.exception.ConflictException;
-import com.cource.exception.ResourceNotFoundException;
-import com.cource.repository.AcademicTermRepository;
-import com.cource.repository.ClassScheduleRepository;
-import com.cource.repository.CourseLecturerRepository;
-import com.cource.repository.CourseOfferingRepository;
-import com.cource.repository.CourseRepository;
-import com.cource.repository.EnrollmentRepository;
-import com.cource.repository.RoomRepository;
-import com.cource.repository.UserRepository;
-import com.cource.service.AdminService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminServiceImpl implements AdminService {
+
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final CourseOfferingRepository courseOfferingRepository;
+    private final com.cource.service.CourseService courseService;
     private final EnrollmentRepository enrollmentRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final RoomRepository roomRepository;
@@ -49,24 +36,27 @@ public class AdminServiceImpl implements AdminService {
     public List<User> getLecturersForOffering(Long offeringId) {
         CourseOffering offering = getOfferingById(offeringId);
         return offering.getLecturers().stream()
-                .map(CourseLecturer::getLecturer)
+                .map(cl -> cl.getLecturer())
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void assignLecturersToOffering(Long offeringId, List<Long> lecturerIds) {
         CourseOffering offering = getOfferingById(offeringId);
         // Remove existing assignments
         List<CourseLecturer> current = courseLecturerRepository.findAll().stream()
                 .filter(cl -> cl.getOffering().getId().equals(offeringId))
                 .collect(Collectors.toList());
-        courseLecturerRepository.deleteAll(current);
-
+        for (CourseLecturer cl : current) {
+            courseLecturerRepository.delete(cl);
+        }
         // Add new assignments (unique only, and check for existing)
         List<Long> uniqueLecturerIds = lecturerIds == null ? List.of() : lecturerIds.stream().distinct().toList();
         for (Long lecturerId : uniqueLecturerIds) {
+            if (courseLecturerRepository.existsByOfferingIdAndLecturerId(offeringId, lecturerId)) {
+                continue; // Defensive: skip if already exists
+            }
             User lecturer = userRepository.findById(lecturerId)
                     .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found with id: " + lecturerId));
             CourseLecturer cl = new CourseLecturer();
@@ -79,13 +69,37 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void removeLecturerFromOffering(Long offeringId, Long lecturerId) {
         List<CourseLecturer> matches = courseLecturerRepository.findAll().stream()
                 .filter(cl -> cl.getOffering().getId().equals(offeringId)
                         && cl.getLecturer().getId().equals(lecturerId))
                 .collect(Collectors.toList());
-        courseLecturerRepository.deleteAll(matches);
+        for (CourseLecturer cl : matches) {
+            courseLecturerRepository.delete(cl);
+        }
+    }
+
+    @Override
+    @Transactional
+    public int bulkAssignLecturerToAllOfferings(Long lecturerId) {
+        var lecturer = userRepository.findById(lecturerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found with id: " + lecturerId));
+        List<CourseOffering> offerings = courseOfferingRepository.findAll();
+        int created = 0;
+        for (CourseOffering off : offerings) {
+            boolean exists = courseLecturerRepository.existsByOfferingIdAndLecturerId(off.getId(), lecturerId);
+            if (exists)
+                continue;
+            CourseLecturer cl = new CourseLecturer();
+            cl.setOffering(off);
+            cl.setLecturer(lecturer);
+            cl.setPrimary(false);
+            courseLecturerRepository.save(cl);
+            created++;
+        }
+        System.out.println(
+                "[ADMIN] bulkAssignLecturerToAllOfferings created=" + created + " for lecturerId=" + lecturerId);
+        return created;
     }
 
     @Override
@@ -136,7 +150,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public CourseOffering createOffering(Long courseId, Long termId, Integer capacity, Boolean isActive) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
@@ -148,13 +161,14 @@ public class AdminServiceImpl implements AdminService {
         offering.setTerm(term);
         offering.setCapacity(capacity);
         offering.setActive(isActive != null ? isActive : true);
+        // Ensure enrollment code is set (generate from course code)
+        offering.setEnrollmentCode(courseService.generateEnrollmentCode(course.getCourseCode()));
 
         return courseOfferingRepository.save(offering);
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive) {
         CourseOffering offering = getOfferingById(id);
 
@@ -175,7 +189,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteOffering(Long id) {
         CourseOffering offering = getOfferingById(id);
         courseOfferingRepository.delete(offering);
@@ -183,7 +196,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public CourseOffering toggleOfferingStatus(Long id) {
         CourseOffering offering = getOfferingById(id);
         offering.setActive(!offering.isActive());
@@ -213,24 +225,25 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Enrollment createEnrollment(Long studentId, Long offeringId) {
-        User studentUser = userRepository.findById(studentId)
+        User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
-
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found with id: " + offeringId));
 
+        // Check if student is already enrolled
         if (enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId).isPresent()) {
             throw new ConflictException("Student is already enrolled in this offering");
         }
 
+        // Check capacity
         long enrolledCount = enrollmentRepository.countByOfferingId(offeringId);
         if (enrolledCount >= offering.getCapacity()) {
             throw new ConflictException("Offering is at full capacity");
         }
 
         Enrollment enrollment = new Enrollment();
+        enrollment.setStudent(student);
         enrollment.setOffering(offering);
         enrollment.setStatus("ENROLLED");
         enrollment.setEnrolledAt(java.time.LocalDateTime.now());
@@ -240,7 +253,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Enrollment updateEnrollmentGrade(Long id, String grade) {
         Enrollment enrollment = getEnrollmentById(id);
         enrollment.setGrade(grade);
@@ -249,7 +261,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Enrollment updateEnrollmentStatus(Long id, String status) {
         Enrollment enrollment = getEnrollmentById(id);
         enrollment.setStatus(status);
@@ -258,7 +269,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteEnrollment(Long id) {
         Enrollment enrollment = getEnrollmentById(id);
         enrollmentRepository.delete(enrollment);
@@ -270,13 +280,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
     public List<Room> getAllRooms() {
         return roomRepository.findAll();
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER', 'STUDENT')")
     public List<AcademicTerm> getAllTerms() {
         return academicTermRepository.findAll();
     }
@@ -289,16 +297,11 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
-                                   java.time.LocalDate endDate) {
-
-        if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("End date cannot be before start date.");
-        }
-
+            java.time.LocalDate endDate) {
+        // ensure termCode is unique
         if (academicTermRepository.findByTermCode(termCode).isPresent()) {
-            throw new ConflictException("Term code already exists: " + termCode);
+            throw new com.cource.exception.ConflictException("Term code already exists: " + termCode);
         }
 
         AcademicTerm term = new AcademicTerm();
@@ -312,21 +315,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public AcademicTerm updateTerm(Long id, String termCode, String termName, java.time.LocalDate startDate,
-                                   java.time.LocalDate endDate) {
+            java.time.LocalDate endDate) {
         AcademicTerm term = getTermById(id);
-        if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("End date cannot be before start date.");
-        }
-
+        // if changing code, ensure uniqueness
         if (!term.getTermCode().equals(termCode)) {
             if (academicTermRepository.findByTermCode(termCode).isPresent()) {
-                throw new ConflictException("Term code already exists: " + termCode);
+                throw new com.cource.exception.ConflictException("Term code already exists: " + termCode);
             }
             term.setTermCode(termCode);
         }
-
         term.setTermName(termName);
         term.setStartDate(startDate);
         term.setEndDate(endDate);
@@ -335,7 +333,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteTerm(Long id) {
         AcademicTerm term = getTermById(id);
         academicTermRepository.delete(term);
@@ -343,7 +340,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public AcademicTerm toggleTermStatus(Long id) {
         AcademicTerm term = getTermById(id);
         term.setActive(!term.isActive());
@@ -359,12 +355,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Room createRoom(String roomNumber, String building, Integer capacity, String roomType, Boolean isActive) {
-        if (capacity <= 0) {
-            throw new IllegalArgumentException("Room capacity must be greater than 0.");
-        }
-
         Room room = new Room();
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
@@ -376,15 +367,9 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
-                           Boolean isActive) {
+            Boolean isActive) {
         Room room = getRoomById(id);
-
-        if (capacity <= 0) {
-            throw new IllegalArgumentException("Room capacity must be greater than 0.");
-        }
-
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
         room.setCapacity(capacity);
@@ -397,7 +382,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteRoom(Long id) {
         Room room = getRoomById(id);
         roomRepository.delete(room);
@@ -405,7 +389,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public Room toggleRoomStatus(Long id) {
         Room room = getRoomById(id);
         room.setActive(!room.isActive());
@@ -421,9 +404,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public ClassSchedule createSchedule(Long offeringId, Long roomId, String dayOfWeek, java.time.LocalTime startTime,
-                                        java.time.LocalTime endTime) {
+            java.time.LocalTime endTime) {
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
 
@@ -439,9 +421,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public ClassSchedule updateSchedule(Long id, Long offeringId, Long roomId, String dayOfWeek,
-                                        java.time.LocalTime startTime, java.time.LocalTime endTime) {
+            java.time.LocalTime startTime, java.time.LocalTime endTime) {
         ClassSchedule schedule = getScheduleById(id);
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
@@ -457,7 +438,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteSchedule(Long id) {
         ClassSchedule schedule = getScheduleById(id);
         classScheduleRepository.delete(schedule);

@@ -6,13 +6,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import com.cource.entity.ClassSchedule;
 
-@Repository
 public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Long> {
-
     List<ClassSchedule> findByOfferingId(Long offeringId);
 
     List<ClassSchedule> findByRoomId(Long roomId);
@@ -25,4 +22,7 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Lo
 
     @Query("SELECT cs FROM ClassSchedule cs WHERE cs.id = :scheduleId")
     Optional<ClassSchedule> findScheduleById(@Param("scheduleId") Long scheduleId);
+
+    @Query("SELECT COUNT(cs) FROM ClassSchedule cs WHERE cs.offering.id IN :offeringIds")
+    long countByOfferingIds(@Param("offeringIds") List<Long> offeringIds);
 }

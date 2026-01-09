@@ -22,10 +22,4 @@ public class AttendanceSummaryDTO {
     private int excusedCount;
     private double attendanceRate;
     private String attendanceGrade; // A, B, C, D, F based on rate
-
-    public AttendanceSummaryDTO(String status, long count, double percentage) {
-        this.attendanceGrade = status;
-        this.totalClasses = (int) count;
-        this.attendanceRate = percentage;
-    }
 }

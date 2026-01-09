@@ -43,23 +43,51 @@
         </div>
       </div>
       <!-- Attendance Code Config Modal -->
-      <div id="code-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+      <div
+        id="code-modal"
+        class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50"
+      >
         <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-          <h3 class="text-lg font-medium text-gray-900">Configure Attendance Code</h3>
-          <p class="text-sm text-gray-500 mt-1">Set time windows (minutes after start)</p>
+          <h3 class="text-lg font-medium text-gray-900">
+            Configure Attendance Code
+          </h3>
+          <p class="text-sm text-gray-500 mt-1">
+            Set time windows (minutes after start)
+          </p>
           <div class="mt-4 grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Present Window (minutes)</label>
-              <input id="present-mins" type="number" min="0" class="mt-1 block w-full rounded-md border-gray-300" />
+              <label class="block text-sm font-medium text-gray-700"
+                >Present Window (minutes)</label
+              >
+              <input
+                id="present-mins"
+                type="number"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300"
+              />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Late Window (minutes)</label>
-              <input id="late-mins" type="number" min="0" class="mt-1 block w-full rounded-md border-gray-300" />
+              <label class="block text-sm font-medium text-gray-700"
+                >Late Window (minutes)</label
+              >
+              <input
+                id="late-mins"
+                type="number"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300"
+              />
             </div>
           </div>
           <div class="mt-6 flex justify-end gap-3">
-            <button id="code-cancel" class="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
-            <button id="code-confirm" class="px-4 py-2 bg-indigo-600 text-white rounded-md">Confirm</button>
+            <button id="code-cancel" class="px-4 py-2 bg-gray-200 rounded-md">
+              Cancel
+            </button>
+            <button
+              id="code-confirm"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-md"
+            >
+              Confirm
+            </button>
           </div>
         </div>
       </div>
@@ -147,13 +175,31 @@
             Export Attendance (CSV)
           </a>
           <th:block th:if="${scheduleId != null}">
-            <span id="attendance-code-info" class="ml-2 inline-flex items-center px-3 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-lg">
+            <span
+              id="attendance-code-info"
+              class="ml-2 inline-flex items-center px-3 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-lg"
+            >
               Code: <strong id="current-code" class="ml-2">-</strong>
             </span>
             <span id="code-msg" class="ml-2 text-sm text-gray-600"></span>
-            <button id="generate-code" class="ml-2 inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">Generate Code</button>
-            <button id="regenerate-code" class="ml-2 inline-flex items-center px-3 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700">Regenerate</button>
-            <button id="delete-code" class="ml-2 inline-flex items-center px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">Delete Code</button>
+            <button
+              id="generate-code"
+              class="ml-2 inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700"
+            >
+              Generate Code
+            </button>
+            <button
+              id="regenerate-code"
+              class="ml-2 inline-flex items-center px-3 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700"
+            >
+              Regenerate
+            </button>
+            <button
+              id="delete-code"
+              class="ml-2 inline-flex items-center px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700"
+            >
+              Delete Code
+            </button>
           </th:block>
         </div>
       </div>
@@ -208,7 +254,9 @@
         th:if="${attendanceRecords != null and !attendanceRecords.isEmpty()}"
         class="bg-white shadow-sm overflow-hidden rounded-xl border border-slate-200"
       >
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
+        <div
+          class="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center"
+        >
           <div>
             <h3 class="text-lg leading-6 font-medium text-gray-900">
               Attendance Records
@@ -266,7 +314,10 @@
               </th>
             </tr>
           </thead>
-          <tbody id="attendance-tbody" class="bg-white divide-y divide-gray-200">
+          <tbody
+            id="attendance-tbody"
+            class="bg-white divide-y divide-gray-200"
+          >
             <tr
               th:each="record : ${attendanceRecords}"
               class="hover:bg-gray-50 attendance-row"
@@ -312,9 +363,15 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <span th:text="${record.recordedAt != null ? #temporals.format(record.recordedAt, 'HH:mm') : '-'}">-</span>
+                <span
+                  th:text="${record.recordedAt != null ? #temporals.format(record.recordedAt, 'HH:mm') : '-'}"
+                  >-</span
+                >
               </td>
-              <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" th:title="${record.notes}">
+              <td
+                class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate"
+                th:title="${record.notes}"
+              >
                 <span th:text="${record.notes ?: '-'}">-</span>
               </td>
               <td
@@ -324,7 +381,12 @@
                 <button
                   type="button"
                   class="text-indigo-600 hover:text-indigo-900 mr-3"
-                  th:onclick="|openEditModal(${record.id}, ${record.enrollment != null && record.enrollment.student != null ? record.enrollment.student.id : 'null'}, '${record.status}', ${record.attendanceDate != null ? '\'' + record.attendanceDate + '\'' : 'null'}, ${record.notes != null ? '\'' + #strings.replace(record.notes, "'", "\\'") + '\'' : 'null'})|"
+                  onclick="openEditModalFromButton(this)"
+                  th:attr="data-attendance-id=${record.id},
+                           data-student-id=${record.enrollment != null && record.enrollment.student != null ? record.enrollment.student.id : ''},
+                           data-status=${record.status},
+                           data-date=${record.attendanceDate},
+                           data-notes=${record.notes}"
                 >
                   Edit
                 </button>
@@ -332,7 +394,7 @@
                 <button
                   type="button"
                   class="text-red-600 hover:text-red-900"
-                  th:onclick="|deleteAttendance(${record.id})|"
+                  th:attr="onclick=${'deleteAttendance(' + record.id + ')'}"
                 >
                   Delete
                 </button>
@@ -345,14 +407,14 @@
                   <button
                     type="button"
                     class="px-2 py-1 bg-green-600 text-white rounded text-sm"
-                    th:onclick="|fetch('/api/lecturer/attendance/'+${record.id}+'/action?action=approve',{method:'POST'}).then(r=>r.ok?location.reload():r.text().then(t=>alert(t)))|"
+                    th:attr="onclick=${'attendanceAction(' + record.id + ', \'approve\')'}"
                   >
                     Approve
                   </button>
                   <button
                     type="button"
                     class="px-2 py-1 bg-red-600 text-white rounded text-sm"
-                    th:onclick="|fetch('/api/lecturer/attendance/'+${record.id}+'/action?action=reject',{method:'POST'}).then(r=>r.ok?location.reload():r.text().then(t=>alert(t)))|"
+                    th:attr="onclick=${'attendanceAction(' + record.id + ', \'reject\')'}"
                   >
                     Reject
                   </button>
@@ -476,43 +538,85 @@
 
         function openEditModal(id, studentId, status, date, notes) {
           editingAttendanceId = id || null;
-          editingStudentId = (studentId && studentId !== 'null') ? studentId : null;
+          editingStudentId =
+            studentId && studentId !== "null" ? studentId : null;
           const sel = document.getElementById("attendance-student");
           const stat = document.getElementById("attendance-status");
           const dt = document.getElementById("attendance-date");
           const nt = document.getElementById("attendance-notes");
-          
+
           // Set student - if not in list, it means we're editing and student already exists
-          if (sel && studentId && studentId !== 'null') {
+          if (sel && studentId && studentId !== "null") {
             sel.value = studentId;
             // If student not found in dropdown (editing record for student not in current list)
             if (sel.value != studentId) {
-              console.log('Student ' + studentId + ' not in dropdown, will use stored editingStudentId');
+              console.log(
+                "Student " +
+                  studentId +
+                  " not in dropdown, will use stored editingStudentId"
+              );
             }
           }
-          if (stat && status && status !== 'null') stat.value = status;
-          if (dt && date && date !== 'null') dt.value = date;
-          if (nt) nt.value = (notes && notes !== 'null') ? notes : '';
+          if (stat && status && status !== "null") stat.value = status;
+          if (dt && date && date !== "null") dt.value = date;
+          if (nt) nt.value = notes && notes !== "null" ? notes : "";
           if (attendanceModal) {
             attendanceModal.classList.remove("hidden");
             attendanceModal.classList.add("flex");
           }
         }
 
-        async function deleteAttendance(id) {
-          if (!confirm('Delete this attendance record?')) return;
+        function openEditModalFromButton(buttonEl) {
+          if (!buttonEl || !buttonEl.dataset) return;
+          const id = buttonEl.dataset.attendanceId;
+          const studentId = buttonEl.dataset.studentId || null;
+          const status = buttonEl.dataset.status || null;
+          const date = buttonEl.dataset.date || null;
+          const notes = buttonEl.dataset.notes || null;
+          openEditModal(id, studentId, status, date, notes);
+        }
+
+        async function attendanceAction(id, action) {
+          if (!id || !action) return;
           try {
-            const lecturerId = /*[[${lecturerId}]]*/ "null";
-            const url = '/api/lecturer/attendance/' + encodeURIComponent(id) + (lecturerId && lecturerId !== 'null' ? '?lecturerId=' + encodeURIComponent(lecturerId) : '');
-            const res = await fetch(url, { method: 'DELETE' });
+            const url =
+              "/api/lecturer/attendance/" +
+              encodeURIComponent(id) +
+              "/action?action=" +
+              encodeURIComponent(action);
+            const res = await fetch(url, { method: "POST" });
             if (!res.ok) {
               const t = await res.text();
-              alert('Delete failed: ' + t);
+              alert(t || action + " failed");
+              return;
+            }
+            location.reload();
+          } catch (err) {
+            alert("Error: " + err);
+          }
+        }
+
+        async function deleteAttendance(id) {
+          if (!confirm("Delete this attendance record?")) return;
+          try {
+            const lecturerId = /*[[${lecturerId}]]*/ "null";
+            const url =
+              "/api/lecturer/attendance/" +
+              encodeURIComponent(id) +
+              (lecturerId && lecturerId !== "null"
+                ? "?lecturerId=" + encodeURIComponent(lecturerId)
+                : "");
+            const res = await fetch(url, { method: "DELETE" });
+            if (!res.ok) {
+              const t = await res.text();
+              alert("Delete failed: " + t);
             } else {
-              alert('Deleted');
+              alert("Deleted");
               location.reload();
             }
-          } catch (err) { alert('Error: ' + err); }
+          } catch (err) {
+            alert("Error: " + err);
+          }
         }
 
         saveBtn.addEventListener("click", async () => {
@@ -522,69 +626,87 @@
           const notes = document.getElementById("attendance-notes").value;
           const scheduleId = /*[[${scheduleId}]]*/ "null";
           const lecturerId = /*[[${lecturerId}]]*/ "null";
-          
+
           // For editing, use stored studentId if dropdown doesn't have the student
           if (!studentId && editingAttendanceId && editingStudentId) {
             studentId = editingStudentId;
           }
-          
+
           if (!studentId && !editingAttendanceId) {
             alert("Select a student");
             return;
           }
-          if (!scheduleId || scheduleId === "null") {
+
+          // For creating a new record we must know the schedule.
+          if (!editingAttendanceId && (!scheduleId || scheduleId === "null")) {
             alert("Missing scheduleId");
             return;
           }
-          // build body
+
+          // build body (only include scheduleId when we actually have it)
           const body = {
-            scheduleId: parseInt(scheduleId),
             lecturerId:
               lecturerId && lecturerId !== "null" ? parseInt(lecturerId) : null,
             attendanceDate: date
               ? date
               : new Date().toISOString().substring(0, 10),
             notes: notes,
-            studentId: parseInt(studentId),
-            status: status
+            studentId: studentId ? parseInt(studentId) : null,
+            status: status,
           };
+          if (scheduleId && scheduleId !== "null") {
+            body.scheduleId = parseInt(scheduleId);
+          }
           try {
             if (editingAttendanceId) {
               // update existing attendance
-              const url = '/api/lecturer/attendance/' + encodeURIComponent(editingAttendanceId) + (lecturerId && lecturerId !== 'null' ? '?lecturerId=' + encodeURIComponent(lecturerId) : '');
+              const url =
+                "/api/lecturer/attendance/" +
+                encodeURIComponent(editingAttendanceId) +
+                (lecturerId && lecturerId !== "null"
+                  ? "?lecturerId=" + encodeURIComponent(lecturerId)
+                  : "");
               const res = await fetch(url, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
               });
               if (!res.ok) {
                 const t = await res.text();
-                alert('Failed to update attendance: ' + t);
+                alert("Failed to update attendance: " + t);
               } else {
-                alert('Attendance updated');
-                if (attendanceModal) { attendanceModal.classList.add('hidden'); attendanceModal.classList.remove('flex'); }
+                alert("Attendance updated");
+                if (attendanceModal) {
+                  attendanceModal.classList.add("hidden");
+                  attendanceModal.classList.remove("flex");
+                }
                 editingAttendanceId = null;
                 editingStudentId = null;
                 location.reload();
               }
             } else {
-              const q = `?studentId=${encodeURIComponent(studentId)}&status=${encodeURIComponent(status)}`;
-              const res = await fetch('/api/lecturer/attendance' + q, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+              const q = `?studentId=${encodeURIComponent(
+                studentId
+              )}&status=${encodeURIComponent(status)}`;
+              const res = await fetch("/api/lecturer/attendance" + q, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
               });
               if (!res.ok) {
                 const t = await res.text();
-                alert('Failed to record attendance: ' + t);
+                alert("Failed to record attendance: " + t);
               } else {
-                alert('Attendance recorded');
-                if (attendanceModal) { attendanceModal.classList.add('hidden'); attendanceModal.classList.remove('flex'); }
+                alert("Attendance recorded");
+                if (attendanceModal) {
+                  attendanceModal.classList.add("hidden");
+                  attendanceModal.classList.remove("flex");
+                }
                 location.reload();
               }
             }
           } catch (err) {
-            alert('Error: ' + err);
+            alert("Error: " + err);
           }
         });
 
@@ -618,131 +740,226 @@
             }
           }
         }
-          // attendance code buttons
-          async function fetchCurrentCode() {
-            try {
-              const sid = /*[[${scheduleId}]]*/ "null";
-              if (!sid || sid === 'null') return;
-              const res = await fetch('/api/attendance-code/current?scheduleId=' + encodeURIComponent(sid));
-              if (!res.ok) return;
-              const j = await res.json();
-              if (j.code) {
-                const issued = j.issuedAt ? new Date(j.issuedAt * 1000).toLocaleTimeString() : '';
-                const presentM = j.presentMinutes ?? j.presentWindowMinutes ?? 15;
-                const lateM = j.lateMinutes ?? j.lateWindowMinutes ?? 30;
-                const enrolled = j.enrolledCount ?? j.enrolled ?? 0;
-                document.getElementById('current-code').innerText = j.code + ' (issued ' + issued + ") present=" + presentM + "m late=" + lateM + "m — enrolled: " + enrolled;
-              } else document.getElementById('current-code').innerText = '-';
-            } catch (e) { console.error(e); }
+        // attendance code buttons
+        async function fetchCurrentCode() {
+          try {
+            const sid = /*[[${scheduleId}]]*/ "null";
+            if (!sid || sid === "null") return;
+            const res = await fetch(
+              "/api/attendance-code/current?scheduleId=" +
+                encodeURIComponent(sid)
+            );
+            if (!res.ok) return;
+            const j = await res.json();
+            if (j.code) {
+              const issued = j.issuedAt
+                ? new Date(j.issuedAt * 1000).toLocaleTimeString()
+                : "";
+              const presentM = j.presentMinutes ?? j.presentWindowMinutes ?? 15;
+              const lateM = j.lateMinutes ?? j.lateWindowMinutes ?? 30;
+              const enrolled = j.enrolledCount ?? j.enrolled ?? 0;
+              document.getElementById("current-code").innerText =
+                j.code +
+                " (issued " +
+                issued +
+                ") present=" +
+                presentM +
+                "m late=" +
+                lateM +
+                "m — enrolled: " +
+                enrolled;
+            } else document.getElementById("current-code").innerText = "-";
+          } catch (e) {
+            console.error(e);
           }
+        }
 
-          // show code modal helper
-          const codeModal = document.getElementById('code-modal');
-          const codeCancel = document.getElementById('code-cancel');
-          const codeConfirm = document.getElementById('code-confirm');
-          const presentInput = document.getElementById('present-mins');
-          const lateInput = document.getElementById('late-mins');
+        // show code modal helper
+        const codeModal = document.getElementById("code-modal");
+        const codeCancel = document.getElementById("code-cancel");
+        const codeConfirm = document.getElementById("code-confirm");
+        const presentInput = document.getElementById("present-mins");
+        const lateInput = document.getElementById("late-mins");
 
-            function openCodeModal(present, late, onConfirm) {
-            if (presentInput) presentInput.value = present ?? 15;
-            if (lateInput) lateInput.value = late ?? 30;
-            codeModal.classList.remove('hidden'); codeModal.classList.add('flex');
-            const handler = async function() {
-              const p = parseInt(presentInput.value) || 0;
-              const l = parseInt(lateInput.value) || 0;
-              // validate windows
-              if (p < 0 || l <= 0 || p >= l) {
-                alert('Invalid windows: ensure 0 <= present < late (minutes)');
-                return;
-              }
-              codeModal.classList.add('hidden'); codeModal.classList.remove('flex');
-              codeConfirm.removeEventListener('click', handler);
-              codeCancel.removeEventListener('click', canceler);
-              await onConfirm(p, l);
-            };
-            const canceler = function() { codeModal.classList.add('hidden'); codeModal.classList.remove('flex'); codeConfirm.removeEventListener('click', handler); codeCancel.removeEventListener('click', canceler); };
-            codeConfirm.addEventListener('click', handler);
-            codeCancel.addEventListener('click', canceler);
-          }
-
-          document.getElementById('generate-code')?.addEventListener('click', async function() {
-            const sid = /*[[${scheduleId}]]*/ "null";
-            if (!sid || sid === 'null') { alert('Missing scheduleId'); return; }
-            // prefill with current or defaults
-            try {
-              const cur = await (await fetch('/api/attendance-code/current?scheduleId=' + encodeURIComponent(sid))).json();
-              openCodeModal(cur.presentMinutes ?? 15, cur.lateMinutes ?? 30, async (p, l) => {
-                const res = await fetch('/api/attendance-code/generate?scheduleId=' + encodeURIComponent(sid) + '&presentMinutes=' + encodeURIComponent(p) + '&lateMinutes=' + encodeURIComponent(l), { method: 'POST' });
-                if (!res.ok) { alert('Failed to generate'); return; }
-                const j = await res.json();
-                alert('Code generated: ' + j.code);
-                fetchCurrentCode();
-              });
-            } catch (e) { alert('Failed to open modal: ' + e); }
-          });
-
-          document.getElementById('regenerate-code')?.addEventListener('click', async function() {
-            const sid = /*[[${scheduleId}]]*/ "null";
-            if (!sid || sid === 'null') { alert('Missing scheduleId'); return; }
-            if (!confirm('Regenerate code? This will invalidate the previous code.')) return;
-            try {
-              const cur = await (await fetch('/api/attendance-code/current?scheduleId=' + encodeURIComponent(sid))).json();
-              openCodeModal(cur.presentMinutes ?? 15, cur.lateMinutes ?? 30, async (p, l) => {
-                const res = await fetch('/api/attendance-code/generate?scheduleId=' + encodeURIComponent(sid) + '&presentMinutes=' + encodeURIComponent(p) + '&lateMinutes=' + encodeURIComponent(l), { method: 'POST' });
-                if (!res.ok) { alert('Failed to regenerate'); return; }
-                const j = await res.json();
-                alert('New code: ' + j.code);
-                fetchCurrentCode();
-              });
-            } catch (e) { alert('Failed to open modal: ' + e); }
-          });
-
-          document.getElementById('delete-code')?.addEventListener('click', async function() {
-            const sid = /*[[${scheduleId}]]*/ "null";
-            if (!sid || sid === 'null') { alert('Missing scheduleId'); return; }
-            if (!confirm('Delete current attendance code?')) return;
-            const res = await fetch('/api/attendance-code/delete?scheduleId=' + encodeURIComponent(sid), { method: 'DELETE' });
-            let j = {};
-            try { j = await res.json(); } catch(e) {}
-            if (!res.ok) {
-              document.getElementById('code-msg').innerText = (j.error || 'Delete failed');
+        function openCodeModal(present, late, onConfirm) {
+          if (presentInput) presentInput.value = present ?? 15;
+          if (lateInput) lateInput.value = late ?? 30;
+          codeModal.classList.remove("hidden");
+          codeModal.classList.add("flex");
+          const handler = async function () {
+            const p = parseInt(presentInput.value) || 0;
+            const l = parseInt(lateInput.value) || 0;
+            // validate windows
+            if (p < 0 || l <= 0 || p >= l) {
+              alert("Invalid windows: ensure 0 <= present < late (minutes)");
               return;
             }
-            document.getElementById('code-msg').innerText = (j.message || 'Deleted');
+            codeModal.classList.add("hidden");
+            codeModal.classList.remove("flex");
+            codeConfirm.removeEventListener("click", handler);
+            codeCancel.removeEventListener("click", canceler);
+            await onConfirm(p, l);
+          };
+          const canceler = function () {
+            codeModal.classList.add("hidden");
+            codeModal.classList.remove("flex");
+            codeConfirm.removeEventListener("click", handler);
+            codeCancel.removeEventListener("click", canceler);
+          };
+          codeConfirm.addEventListener("click", handler);
+          codeCancel.addEventListener("click", canceler);
+        }
+
+        document
+          .getElementById("generate-code")
+          ?.addEventListener("click", async function () {
+            const sid = /*[[${scheduleId}]]*/ "null";
+            if (!sid || sid === "null") {
+              alert("Missing scheduleId");
+              return;
+            }
+            // prefill with current or defaults
+            try {
+              const cur = await (
+                await fetch(
+                  "/api/attendance-code/current?scheduleId=" +
+                    encodeURIComponent(sid)
+                )
+              ).json();
+              openCodeModal(
+                cur.presentMinutes ?? 15,
+                cur.lateMinutes ?? 30,
+                async (p, l) => {
+                  const res = await fetch(
+                    "/api/attendance-code/generate?scheduleId=" +
+                      encodeURIComponent(sid) +
+                      "&presentMinutes=" +
+                      encodeURIComponent(p) +
+                      "&lateMinutes=" +
+                      encodeURIComponent(l),
+                    { method: "POST" }
+                  );
+                  if (!res.ok) {
+                    alert("Failed to generate");
+                    return;
+                  }
+                  const j = await res.json();
+                  alert("Code generated: " + j.code);
+                  fetchCurrentCode();
+                }
+              );
+            } catch (e) {
+              alert("Failed to open modal: " + e);
+            }
+          });
+
+        document
+          .getElementById("regenerate-code")
+          ?.addEventListener("click", async function () {
+            const sid = /*[[${scheduleId}]]*/ "null";
+            if (!sid || sid === "null") {
+              alert("Missing scheduleId");
+              return;
+            }
+            if (
+              !confirm(
+                "Regenerate code? This will invalidate the previous code."
+              )
+            )
+              return;
+            try {
+              const cur = await (
+                await fetch(
+                  "/api/attendance-code/current?scheduleId=" +
+                    encodeURIComponent(sid)
+                )
+              ).json();
+              openCodeModal(
+                cur.presentMinutes ?? 15,
+                cur.lateMinutes ?? 30,
+                async (p, l) => {
+                  const res = await fetch(
+                    "/api/attendance-code/generate?scheduleId=" +
+                      encodeURIComponent(sid) +
+                      "&presentMinutes=" +
+                      encodeURIComponent(p) +
+                      "&lateMinutes=" +
+                      encodeURIComponent(l),
+                    { method: "POST" }
+                  );
+                  if (!res.ok) {
+                    alert("Failed to regenerate");
+                    return;
+                  }
+                  const j = await res.json();
+                  alert("New code: " + j.code);
+                  fetchCurrentCode();
+                }
+              );
+            } catch (e) {
+              alert("Failed to open modal: " + e);
+            }
+          });
+
+        document
+          .getElementById("delete-code")
+          ?.addEventListener("click", async function () {
+            const sid = /*[[${scheduleId}]]*/ "null";
+            if (!sid || sid === "null") {
+              alert("Missing scheduleId");
+              return;
+            }
+            if (!confirm("Delete current attendance code?")) return;
+            const res = await fetch(
+              "/api/attendance-code/delete?scheduleId=" +
+                encodeURIComponent(sid),
+              { method: "DELETE" }
+            );
+            let j = {};
+            try {
+              j = await res.json();
+            } catch (e) {}
+            if (!res.ok) {
+              document.getElementById("code-msg").innerText =
+                j.error || "Delete failed";
+              return;
+            }
+            document.getElementById("code-msg").innerText =
+              j.message || "Deleted";
             fetchCurrentCode();
           });
 
-          // fetch code on page load
-          fetchCurrentCode();
+        // fetch code on page load
+        fetchCurrentCode();
 
-          // Date filter functionality
-          const dateFilter = document.getElementById('date-filter');
-          function getTodayString() {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const d = String(now.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-          }
-          function applyDateFilter() {
-            const filter = dateFilter ? dateFilter.value : 'today';
-            const todayStr = getTodayString();
-            const rows = document.querySelectorAll('.attendance-row');
-            rows.forEach(row => {
-              const rowDate = row.dataset.date || '';
-              const isToday = rowDate === todayStr;
-              if (filter === 'today') {
-                row.style.display = isToday ? '' : 'none';
-              } else {
-                row.style.display = '';
-              }
-            });
-          }
-          if (dateFilter) {
-            dateFilter.addEventListener('change', applyDateFilter);
-            // Apply filter on page load
-            applyDateFilter();
-          }
+        // Date filter functionality
+        const dateFilter = document.getElementById("date-filter");
+        function getTodayString() {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, "0");
+          const d = String(now.getDate()).padStart(2, "0");
+          return `${y}-${m}-${d}`;
+        }
+        function applyDateFilter() {
+          const filter = dateFilter ? dateFilter.value : "today";
+          const todayStr = getTodayString();
+          const rows = document.querySelectorAll(".attendance-row");
+          rows.forEach((row) => {
+            const rowDate = row.dataset.date || "";
+            const isToday = rowDate === todayStr;
+            if (filter === "today") {
+              row.style.display = isToday ? "" : "none";
+            } else {
+              row.style.display = "";
+            }
+          });
+        }
+        if (dateFilter) {
+          dateFilter.addEventListener("change", applyDateFilter);
+          // Apply filter on page load
+          applyDateFilter();
+        }
       </script>
 
       <div

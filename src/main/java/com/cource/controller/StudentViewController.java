@@ -1,4 +1,3 @@
-
 package com.cource.controller;
 
 import org.springframework.http.HttpHeaders;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.cource.service.StudentService;
+import com.cource.util.SecurityHelper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -24,11 +24,14 @@ import lombok.extern.slf4j.Slf4j;
 public class StudentViewController {
 
     private final StudentService studentService;
+    private final SecurityHelper securityHelper;
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("enrollments", studentService.getMyEnrollments(studentId));
             model.addAttribute("terms", studentService.getActiveTerms());
             model.addAttribute("gpa", studentService.calculateGPA(studentId));
@@ -42,6 +45,8 @@ public class StudentViewController {
     public String courses(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("terms", studentService.getAllTerms());
         }
         return "student/courses";
@@ -51,6 +56,8 @@ public class StudentViewController {
     public String myCourses(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("enrollments", studentService.getMyEnrollments(studentId));
         }
         return "student/my-courses";
@@ -60,6 +67,8 @@ public class StudentViewController {
     public String schedule(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             var sched = studentService.getMySchedule(studentId);
             if (sched == null || sched.isEmpty()) {
                 log.info("Student {} schedule is empty or null", studentId);
@@ -78,6 +87,8 @@ public class StudentViewController {
     public String grades(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("grades", studentService.getMyGrades(studentId));
             // Add summary values so the grades page can display GPA, credits and completed
             // count
@@ -95,6 +106,8 @@ public class StudentViewController {
             Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             // Only invoke StudentService methods when the current principal has the STUDENT
             // role.
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -128,8 +141,11 @@ public class StudentViewController {
 
     @GetMapping("/enter-code")
     public String enterCode(@RequestParam(required = false) Long studentId, Model model) {
-        if (studentId != null)
+        if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
+        }
         return "student/enter-code";
     }
 
@@ -137,6 +153,8 @@ public class StudentViewController {
     public String waitlist(@RequestParam(required = false) Long studentId, Model model) {
         if (studentId != null) {
             model.addAttribute("studentId", studentId);
+            model.addAttribute("userId", studentId);
+            model.addAttribute("role", "STUDENT");
             model.addAttribute("waitlistEntries", studentService.getMyWaitlistEntries(studentId));
         }
         return "student/waitlist";
