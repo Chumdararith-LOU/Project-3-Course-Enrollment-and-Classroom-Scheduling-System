@@ -147,7 +147,7 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <a
-                      th:href="@{/student/grades(studentId=${studentId})}"
+                      th:href="@{/student/grades(studentId=${studentId},offeringId=${offeringId})}"
                       class="text-blue-600 hover:text-blue-900 mr-3"
                       >View Grade</a
                     >
@@ -236,7 +236,7 @@
         </a>
 
         <a
-          th:href="@{/student/grades(studentId=${studentId})}"
+          th:href="@{/student/grades(studentId=${studentId},offeringId=${offeringId})}"
           class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
         >
           <div class="flex items-center">

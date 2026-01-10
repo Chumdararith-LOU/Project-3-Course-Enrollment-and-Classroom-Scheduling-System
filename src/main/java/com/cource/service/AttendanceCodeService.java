@@ -62,6 +62,7 @@ public class AttendanceCodeService {
         return generate(scheduleId, creatorId, null, null);
     }
 
+    @Transactional
     public CodeInfo generate(Long scheduleId, Long creatorId, Integer presentWindowMinutes, Integer lateWindowMinutes) {
         String code = generateShortCode();
         long now = Instant.now().getEpochSecond();

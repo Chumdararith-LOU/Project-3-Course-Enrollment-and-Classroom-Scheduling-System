@@ -3,7 +3,9 @@ package com.cource.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.cource.service.LecturerService;
@@ -11,8 +13,6 @@ import com.cource.service.AdminService;
 import com.cource.repository.RoleRepository;
 import com.cource.repository.ClassScheduleRepository;
 import com.cource.repository.EnrollmentRepository;
-import java.util.Map;
-import java.util.LinkedHashMap;
 
 /**
  * Controller for rendering Lecturer HTML views (Thymeleaf templates)
@@ -224,6 +224,16 @@ public class LecturerViewController {
         return "lecturer/students";
     }
 
+    @PostMapping("/enrollments/{enrollmentId}/grade")
+    public String updateEnrollmentGrade(
+            @PathVariable Long enrollmentId,
+            @RequestParam Long offeringId,
+            @RequestParam Long lecturerId,
+            @RequestParam(required = false) String grade) {
+        lecturerService.updateEnrollmentGrade(lecturerId, enrollmentId, grade);
+        return "redirect:/lecturer/students?offeringId=" + offeringId + "&lecturerId=" + lecturerId;
+    }
+
     /**
      * Render attendance page
      */
@@ -243,6 +253,9 @@ public class LecturerViewController {
                 if (offerings != null) {
                     for (var off : offerings) {
                         var classSchedules = classScheduleRepository.findByOfferingId(off.getId());
+                        if (classSchedules == null) {
+                            continue;
+                        }
                         if (classSchedules != null && !classSchedules.isEmpty()) {
                             scheduleId = classSchedules.get(0).getId();
                             break;
@@ -331,11 +344,13 @@ public class LecturerViewController {
                 var classSchedules = classScheduleRepository.findByOfferingId(offering.getId());
                 System.out.println("    Schedules for OfferingId=" + offering.getId() + ": "
                         + (classSchedules != null ? classSchedules.size() : 0));
-                for (var sched : classSchedules) {
-                    System.out.println("      ScheduleId=" + sched.getId() + ", Day=" + sched.getDayOfWeek()
-                            + ", Start=" + sched.getStartTime() + ", End=" + sched.getEndTime());
+                if (classSchedules != null) {
+                    for (var sched : classSchedules) {
+                        System.out.println("      ScheduleId=" + sched.getId() + ", Day=" + sched.getDayOfWeek()
+                                + ", Start=" + sched.getStartTime() + ", End=" + sched.getEndTime());
+                    }
+                    schedules.addAll(classSchedules);
                 }
-                schedules.addAll(classSchedules);
             }
             System.out.println("[DEBUG] Total schedules found: " + schedules.size());
             model.addAttribute("schedules", schedules);

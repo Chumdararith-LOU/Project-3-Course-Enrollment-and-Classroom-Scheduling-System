@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.cource.dto.attendance.AttendanceRequestDTO;
 import com.cource.entity.Attendance;
@@ -100,7 +99,11 @@ public class LecturerServiceImpl implements LecturerService {
                 studentId, schedule.getOffering().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
 
-        Attendance attendance = new Attendance();
+        Attendance attendance = attendanceRepository
+                .findByEnrollmentScheduleAndDate(enrollment.getId(), schedule.getId(),
+                        attendanceRequestDTO.getAttendanceDate())
+                .orElseGet(Attendance::new);
+
         attendance.setEnrollment(enrollment);
         attendance.setSchedule(schedule);
         attendance.setAttendanceDate(attendanceRequestDTO.getAttendanceDate());
@@ -165,6 +168,9 @@ public class LecturerServiceImpl implements LecturerService {
             verifyOwnership(schedule.getOffering().getId(), lecturerId);
         }
         List<Attendance> rows = attendanceRepository.findByScheduleId(scheduleId);
+        if (rows == null) {
+            rows = java.util.Collections.emptyList();
+        }
         // Sort by attendanceDate descending (latest first)
         rows.sort((a, b) -> b.getAttendanceDate().compareTo(a.getAttendanceDate()));
         // Initialize lazy associations while still in transaction to avoid
@@ -197,6 +203,9 @@ public class LecturerServiceImpl implements LecturerService {
         try {
             List<Attendance> rows = attendanceRepository.findByScheduleIdWithStudent(scheduleId);
             System.out.println("[DEBUG] loaded attendance rows count=" + (rows == null ? 0 : rows.size()));
+            if (rows == null) {
+                rows = java.util.Collections.emptyList();
+            }
             for (Attendance a : rows) {
                 java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
                 m.put("id", a.getId());
@@ -500,6 +509,25 @@ public class LecturerServiceImpl implements LecturerService {
             out.put(off.getCourse().getCourseCode() + " - " + off.getCourse().getTitle(), avg);
         }
         return out;
+    }
+
+    @Override
+    public Enrollment updateEnrollmentGrade(long lecturerId, long enrollmentId, String grade) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+
+        if (enrollment.getOffering() == null || enrollment.getOffering().getId() == null) {
+            throw new ResourceNotFoundException("Associated offering not found");
+        }
+
+        verifyOwnership(enrollment.getOffering().getId(), lecturerId);
+
+        String normalized = null;
+        if (grade != null && !grade.isBlank()) {
+            normalized = grade.trim().toUpperCase();
+        }
+        enrollment.setGrade(normalized);
+        return enrollmentRepository.save(enrollment);
     }
 
     @Override
