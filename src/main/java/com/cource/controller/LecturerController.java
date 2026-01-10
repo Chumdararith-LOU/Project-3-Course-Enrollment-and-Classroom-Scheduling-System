@@ -3,9 +3,9 @@ package com.cource.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.Course;
+import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.LecturerService;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -202,6 +203,26 @@ public class LecturerController {
     public ResponseEntity<java.util.Map<String, Double>> getCourseAverages(@RequestParam long lecturerId) {
         var map = lecturerService.getCourseAverageGradeByLecturer(lecturerId);
         return ResponseEntity.ok(map);
+    }
+
+    @PatchMapping("/enrollments/{id}/grade")
+    public ResponseEntity<?> updateEnrollmentGrade(
+            @PathVariable("id") long enrollmentId,
+            @RequestParam long lecturerId,
+            @RequestBody java.util.Map<String, Object> request) {
+        try {
+            Object g = request.get("grade");
+            String grade = g == null ? null : g.toString();
+            Enrollment updated = lecturerService.updateEnrollmentGrade(lecturerId, enrollmentId, grade);
+            return ResponseEntity.ok(updated);
+        } catch (ResourceNotFoundException rnfe) {
+            return ResponseEntity.status(404).body(java.util.Collections.singletonMap("message", rnfe.getMessage()));
+        } catch (SecurityException se) {
+            return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
+        }
     }
 
 }

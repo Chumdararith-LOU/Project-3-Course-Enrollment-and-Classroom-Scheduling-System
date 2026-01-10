@@ -23,6 +23,10 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         Optional<Attendance> findByStudentScheduleAndDate(@Param("studentId") Long studentId,
                         @Param("scheduleId") Long scheduleId, @Param("date") LocalDate date);
 
+        @Query("SELECT a FROM Attendance a WHERE a.enrollment.id = :enrollmentId AND a.schedule.id = :scheduleId AND a.attendanceDate = :date")
+        Optional<Attendance> findByEnrollmentScheduleAndDate(@Param("enrollmentId") Long enrollmentId,
+                        @Param("scheduleId") Long scheduleId, @Param("date") LocalDate date);
+
         @Query("SELECT a FROM Attendance a WHERE a.enrollment.student.id = :studentId")
         List<Attendance> findByStudentId(@Param("studentId") Long studentId);
 
