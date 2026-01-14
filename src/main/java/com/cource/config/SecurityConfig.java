@@ -32,7 +32,6 @@ public class SecurityConfig {
                                 "/index",
                                 "/home",
                                 "/signin",
-                                "/signup",
                                 "/api/auth/**",
                                 "/css/**",
                                 "/js/**",

@@ -285,19 +285,33 @@ public class AdminServiceImpl implements AdminService {
         return enrollmentRepository.save(enrollment);
     }
 
+    private static final java.util.Set<String> VALID_GRADES = java.util.Set.of(
+            "A", "A+", "A-", "B", "B+", "B-", "C", "C+", "C-", "D", "D+", "D-", "F", "W", "I");
+
     @Override
     @Transactional
     public Enrollment updateEnrollmentGrade(Long id, String grade) {
+        if (grade != null && !grade.isBlank() && !VALID_GRADES.contains(grade.toUpperCase())) {
+            throw new IllegalArgumentException(
+                    "Invalid grade: " + grade + ". Valid grades are: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, F, W, I");
+        }
         Enrollment enrollment = getEnrollmentById(id);
-        enrollment.setGrade(grade);
+        enrollment.setGrade(grade != null ? grade.toUpperCase() : null);
         return enrollmentRepository.save(enrollment);
     }
+
+    private static final java.util.Set<String> VALID_STATUSES = java.util.Set.of(
+            "ENROLLED", "DROPPED", "COMPLETED", "FAILED", "WAITLISTED");
 
     @Override
     @Transactional
     public Enrollment updateEnrollmentStatus(Long id, String status) {
+        if (status != null && !status.isBlank() && !VALID_STATUSES.contains(status.toUpperCase())) {
+            throw new IllegalArgumentException(
+                    "Invalid status: " + status + ". Valid statuses are: ENROLLED, DROPPED, COMPLETED, FAILED, WAITLISTED");
+        }
         Enrollment enrollment = getEnrollmentById(id);
-        enrollment.setStatus(status);
+        enrollment.setStatus(status != null ? status.toUpperCase() : null);
         return enrollmentRepository.save(enrollment);
     }
 
@@ -330,9 +344,49 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    public String generateTermCode(java.time.LocalDate startDate) {
+        if (startDate == null) {
+            startDate = java.time.LocalDate.now();
+        }
+        int year = startDate.getYear();
+        String prefix = String.valueOf(year);
+
+        // Find existing codes with this prefix
+        java.util.List<String> existingCodes = academicTermRepository.findTermCodesByPrefix(prefix);
+
+        // Find the next available number
+        int nextNum = 1;
+        for (String code : existingCodes) {
+            if (code.startsWith(prefix + "-")) {
+                try {
+                    int num = Integer.parseInt(code.substring(prefix.length() + 1));
+                    if (num >= nextNum) {
+                        nextNum = num + 1;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        return prefix + "-" + nextNum;
+    }
+
+    @Override
     @Transactional
     public AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
             java.time.LocalDate endDate) {
+        // Validate dates
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start date and end date are required");
+        }
+        if (!startDate.isBefore(endDate)) {
+            throw new IllegalArgumentException("Start date must be before end date");
+        }
+        // Term cannot start in the past (before today)
+        if (startDate.isBefore(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Term start date cannot be in the past");
+        }
+
         // ensure termCode is unique
         if (academicTermRepository.findByTermCode(termCode).isPresent()) {
             throw new com.cource.exception.ConflictException("Term code already exists: " + termCode);

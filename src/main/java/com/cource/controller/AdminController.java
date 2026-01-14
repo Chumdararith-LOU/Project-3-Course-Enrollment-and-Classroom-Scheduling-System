@@ -479,6 +479,14 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getTermById(id));
     }
 
+    @GetMapping("/terms/generate-code")
+    public ResponseEntity<Map<String, String>> generateTermCode(
+            @RequestParam(required = false) String startDate) {
+        LocalDate date = startDate != null ? LocalDate.parse(startDate) : LocalDate.now();
+        String code = adminService.generateTermCode(date);
+        return ResponseEntity.ok(Collections.singletonMap("termCode", code));
+    }
+
     @PostMapping("/terms")
     public ResponseEntity<?> createTerm(@RequestBody Map<String, Object> request) {
         String termCode = request.get("termCode").toString();

@@ -64,6 +64,8 @@ public interface AdminService {
 
         AcademicTerm getTermById(Long id);
 
+        String generateTermCode(java.time.LocalDate startDate);
+
         AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
                         java.time.LocalDate endDate);
 

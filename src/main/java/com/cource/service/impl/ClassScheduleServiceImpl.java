@@ -121,12 +121,37 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         LocalTime start = parseTime(startTime);
         LocalTime end = parseTime(endTime);
 
+        // Validate start time is before end time
+        if (!start.isBefore(end)) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
         Room room = upsertRoom(roomNumber, building, roomType);
+
+        // Check for room time conflict
+        List<ClassSchedule> roomConflicts = classScheduleRepository.findConflictingSchedules(
+                room.getId(), dayOfWeek.toUpperCase(), start, end, null);
+        if (!roomConflicts.isEmpty()) {
+            ClassSchedule conflict = roomConflicts.get(0);
+            throw new IllegalArgumentException(String.format(
+                    "Room %s is already booked on %s from %s to %s",
+                    roomNumber, dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
+        }
+
+        // Check for lecturer time conflict
+        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findLecturerConflictingSchedules(
+                lecturerId, dayOfWeek.toUpperCase(), start, end, null);
+        if (!lecturerConflicts.isEmpty()) {
+            ClassSchedule conflict = lecturerConflicts.get(0);
+            throw new IllegalArgumentException(String.format(
+                    "Lecturer already has a class on %s from %s to %s",
+                    dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
+        }
 
         ClassSchedule cs = new ClassSchedule();
         cs.setOffering(offering);
         cs.setRoom(room);
-        cs.setDayOfWeek(dayOfWeek);
+        cs.setDayOfWeek(dayOfWeek.toUpperCase());
         cs.setStartTime(start);
         cs.setEndTime(end);
 
@@ -146,7 +171,32 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         LocalTime start = parseTime(startTime);
         LocalTime end = parseTime(endTime);
 
+        // Validate start time is before end time
+        if (!start.isBefore(end)) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
         Room room = upsertRoom(roomNumber, building, roomType);
+
+        // Check for room time conflict (exclude current schedule)
+        List<ClassSchedule> roomConflicts = classScheduleRepository.findConflictingSchedules(
+                room.getId(), dayOfWeek.toUpperCase(), start, end, scheduleId);
+        if (!roomConflicts.isEmpty()) {
+            ClassSchedule conflict = roomConflicts.get(0);
+            throw new IllegalArgumentException(String.format(
+                    "Room %s is already booked on %s from %s to %s",
+                    roomNumber, dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
+        }
+
+        // Check for lecturer time conflict (exclude current schedule)
+        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findLecturerConflictingSchedules(
+                lecturerId, dayOfWeek.toUpperCase(), start, end, scheduleId);
+        if (!lecturerConflicts.isEmpty()) {
+            ClassSchedule conflict = lecturerConflicts.get(0);
+            throw new IllegalArgumentException(String.format(
+                    "Lecturer already has a class on %s from %s to %s",
+                    dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
+        }
 
         ClassSchedule cs;
         if (scheduleId != null) {
@@ -158,7 +208,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
         cs.setOffering(offering);
         cs.setRoom(room);
-        cs.setDayOfWeek(dayOfWeek);
+        cs.setDayOfWeek(dayOfWeek.toUpperCase());
         cs.setStartTime(start);
         cs.setEndTime(end);
 

@@ -515,6 +515,9 @@ public class LecturerServiceImpl implements LecturerService {
         return out;
     }
 
+    private static final java.util.Set<String> VALID_GRADES = java.util.Set.of(
+            "A", "A+", "A-", "B", "B+", "B-", "C", "C+", "C-", "D", "D+", "D-", "F", "W", "I");
+
     @Override
     public Enrollment updateEnrollmentGrade(long lecturerId, long enrollmentId, String grade) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
@@ -529,6 +532,11 @@ public class LecturerServiceImpl implements LecturerService {
         String normalized = null;
         if (grade != null && !grade.isBlank()) {
             normalized = grade.trim().toUpperCase();
+            if (!VALID_GRADES.contains(normalized)) {
+                throw new IllegalArgumentException(
+                        "Invalid grade: " + grade
+                                + ". Valid grades are: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, F, W, I");
+            }
         }
         enrollment.setGrade(normalized);
         return enrollmentRepository.save(enrollment);
