@@ -173,8 +173,6 @@
               id="sortSelect"
               class="pl-3 pr-9 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white cursor-pointer transition-all duration-200"
             >
-              <option value="id-asc">ID ↑</option>
-              <option value="id-desc">ID ↓</option>
               <option value="name-asc">Name ↑</option>
               <option value="name-desc">Name ↓</option>
               <option value="email-asc">Email ↑</option>
@@ -209,25 +207,6 @@
           <table class="min-w-full divide-y divide-slate-200" id="usersTable">
             <thead class="bg-slate-50/50">
               <tr>
-                <th
-                  class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wide cursor-pointer hover:bg-slate-100"
-                  onclick="sortTable('id')"
-                >
-                  ID
-                  <svg
-                    class="w-4 h-4 inline ml-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                    ></path>
-                  </svg>
-                </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
                   onclick="sortTable('name')"
@@ -293,12 +272,6 @@
                 th:each="user : ${users}"
                 class="hover:bg-slate-50 transition user-row"
               >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-medium user-id"
-                  th:text="${user.id}"
-                >
-                  1
-                </td>
                 <td class="px-6 py-4 whitespace-nowrap user-name">
                   <div
                     class="text-sm font-medium text-slate-900"
@@ -726,7 +699,6 @@
           const rows = document.querySelectorAll(".user-row");
 
           rows.forEach((row) => {
-            const id = row.querySelector(".user-id").textContent.toLowerCase();
             const name = row
               .querySelector(".user-name")
               .textContent.toLowerCase();
@@ -734,11 +706,7 @@
               .querySelector(".user-email")
               .textContent.toLowerCase();
 
-            if (
-              id.includes(searchTerm) ||
-              name.includes(searchTerm) ||
-              email.includes(searchTerm)
-            ) {
+            if (name.includes(searchTerm) || email.includes(searchTerm)) {
               row.style.display = "";
             } else {
               row.style.display = "none";
@@ -747,7 +715,7 @@
         });
 
       // Sort functionality
-      let currentSort = { column: "id", direction: "asc" };
+      let currentSort = { column: "name", direction: "asc" };
 
       function sortTable(column) {
         const tbody = document.querySelector("#usersTable tbody");
@@ -765,10 +733,7 @@
         rows.sort((a, b) => {
           let aVal, bVal;
 
-          if (column === "id") {
-            aVal = parseInt(a.querySelector(".user-id").textContent);
-            bVal = parseInt(b.querySelector(".user-id").textContent);
-          } else if (column === "name") {
+          if (column === "name") {
             aVal = a.querySelector(".user-name").textContent.toLowerCase();
             bVal = b.querySelector(".user-name").textContent.toLowerCase();
           } else if (column === "email") {
@@ -797,10 +762,7 @@
           rows.sort((a, b) => {
             let aVal, bVal;
 
-            if (column === "id") {
-              aVal = parseInt(a.querySelector(".user-id").textContent);
-              bVal = parseInt(b.querySelector(".user-id").textContent);
-            } else if (column === "name") {
+            if (column === "name") {
               aVal = a.querySelector(".user-name").textContent.toLowerCase();
               bVal = b.querySelector(".user-name").textContent.toLowerCase();
             } else if (column === "email") {

@@ -12,112 +12,115 @@
           <div th:case="'ADMIN'">
             <a
               th:href="@{/admin/dashboard(adminId=${userId})}"
-              class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/dashboard')} 
+              ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' 
+              : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Dashboard</a
             >
             <a
               th:href="@{/admin/users(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/users')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/users')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Users</a
             >
             <a
               th:href="@{/admin/courses(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Courses</a
             >
             <a
               th:href="@{/admin/offerings(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/offerings')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/offerings')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Offering</a
             >
             <a
               th:href="@{/admin/enrollments(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/enrollments')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/enrollments')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Enrollments</a
             >
             <a
               th:href="@{/admin/rooms(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/rooms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/rooms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Rooms</a
             >
             <a
               th:href="@{/admin/schedules(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/schedules')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/schedules')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Schedules</a
             >
             <a
               th:href="@{/admin/terms(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/terms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/terms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Terms</a
             >
             <a
               th:href="@{/admin/attendance(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Attendance</a
             >
             <a
               th:href="@{/admin/reports(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Reports</a
             >
           </div>
+
           <div th:case="'LECTURER'">
             <a
               th:href="@{/lecturer/dashboard(lecturerId=${userId})}"
-              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Dashboard</a
             >
             <a
               th:href="@{/lecturer/courses(lecturerId=${userId})}"
-              th:class="${#httpServletRequest != null and (#httpServletRequest.getServletPath().startsWith('/lecturer/courses') or #httpServletRequest.getServletPath().startsWith('/lecturer/students'))} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and (#httpServletRequest.getServletPath().startsWith('/lecturer/courses') or #httpServletRequest.getServletPath().startsWith('/lecturer/students'))} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >My Courses</a
             >
             <a
               th:href="@{/lecturer/schedule(lecturerId=${userId})}"
-              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Schedule</a
             >
             <a
               th:href="@{/lecturer/attendance(lecturerId=${userId})}"
-              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Attendance</a
             >
             <a
               th:href="@{/lecturer/reports(lecturerId=${userId})}"
-              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Reports</a
             >
           </div>
+
           <div th:case="'STUDENT'">
             <a
               th:href="@{/student/dashboard(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Dashboard</a
             >
             <a
               th:href="@{/student/courses(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Browse Courses</a
             >
             <a
               th:href="@{/student/waitlist(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/waitlist')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/waitlist')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Waitlist</a
             >
             <a
               th:href="@{/student/schedule(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >My Schedule</a
             >
             <a
               th:href="@{/student/attendance(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Attendance</a
             >
             <a
               th:href="@{/student/grades(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/grades')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/grades')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >My Grades</a
             >
           </div>
@@ -177,7 +180,6 @@
       </div>
     </div>
   </aside>
-  <!-- Profile Modal (moved here for reuse) -->
   <div
     id="profileModal"
     class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40"
@@ -289,7 +291,6 @@
     </div>
   </div>
 
-  <!-- View Other User Modal (reusable across all roles) -->
   <div
     id="userViewModal"
     class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40"

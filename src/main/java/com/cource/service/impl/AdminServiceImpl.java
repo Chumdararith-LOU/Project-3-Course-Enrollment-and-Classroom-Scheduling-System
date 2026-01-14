@@ -444,6 +444,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public Room createRoom(String roomNumber, String building, Integer capacity, String roomType, Boolean isActive) {
+        // Check for duplicate room number
+        if (roomRepository.existsByRoomNumber(roomNumber)) {
+            throw new ConflictException("Room number '" + roomNumber + "' already exists");
+        }
         Room room = new Room();
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
@@ -458,6 +462,10 @@ public class AdminServiceImpl implements AdminService {
     public Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
             Boolean isActive) {
         Room room = getRoomById(id);
+        // Check for duplicate room number (exclude current room)
+        if (roomRepository.existsByRoomNumberAndIdNot(roomNumber, id)) {
+            throw new ConflictException("Room number '" + roomNumber + "' already exists");
+        }
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
         room.setCapacity(capacity);

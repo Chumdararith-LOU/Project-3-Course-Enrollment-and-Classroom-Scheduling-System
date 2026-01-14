@@ -11,4 +11,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     Optional<Room> findByRoomNumber(String roomNumber);
 
+    // Check if room number exists (for create)
+    boolean existsByRoomNumber(String roomNumber);
+
+    // Check if room number exists excluding a specific ID (for update)
+    boolean existsByRoomNumberAndIdNot(String roomNumber, Long id);
 }
