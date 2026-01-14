@@ -88,6 +88,22 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    public EnrollmentResult enrollStudentWithOfferingCode(Long studentId, Long offeringId, String enrollmentCode) {
+        if (enrollmentCode == null || enrollmentCode.isBlank()) {
+            throw new IllegalArgumentException("Enrollment code is required");
+        }
+
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new RuntimeException("Offering not found"));
+
+        if (offering.getEnrollmentCode() == null || !offering.getEnrollmentCode().equals(enrollmentCode)) {
+            throw new IllegalArgumentException("Invalid enrollment code");
+        }
+
+        return enrollStudent(studentId, offeringId);
+    }
+
+    @Override
     public EnrollmentResult dropCourse(Long studentId, Long offeringId) {
         Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found"));

@@ -11,15 +11,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.cource.service.StudentService;
 import com.cource.util.SecurityHelper;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('STUDENT')")
 public class StudentController {
 
     private final StudentService studentService;
     private final SecurityHelper securityHelper;
-    private final com.cource.repository.ClassScheduleRepository scheduleRepository;
 
     @GetMapping("/student/drop")
     public String dropEnrollment(@RequestParam Long enrollmentId, RedirectAttributes ra) {
@@ -77,20 +79,17 @@ public class StudentController {
             ra.addFlashAttribute("error", "Unable to resolve current user");
             return "redirect:/login";
         }
+        com.cource.entity.Attendance saved = null;
         try {
             LocalDate date = LocalDate.parse(attendanceDate);
-            studentService.submitAttendanceRequest(currentUserId, scheduleId, date, notes);
+            saved = studentService.submitAttendanceRequest(currentUserId, scheduleId, date, notes);
             ra.addFlashAttribute("message", "Attendance request submitted");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
         Long offeringId = null;
-        try {
-            var sched = scheduleRepository.findById(scheduleId);
-            if (sched.isPresent() && sched.get().getOffering() != null)
-                offeringId = sched.get().getOffering().getId();
-        } catch (Exception ex) {
-            // ignore
+        if (saved != null && saved.getSchedule() != null && saved.getSchedule().getOffering() != null) {
+            offeringId = saved.getSchedule().getOffering().getId();
         }
         return "redirect:/student/attendance?studentId=" + currentUserId
                 + (offeringId != null ? "&offeringId=" + offeringId : "");

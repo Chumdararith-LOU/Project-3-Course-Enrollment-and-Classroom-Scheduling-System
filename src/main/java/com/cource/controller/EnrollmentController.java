@@ -5,9 +5,10 @@ import com.cource.service.EnrollmentService;
 import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,14 +17,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/enrollment")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('STUDENT')")
 public class EnrollmentController {
     private final EnrollmentService enrollmentService;
     private final UserService userService;
 
     @PostMapping("/enroll")
     public String enroll(@RequestParam Long offeringId,
-                         @AuthenticationPrincipal UserDetails userDetails, // Inject logged-in user
-                         RedirectAttributes redirectAttributes) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
         try {
             User student = userService.getUserByEmail(userDetails.getUsername());
 
@@ -44,8 +46,8 @@ public class EnrollmentController {
 
     @PostMapping("/drop")
     public String drop(@RequestParam Long offeringId,
-                       @AuthenticationPrincipal UserDetails userDetails, // Inject logged-in user
-                       RedirectAttributes redirectAttributes) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
         try {
             User student = userService.getUserByEmail(userDetails.getUsername());
 

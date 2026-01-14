@@ -11,6 +11,13 @@ public interface EnrollmentService {
 
     EnrollmentResult enrollStudent(Long studentId, Long offeringId);
 
+    /**
+     * Enroll a student in a specific offering after validating the offering's
+     * enrollment code.
+     * Keeps controller thin by centralizing code validation here.
+     */
+    EnrollmentResult enrollStudentWithOfferingCode(Long studentId, Long offeringId, String enrollmentCode);
+
     EnrollmentResult dropCourse(Long studentId, Long offeringId);
 
     EnrollmentResult removeFromWaitlist(Long studentId, Long offeringId);

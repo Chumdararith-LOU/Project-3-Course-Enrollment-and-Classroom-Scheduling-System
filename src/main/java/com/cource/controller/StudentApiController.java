@@ -2,12 +2,12 @@ package com.cource.controller;
 
 import com.cource.dto.enrollment.EnrollmentResult;
 import com.cource.entity.CourseOffering;
-import com.cource.repository.CourseOfferingRepository;
 import com.cource.service.EnrollmentService;
 import com.cource.service.StudentService;
 import com.cource.util.SecurityHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +16,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('STUDENT','ADMIN')")
 public class StudentApiController {
 
     private final StudentService studentService;
     private final EnrollmentService enrollmentService;
-    private final CourseOfferingRepository courseOfferingRepository;
     private final SecurityHelper securityHelper;
 
     @GetMapping("/{studentId}/available-courses")
@@ -53,17 +53,8 @@ public class StudentApiController {
                 return ResponseEntity.badRequest().body("Enrollment code is required");
             }
 
-            // Validate offering code matches
-            CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                    .orElse(null);
-            if (offering == null) {
-                return ResponseEntity.status(404).body("Offering not found");
-            }
-            if (offering.getEnrollmentCode() == null || !offering.getEnrollmentCode().equals(enrollmentCode)) {
-                return ResponseEntity.badRequest().body("Invalid enrollment code");
-            }
-
-            EnrollmentResult result = enrollmentService.enrollStudent(studentId, offeringId);
+            EnrollmentResult result = enrollmentService.enrollStudentWithOfferingCode(studentId, offeringId,
+                    enrollmentCode);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException ia) {
             return ResponseEntity.badRequest().body(ia.getMessage());

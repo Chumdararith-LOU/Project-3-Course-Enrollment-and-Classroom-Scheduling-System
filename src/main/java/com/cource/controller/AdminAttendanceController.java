@@ -1,11 +1,14 @@
 package com.cource.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,13 +23,14 @@ import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminAttendanceController {
 
     private final AttendanceRepository attendanceRepository;
     private final AdminService adminService;
 
     @GetMapping("/admin/attendance")
-    public String attendancePage(org.springframework.ui.Model model) {
+    public String attendancePage(Model model) {
         return attendancePage(null, null, null, null, model);
     }
 
@@ -36,14 +40,12 @@ public class AdminAttendanceController {
             @RequestParam(required = false) Long scheduleId,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
-            org.springframework.ui.Model model) {
-        // use injected AdminService to populate offerings/schedules for filters
-
-        java.util.List<com.cource.entity.Attendance> rows = null;
+            Model model) {
+        List<Attendance> rows = null;
         try {
             if (offeringId != null && from != null && to != null) {
-                java.time.LocalDate f = java.time.LocalDate.parse(from);
-                java.time.LocalDate t = java.time.LocalDate.parse(to);
+                LocalDate f = LocalDate.parse(from);
+                LocalDate t = LocalDate.parse(to);
                 rows = attendanceRepository.findByOfferingIdBetweenDates(offeringId, f, t);
             } else if (scheduleId != null) {
                 rows = attendanceRepository.findByScheduleIdWithStudent(scheduleId);
@@ -55,8 +57,7 @@ public class AdminAttendanceController {
         }
 
         model.addAttribute("attendanceRows", rows);
-        // provide offerings and schedules for filter selects using injected
-        // AdminService
+
         try {
             model.addAttribute("offerings", adminService.getAllCourseOfferings());
             if (offeringId != null) {
@@ -74,8 +75,7 @@ public class AdminAttendanceController {
         model.addAttribute("from", from);
         model.addAttribute("to", to);
 
-        // ADD THESE LINES FOR SIDEBAR
-        model.addAttribute("userId", 1); // You might want to get this from SecurityHelper
+        model.addAttribute("userId", 1);
         model.addAttribute("role", "ADMIN");
 
         return "admin/attendance";

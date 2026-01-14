@@ -1,12 +1,21 @@
 package com.cource.controller;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.cource.service.LecturerService;
 import com.cource.service.AdminService;
@@ -14,12 +23,9 @@ import com.cource.repository.RoleRepository;
 import com.cource.repository.ClassScheduleRepository;
 import com.cource.repository.EnrollmentRepository;
 
-/**
- * Controller for rendering Lecturer HTML views (Thymeleaf templates)
- * Separate from REST API endpoints in LecturerController
- */
 @Controller
 @RequestMapping("/lecturer")
+@PreAuthorize("hasRole('LECTURER')")
 public class LecturerViewController {
 
     private final LecturerService lecturerService;
@@ -38,20 +44,14 @@ public class LecturerViewController {
         this.enrollmentRepository = enrollmentRepository;
     }
 
-    /**
-     * Render lecturer dashboard page
-     */
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
             model.addAttribute("userId", lecturerId);
             model.addAttribute("role", "LECTURER");
         }
 
-        // Dashboard totals for the lecturer: total courses, total students, classes
-        // today
         if (lecturerId != null) {
             var offerings = lecturerService.getOfferingsByLecturerId(lecturerId);
             int totalCourses = offerings == null ? 0 : offerings.size();
@@ -73,7 +73,7 @@ public class LecturerViewController {
                             String dowFull = dow.name(); // e.g., MONDAY
                             String dowShort = dowFull.substring(0, 3); // e.g., MON
                             String dowShortDisplay = dow.getDisplayName(java.time.format.TextStyle.SHORT,
-                                    java.util.Locale.ENGLISH).toUpperCase(); // e.g., Mon -> MON
+                                    Locale.ENGLISH).toUpperCase(); // e.g., Mon -> MON
                             for (var s : schedules) {
                                 String schedDow = s.getDayOfWeek();
                                 if (schedDow == null)
@@ -92,9 +92,7 @@ public class LecturerViewController {
             model.addAttribute("totalStudents", totalStudents);
             model.addAttribute("classesToday", classesToday);
         }
-        // Provide chart data using LecturerService: recent attendance (7 days) + role
-        // distribution
-        // Only fetch system-wide admin metrics when the current user has ADMIN role
+
         var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = false;
         if (auth != null && auth.getAuthorities() != null) {
@@ -110,8 +108,8 @@ public class LecturerViewController {
 
         if (lecturerId != null) {
             var attendanceMap = lecturerService.getAttendanceCountsByDate(lecturerId, 7);
-            var enrollmentLabels = new java.util.ArrayList<String>(attendanceMap.keySet());
-            var enrollmentData = new java.util.ArrayList<Number>();
+            var enrollmentLabels = new ArrayList<String>(attendanceMap.keySet());
+            var enrollmentData = new ArrayList<Number>();
             for (String k : enrollmentLabels) {
                 enrollmentData.add(attendanceMap.getOrDefault(k, 0L));
             }
@@ -119,8 +117,8 @@ public class LecturerViewController {
             model.addAttribute("enrollmentData", enrollmentData);
 
             var roles = roleRepository.findAll();
-            var userLabels = new java.util.ArrayList<String>();
-            var userData = new java.util.ArrayList<Number>();
+            var userLabels = new ArrayList<String>();
+            var userData = new ArrayList<Number>();
             if (isAdmin) {
                 for (var r : roles) {
                     long count = adminService.getUsersByRole(r.getRoleCode()).size();
@@ -128,8 +126,6 @@ public class LecturerViewController {
                     userData.add(count);
                 }
             } else {
-                // For non-admin lecturers, avoid calling adminService (method-secured)
-                // Provide empty data or zeros so the dashboard renders safely.
                 for (var r : roles) {
                     userLabels.add(r.getRoleName());
                     userData.add(0);
@@ -138,20 +134,16 @@ public class LecturerViewController {
             model.addAttribute("userLabels", userLabels);
             model.addAttribute("userData", userData);
         } else {
-            model.addAttribute("enrollmentLabels", new java.util.ArrayList<String>());
-            model.addAttribute("enrollmentData", new java.util.ArrayList<Number>());
-            model.addAttribute("userLabels", new java.util.ArrayList<String>());
-            model.addAttribute("userData", new java.util.ArrayList<Number>());
+            model.addAttribute("enrollmentLabels", new ArrayList<String>());
+            model.addAttribute("enrollmentData", new ArrayList<Number>());
+            model.addAttribute("userLabels", new ArrayList<String>());
+            model.addAttribute("userData", new ArrayList<Number>());
         }
         return "lecturer/dashboard";
     }
 
-    /**
-     * Render courses page
-     */
     @GetMapping("/courses")
     public String courses(@RequestParam(required = false) Long lecturerId, Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         try {
             if (lecturerId != null) {
                 model.addAttribute("lecturerId", lecturerId);
@@ -159,7 +151,6 @@ public class LecturerViewController {
                 model.addAttribute("role", "LECTURER");
                 model.addAttribute("offerings", lecturerService.getOfferingsByLecturerId(lecturerId));
             }
-            // Only fetch admin-level lists if the current user has ADMIN role
             var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             boolean isAdmin = false;
             if (auth != null && auth.getAuthorities() != null) {
@@ -169,8 +160,8 @@ public class LecturerViewController {
                 model.addAttribute("courses", adminService.getAllCourses());
                 model.addAttribute("terms", adminService.getAllTerms());
             } else {
-                model.addAttribute("courses", new java.util.ArrayList<>());
-                model.addAttribute("terms", new java.util.ArrayList<>());
+                model.addAttribute("courses", new ArrayList<>());
+                model.addAttribute("terms", new ArrayList<>());
             }
         } catch (Exception ex) {
             model.addAttribute("error", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
@@ -178,30 +169,25 @@ public class LecturerViewController {
         return "lecturer/courses";
     }
 
-    /**
-     * Render students page
-     */
     @GetMapping("/students")
     public String students(
             @RequestParam(required = false) Long offeringId,
             @RequestParam(required = false) Long lecturerId,
             Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (offeringId != null && lecturerId != null) {
             try {
                 model.addAttribute("offeringId", offeringId);
                 model.addAttribute("lecturerId", lecturerId);
-                model.addAttribute("userId", lecturerId); // ADD THIS LINE
+                model.addAttribute("userId", lecturerId);
                 model.addAttribute("role", "LECTURER");
-                // Verify lecturer owns this offering (throws if not)
+
                 lecturerService.getEnrolledStudents(offeringId, lecturerId);
 
-                // Load enrollments + students for this offering (ENROLLED only)
                 var enrollments = enrollmentRepository.findByOfferingIdWithStudentFiltered(offeringId, "ENROLLED");
                 model.addAttribute("enrollments", enrollments);
 
-                java.util.List<com.cource.entity.User> students = new java.util.ArrayList<>();
-                java.util.Map<Long, com.cource.entity.Enrollment> enrollmentMap = new java.util.HashMap<>();
+                List<com.cource.entity.User> students = new ArrayList<>();
+                Map<Long, com.cource.entity.Enrollment> enrollmentMap = new HashMap<>();
                 if (enrollments != null) {
                     for (com.cource.entity.Enrollment e : enrollments) {
                         if (e != null && e.getStudent() != null && e.getStudent().getId() != null) {
@@ -234,9 +220,6 @@ public class LecturerViewController {
         return "redirect:/lecturer/students?offeringId=" + offeringId + "&lecturerId=" + lecturerId;
     }
 
-    /**
-     * Render attendance page
-     */
     @GetMapping("/attendance")
     public String attendance(
             @RequestParam(required = false) Long scheduleId,
@@ -244,9 +227,7 @@ public class LecturerViewController {
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) Long offeringId,
             Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
-        // If lecturer provided but no schedule selected, try to auto-select the first
-        // schedule for one of the lecturer's offerings so the page shows useful data
+
         if (lecturerId != null && scheduleId == null) {
             try {
                 var offerings = lecturerService.getOfferingsByLecturerId(lecturerId);
@@ -268,7 +249,7 @@ public class LecturerViewController {
         // Provide schedules for the lecturer so the template can show a selector
         if (lecturerId != null) {
             try {
-                java.util.List<com.cource.entity.ClassSchedule> schedules = new java.util.ArrayList<>();
+                List<com.cource.entity.ClassSchedule> schedules = new ArrayList<>();
                 var offerings = lecturerService.getOfferingsByLecturerId(lecturerId);
                 if (offerings != null) {
                     for (var off : offerings) {
@@ -283,18 +264,16 @@ public class LecturerViewController {
                 }
                 model.addAttribute("schedules", schedules);
             } catch (Exception ignored) {
-                model.addAttribute("schedules", new java.util.ArrayList<>());
+                model.addAttribute("schedules", new ArrayList<>());
             }
         }
 
-        // Pass through an initial studentId (if any) so the attendance modal can
-        // preselect
         if (studentId != null) {
             model.addAttribute("initialStudentId", studentId);
         } else {
             model.addAttribute("initialStudentId", null);
         }
-        // Also provide offeringId if supplied to help auto-select schedules
+
         if (offeringId != null) {
             model.addAttribute("offeringId", offeringId);
         }
@@ -305,8 +284,7 @@ public class LecturerViewController {
             model.addAttribute("userId", lecturerId); // ADD THIS LINE
             model.addAttribute("role", "LECTURER");
             model.addAttribute("attendanceRecords", lecturerService.getAttendanceRecords(scheduleId, lecturerId));
-            // Also load enrolled students for this schedule's offering so lecturer can mark
-            // attendance
+
             try {
                 var schedOpt = classScheduleRepository.findById(scheduleId);
                 if (schedOpt.isPresent() && schedOpt.get().getOffering() != null) {
@@ -314,32 +292,29 @@ public class LecturerViewController {
                     var students = lecturerService.getEnrolledStudents(offId, lecturerId);
                     model.addAttribute("students", students);
                 } else {
-                    model.addAttribute("students", new java.util.ArrayList<>());
+                    model.addAttribute("students", new ArrayList<>());
                 }
             } catch (Exception ex) {
-                model.addAttribute("students", new java.util.ArrayList<>());
+                model.addAttribute("students", new ArrayList<>());
             }
         }
         return "lecturer/attendance";
     }
 
-    /**
-     * Render schedule page
-     */
     @GetMapping("/schedule")
     public String schedule(@RequestParam(required = false) Long lecturerId, Model model) {
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("userId", lecturerId); // ADD THIS LINE
+            model.addAttribute("userId", lecturerId);
             model.addAttribute("role", "LECTURER");
-            // Fetch all offerings for this lecturer
+
             var offerings = lecturerService.getOfferingsByLecturerId(lecturerId);
             System.out.println("[DEBUG] Offerings for lecturerId=" + lecturerId + ":");
             for (var off : offerings) {
                 System.out.println("  OfferingId=" + off.getId() + ", Course=" + off.getCourse().getCourseCode() + " - "
                         + off.getCourse().getTitle() + ", Term=" + off.getTerm().getTermName());
             }
-            java.util.List<com.cource.entity.ClassSchedule> schedules = new java.util.ArrayList<>();
+            List<com.cource.entity.ClassSchedule> schedules = new ArrayList<>();
             for (var offering : offerings) {
                 var classSchedules = classScheduleRepository.findByOfferingId(offering.getId());
                 System.out.println("    Schedules for OfferingId=" + offering.getId() + ": "
@@ -356,7 +331,7 @@ public class LecturerViewController {
             model.addAttribute("schedules", schedules);
             model.addAttribute("offerings", offerings); // <-- Add offerings for course selection
         } else {
-            model.addAttribute("offerings", new java.util.ArrayList<>());
+            model.addAttribute("offerings", new ArrayList<>());
         }
         // Always provide all terms for the modal
         var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
@@ -367,14 +342,11 @@ public class LecturerViewController {
         if (isAdmin) {
             model.addAttribute("terms", adminService.getAllTerms());
         } else {
-            model.addAttribute("terms", new java.util.ArrayList<>());
+            model.addAttribute("terms", new ArrayList<>());
         }
         return "lecturer/schedule";
     }
 
-    /**
-     * Render reports page
-     */
     @GetMapping("/reports")
     public String reports(
             @RequestParam(required = false) Long lecturerId,
@@ -383,10 +355,9 @@ public class LecturerViewController {
             @RequestParam(required = false) String to,
             @RequestParam(required = false) String studentStatus,
             Model model) {
-        // TODO: After enabling security, get lecturerId from Authentication
         if (lecturerId != null) {
             model.addAttribute("lecturerId", lecturerId);
-            model.addAttribute("userId", lecturerId); // ADD THIS LINE
+            model.addAttribute("userId", lecturerId);
             model.addAttribute("role", "LECTURER");
         }
 
@@ -419,7 +390,6 @@ public class LecturerViewController {
             var offerings = lecturerService.getOfferingsByLecturerId(lecturerId);
             model.addAttribute("offerings", offerings);
 
-            // summary cards (lecturer-only)
             double avgAttendance = lecturerService.calculateAverageAttendance(lecturerId, fromDate, toDate, offeringId,
                     studentStatus);
             model.addAttribute("summaryAvgAttendance", avgAttendance);
@@ -428,7 +398,6 @@ public class LecturerViewController {
             if (offeringId != null) {
                 passRate = lecturerService.calculatePassRate(lecturerId, offeringId, studentStatus);
             } else {
-                // weighted pass rate across offerings
                 double sum = 0.0;
                 int n = 0;
                 for (var off : offerings) {
@@ -439,10 +408,10 @@ public class LecturerViewController {
             }
             model.addAttribute("summaryPassRate", passRate);
 
-            java.util.List<Long> offeringIds = offerings == null ? java.util.List.of()
+            List<Long> offeringIds = offerings == null ? List.of()
                     : offerings.stream().map(o -> o.getId()).toList();
             if (offeringId != null) {
-                offeringIds = java.util.List.of(offeringId);
+                offeringIds = List.of(offeringId);
             }
             String statusToCount = (studentStatus == null || studentStatus.isBlank()) ? "ENROLLED" : studentStatus;
             long activeEnrollments = offeringIds.isEmpty() ? 0
@@ -452,19 +421,16 @@ public class LecturerViewController {
             long totalClasses = offeringIds.isEmpty() ? 0 : classScheduleRepository.countByOfferingIds(offeringIds);
             model.addAttribute("summaryTotalClasses", totalClasses);
 
-            // table data
             model.addAttribute("courseReports", lecturerService.getCourseReports(lecturerId, fromDate, toDate,
                     studentStatus));
 
-            // optional details when a course is selected
             if (offeringId != null) {
                 var detail = lecturerService.getDetailedCourseReport(lecturerId, offeringId, fromDate, toDate,
                         studentStatus);
                 model.addAttribute("courseDetail", detail);
 
-                // grade distribution chart arrays
-                var gradeLabels = new java.util.ArrayList<String>();
-                var gradeData = new java.util.ArrayList<Number>();
+                var gradeLabels = new ArrayList<String>();
+                var gradeData = new ArrayList<Number>();
                 if (detail != null && detail.getGradeDistribution() != null) {
                     for (var e : detail.getGradeDistribution().entrySet()) {
                         gradeLabels.add(e.getKey());
@@ -475,23 +441,22 @@ public class LecturerViewController {
                 model.addAttribute("gradeData", gradeData);
             } else {
                 model.addAttribute("courseDetail", null);
-                model.addAttribute("gradeLabels", new java.util.ArrayList<String>());
-                model.addAttribute("gradeData", new java.util.ArrayList<Number>());
+                model.addAttribute("gradeLabels", new ArrayList<String>());
+                model.addAttribute("gradeData", new ArrayList<Number>());
             }
         } else {
-            model.addAttribute("offerings", new java.util.ArrayList<>());
+            model.addAttribute("offerings", new ArrayList<>());
             model.addAttribute("summaryAvgAttendance", 0.0);
             model.addAttribute("summaryPassRate", 0.0);
             model.addAttribute("summaryActiveEnrollments", 0L);
             model.addAttribute("summaryTotalClasses", 0L);
-            model.addAttribute("courseReports", new java.util.ArrayList<>());
+            model.addAttribute("courseReports", new ArrayList<>());
             model.addAttribute("courseDetail", null);
-            model.addAttribute("gradeLabels", new java.util.ArrayList<String>());
-            model.addAttribute("gradeData", new java.util.ArrayList<Number>());
+            model.addAttribute("gradeLabels", new ArrayList<String>());
+            model.addAttribute("gradeData", new ArrayList<Number>());
         }
-        // Provide chart data specific to lecturer: attendance (30 days) and course
-        // performance. Only include global admin metrics for users with ADMIN role.
-        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = false;
         if (auth != null && auth.getAuthorities() != null) {
             isAdmin = auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
@@ -506,8 +471,8 @@ public class LecturerViewController {
         if (lecturerId != null) {
             var attendanceMap = lecturerService.getAttendanceCountsByDateRange(lecturerId, fromDate, toDate, offeringId,
                     studentStatus);
-            var attendanceLabels = new java.util.ArrayList<String>(attendanceMap.keySet());
-            var attendanceData = new java.util.ArrayList<Number>();
+            var attendanceLabels = new ArrayList<String>(attendanceMap.keySet());
+            var attendanceData = new ArrayList<Number>();
             for (String k : attendanceLabels) {
                 attendanceData.add(attendanceMap.getOrDefault(k, 0L));
             }
@@ -515,18 +480,18 @@ public class LecturerViewController {
             model.addAttribute("enrollmentData", attendanceData);
 
             var perf = lecturerService.getCourseAverageGradeByLecturer(lecturerId);
-            var courseLabels = new java.util.ArrayList<String>(perf.keySet());
-            var courseData = new java.util.ArrayList<Number>();
+            var courseLabels = new ArrayList<String>(perf.keySet());
+            var courseData = new ArrayList<Number>();
             for (String k : courseLabels) {
                 courseData.add(perf.getOrDefault(k, 0.0));
             }
             model.addAttribute("courseLabels", courseLabels);
             model.addAttribute("courseData", courseData);
         } else {
-            model.addAttribute("enrollmentLabels", new java.util.ArrayList<String>());
-            model.addAttribute("enrollmentData", new java.util.ArrayList<Number>());
-            model.addAttribute("courseLabels", new java.util.ArrayList<String>());
-            model.addAttribute("courseData", new java.util.ArrayList<Number>());
+            model.addAttribute("enrollmentLabels", new ArrayList<String>());
+            model.addAttribute("enrollmentData", new ArrayList<Number>());
+            model.addAttribute("courseLabels", new ArrayList<String>());
+            model.addAttribute("courseData", new ArrayList<Number>());
         }
         return "lecturer/reports";
     }

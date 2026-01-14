@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/lecturer")
-@PreAuthorize("hasRole('LECTURER')") // DISABLED FOR TESTING
+@PreAuthorize("hasRole('LECTURER')")
 public class LecturerController {
 
     private final LecturerService lecturerService;

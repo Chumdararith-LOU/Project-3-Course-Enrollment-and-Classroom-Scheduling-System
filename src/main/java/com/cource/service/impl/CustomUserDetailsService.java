@@ -1,4 +1,4 @@
-package com.cource.security;
+package com.cource.service.impl;
 
 import com.cource.entity.User;
 import com.cource.repository.UserRepository;
@@ -8,9 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
-// @Service
 @Service("securityUserDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
 

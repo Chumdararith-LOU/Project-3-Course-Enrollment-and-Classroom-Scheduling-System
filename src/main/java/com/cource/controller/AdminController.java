@@ -10,12 +10,17 @@ import com.cource.service.CourseService;
 import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -227,10 +233,6 @@ public class AdminController {
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
-    /**
-     * Bulk assign a lecturer to all offerings. Idempotent.
-     * Example: POST /api/admin/offerings/assign-all?lecturerId=1
-     */
     @PostMapping("/offerings/assign-all")
     public ResponseEntity<Map<String, Object>> assignLecturerToAllOfferings(@RequestParam Long lecturerId) {
         int created = adminService.bulkAssignLecturerToAllOfferings(lecturerId);
@@ -361,10 +363,9 @@ public class AdminController {
             roomId = Long.valueOf(request.get("roomId").toString());
         }
         String dayOfWeek = request.get("dayOfWeek").toString();
-        java.time.LocalTime startTime = java.time.LocalTime.parse(request.get("startTime").toString());
-        java.time.LocalTime endTime = java.time.LocalTime.parse(request.get("endTime").toString());
-        // If roomId not provided, attempt to create a room using building/roomType (if
-        // supplied)
+        LocalTime startTime = LocalTime.parse(request.get("startTime").toString());
+        LocalTime endTime = LocalTime.parse(request.get("endTime").toString());
+        
         if (roomId == null) {
             String building = request.containsKey("building") && request.get("building") != null
                     ? request.get("building").toString()
@@ -372,10 +373,6 @@ public class AdminController {
             String roomType = request.containsKey("roomType") && request.get("roomType") != null
                     ? request.get("roomType").toString()
                     : "";
-            // minimal defaults: use a generated room number if none provided? Expect admin
-            // to supply roomId or building+roomNumber via UI.
-            // If building/roomNumber are provided together, create room; else throw bad
-            // request.
             if (request.containsKey("roomNumber") && request.get("roomNumber") != null
                     && !request.get("roomNumber").toString().isBlank()) {
                 String roomNumber = request.get("roomNumber").toString();
@@ -399,8 +396,8 @@ public class AdminController {
             roomId = Long.valueOf(request.get("roomId").toString());
         }
         String dayOfWeek = request.get("dayOfWeek").toString();
-        java.time.LocalTime startTime = java.time.LocalTime.parse(request.get("startTime").toString());
-        java.time.LocalTime endTime = java.time.LocalTime.parse(request.get("endTime").toString());
+        LocalTime startTime = LocalTime.parse(request.get("startTime").toString());
+        LocalTime endTime = LocalTime.parse(request.get("endTime").toString());
         if (roomId == null) {
             String building = request.containsKey("building") && request.get("building") != null
                     ? request.get("building").toString()
@@ -418,7 +415,7 @@ public class AdminController {
             }
         }
         adminService.updateSchedule(id, offeringId, roomId, dayOfWeek, startTime, endTime);
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+        return ResponseEntity.ok(Collections.singletonMap("status", "success"));
     }
 
     @DeleteMapping("/schedules/{id}")
@@ -446,7 +443,7 @@ public class AdminController {
         String roomType = request.get("roomType").toString();
         Boolean isActive = request.get("isActive") != null ? (Boolean) request.get("isActive") : true;
         adminService.createRoom(roomNumber, building, capacity, roomType, isActive);
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+        return ResponseEntity.ok(Collections.singletonMap("status", "success"));
     }
 
     @PutMapping("/rooms/{id}")
@@ -457,7 +454,7 @@ public class AdminController {
         String roomType = request.get("roomType").toString();
         Boolean isActive = request.get("isActive") != null ? (Boolean) request.get("isActive") : null;
         adminService.updateRoom(id, roomNumber, building, capacity, roomType, isActive);
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+        return ResponseEntity.ok(Collections.singletonMap("status", "success"));
     }
 
     @DeleteMapping("/rooms/{id}")
@@ -486,18 +483,18 @@ public class AdminController {
     public ResponseEntity<?> createTerm(@RequestBody Map<String, Object> request) {
         String termCode = request.get("termCode").toString();
         String termName = request.get("termName").toString();
-        java.time.LocalDate startDate = java.time.LocalDate.parse(request.get("startDate").toString());
-        java.time.LocalDate endDate = java.time.LocalDate.parse(request.get("endDate").toString());
+        LocalDate startDate = LocalDate.parse(request.get("startDate").toString());
+        LocalDate endDate = LocalDate.parse(request.get("endDate").toString());
         adminService.createTerm(termCode, termName, startDate, endDate);
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+        return ResponseEntity.ok(Collections.singletonMap("status", "success"));
     }
 
     @PutMapping("/terms/{id}")
     public ResponseEntity<?> updateTerm(@PathVariable Long id, @RequestBody Map<String, Object> request) {
         String termCode = request.get("termCode").toString();
         String termName = request.get("termName").toString();
-        java.time.LocalDate startDate = java.time.LocalDate.parse(request.get("startDate").toString());
-        java.time.LocalDate endDate = java.time.LocalDate.parse(request.get("endDate").toString());
+        LocalDate startDate = LocalDate.parse(request.get("startDate").toString());
+        LocalDate endDate = LocalDate.parse(request.get("endDate").toString());
         adminService.updateTerm(id, termCode, termName, startDate, endDate);
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
