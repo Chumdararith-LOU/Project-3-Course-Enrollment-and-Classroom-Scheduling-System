@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.cource.config.JwtService;
+import com.cource.config.JwtUtil;
 import com.cource.dto.auth.AuthResult;
 import com.cource.repository.UserRepository;
 import com.cource.service.AuthService;
@@ -18,7 +18,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
 
     @Override
     public AuthResult signIn(String email, String password) {
@@ -31,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String roleCode = user.getRole() != null ? user.getRole().getRoleCode() : null;
-        String token = jwtService.generateToken(user.getEmail(), roleCode == null ? List.of() : List.of(roleCode));
+        String token = jwtUtil.generateToken(user.getEmail(), roleCode == null ? List.of() : List.of(roleCode));
 
         String redirectUrl;
         if ("ADMIN".equalsIgnoreCase(roleCode)) {

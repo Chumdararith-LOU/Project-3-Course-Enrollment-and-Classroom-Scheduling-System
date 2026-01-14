@@ -26,11 +26,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
 
-    private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
-    public JwtFilter(JwtService jwtService,  UserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
+    public JwtFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+        this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
 
@@ -54,7 +54,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
-                Claims claims = jwtService.parseClaims(token);
+                Claims claims = jwtUtil.parseClaims(token);
                 String username = claims.getSubject();
                 log.info("JwtFilter: token parsed, subject={}", username);
 
@@ -79,7 +79,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    if (jwtService.isTokenValid(token, userDetails.getUsername())) {
+                    if (jwtUtil.isTokenValid(token, userDetails.getUsername())) {
                         log.info("JwtFilter: token valid for user={}", userDetails.getUsername());
                         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                         if (roles != null && !roles.isEmpty()) {
