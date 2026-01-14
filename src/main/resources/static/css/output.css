@@ -1892,6 +1892,10 @@ input:checked + .toggle-bg {
   margin-top: auto;
 }
 
+.mr-0 {
+  margin-right: 0px;
+}
+
 .box-border {
   box-sizing: border-box;
 }
