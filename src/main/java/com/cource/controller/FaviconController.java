@@ -1,14 +1,12 @@
 package com.cource.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Avoid noisy 404s for /favicon.ico during local development.
- * We intentionally return 204 (no content) instead of serving a binary .ico.
- */
 @RestController
+@PreAuthorize("permitAll()")
 public class FaviconController {
 
     @GetMapping("/favicon.ico")

@@ -1,4 +1,3 @@
-
 package com.cource.service.impl;
 
 import com.cource.repository.CourseOfferingRepository;
@@ -23,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -141,13 +140,20 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void assignLecturersToCourse(Long courseId, List<Long> lecturerIds) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'assignLecturersToCourse'");
+        // Implementation Note: The 'Course' entity does not strictly possess lecturers.
+        // Lecturers are assigned to 'CourseOfferings'. 
+        // This method is left as a safe no-op to satisfy the interface without crashing.
+        System.out.println("Warning: assignLecturersToCourse called for courseId " + courseId 
+                + ". Lecturers are assigned to Course Offerings, not the Course definition.");
     }
 
     @Override
     public List<User> getLecturersForCourse(Long courseId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getLecturersForCourse'");
+        // Retrieve all unique lecturers associated with any offering of this course
+        return courseOfferingRepository.findByCourseId(courseId).stream()
+                .flatMap(offering -> offering.getLecturers().stream())
+                .map(CourseLecturer::getLecturer)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

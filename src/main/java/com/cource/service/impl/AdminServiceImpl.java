@@ -5,6 +5,7 @@ import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.*;
 import com.cource.service.AdminService;
+import com.cource.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final RoomRepository roomRepository;
     private final AcademicTermRepository academicTermRepository;
     private final CourseLecturerRepository courseLecturerRepository;
+    private final EnrollmentService enrollmentService;
 
     @Override
     public List<User> getLecturersForOffering(Long offeringId) {
@@ -172,6 +174,9 @@ public class AdminServiceImpl implements AdminService {
     public CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive) {
         CourseOffering offering = getOfferingById(id);
 
+        Integer oldCapacity = offering.getCapacity();
+        boolean oldActive = offering.isActive();
+
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         AcademicTerm term = academicTermRepository.findById(termId)
@@ -184,6 +189,30 @@ public class AdminServiceImpl implements AdminService {
             offering.setActive(isActive);
         }
 
+        CourseOffering saved = courseOfferingRepository.save(offering);
+
+        boolean capacityIncreased = capacity != null && (oldCapacity == null || capacity > oldCapacity);
+        boolean activated = isActive != null && isActive && !oldActive;
+        if (saved.isActive() && (capacityIncreased || activated)) {
+            enrollmentService.processWaitlist(saved.getId());
+        }
+
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public CourseOffering regenerateOfferingEnrollmentCode(Long offeringId) {
+        CourseOffering offering = getOfferingById(offeringId);
+        String newCode;
+        int attempts = 0;
+        do {
+            newCode = courseService.generateEnrollmentCode(offering.getCourse().getCourseCode());
+            attempts++;
+            if (attempts > 10)
+                break; // safety
+        } while (courseOfferingRepository.existsByEnrollmentCode(newCode));
+        offering.setEnrollmentCode(newCode);
         return courseOfferingRepository.save(offering);
     }
 
@@ -198,8 +227,13 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public CourseOffering toggleOfferingStatus(Long id) {
         CourseOffering offering = getOfferingById(id);
-        offering.setActive(!offering.isActive());
-        return courseOfferingRepository.save(offering);
+        boolean oldActive = offering.isActive();
+        offering.setActive(!oldActive);
+        CourseOffering saved = courseOfferingRepository.save(offering);
+        if (!oldActive && saved.isActive()) {
+            enrollmentService.processWaitlist(saved.getId());
+        }
+        return saved;
     }
 
     @Override
@@ -251,19 +285,33 @@ public class AdminServiceImpl implements AdminService {
         return enrollmentRepository.save(enrollment);
     }
 
+    private static final java.util.Set<String> VALID_GRADES = java.util.Set.of(
+            "A", "A+", "A-", "B", "B+", "B-", "C", "C+", "C-", "D", "D+", "D-", "F", "W", "I");
+
     @Override
     @Transactional
     public Enrollment updateEnrollmentGrade(Long id, String grade) {
+        if (grade != null && !grade.isBlank() && !VALID_GRADES.contains(grade.toUpperCase())) {
+            throw new IllegalArgumentException(
+                    "Invalid grade: " + grade + ". Valid grades are: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, F, W, I");
+        }
         Enrollment enrollment = getEnrollmentById(id);
-        enrollment.setGrade(grade);
+        enrollment.setGrade(grade != null ? grade.toUpperCase() : null);
         return enrollmentRepository.save(enrollment);
     }
+
+    private static final java.util.Set<String> VALID_STATUSES = java.util.Set.of(
+            "ENROLLED", "DROPPED", "COMPLETED", "FAILED", "WAITLISTED");
 
     @Override
     @Transactional
     public Enrollment updateEnrollmentStatus(Long id, String status) {
+        if (status != null && !status.isBlank() && !VALID_STATUSES.contains(status.toUpperCase())) {
+            throw new IllegalArgumentException(
+                    "Invalid status: " + status + ". Valid statuses are: ENROLLED, DROPPED, COMPLETED, FAILED, WAITLISTED");
+        }
         Enrollment enrollment = getEnrollmentById(id);
-        enrollment.setStatus(status);
+        enrollment.setStatus(status != null ? status.toUpperCase() : null);
         return enrollmentRepository.save(enrollment);
     }
 
@@ -296,9 +344,49 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    public String generateTermCode(java.time.LocalDate startDate) {
+        if (startDate == null) {
+            startDate = java.time.LocalDate.now();
+        }
+        int year = startDate.getYear();
+        String prefix = String.valueOf(year);
+
+        // Find existing codes with this prefix
+        java.util.List<String> existingCodes = academicTermRepository.findTermCodesByPrefix(prefix);
+
+        // Find the next available number
+        int nextNum = 1;
+        for (String code : existingCodes) {
+            if (code.startsWith(prefix + "-")) {
+                try {
+                    int num = Integer.parseInt(code.substring(prefix.length() + 1));
+                    if (num >= nextNum) {
+                        nextNum = num + 1;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        return prefix + "-" + nextNum;
+    }
+
+    @Override
     @Transactional
     public AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
             java.time.LocalDate endDate) {
+        // Validate dates
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start date and end date are required");
+        }
+        if (!startDate.isBefore(endDate)) {
+            throw new IllegalArgumentException("Start date must be before end date");
+        }
+        // Term cannot start in the past (before today)
+        if (startDate.isBefore(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Term start date cannot be in the past");
+        }
+
         // ensure termCode is unique
         if (academicTermRepository.findByTermCode(termCode).isPresent()) {
             throw new com.cource.exception.ConflictException("Term code already exists: " + termCode);
@@ -356,6 +444,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public Room createRoom(String roomNumber, String building, Integer capacity, String roomType, Boolean isActive) {
+        // Check for duplicate room number
+        if (roomRepository.existsByRoomNumber(roomNumber)) {
+            throw new ConflictException("Room number '" + roomNumber + "' already exists");
+        }
         Room room = new Room();
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
@@ -370,6 +462,10 @@ public class AdminServiceImpl implements AdminService {
     public Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
             Boolean isActive) {
         Room room = getRoomById(id);
+        // Check for duplicate room number (exclude current room)
+        if (roomRepository.existsByRoomNumberAndIdNot(roomNumber, id)) {
+            throw new ConflictException("Room number '" + roomNumber + "' already exists");
+        }
         room.setRoomNumber(roomNumber);
         room.setBuilding(building);
         room.setCapacity(capacity);

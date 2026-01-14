@@ -176,11 +176,6 @@
                   <th
                     class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
                   >
-                    ID
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                  >
                     Student
                   </th>
                   <th
@@ -224,9 +219,6 @@
                   th:attr="data-id=${enrollment.id},data-student=${enrollment.student.fullName},data-course=${enrollment.offering.course.courseCode + ' - ' + enrollment.offering.course.title},data-status=${enrollment.status},data-offering=${enrollment.offering.id}"
                   class="enrollment-row hover:bg-slate-50"
                 >
-                  <td class="px-6 py-4 text-sm text-slate-600">
-                    <span th:text="${enrollment.id}"></span>
-                  </td>
                   <td class="px-6 py-4">
                     <div class="text-sm font-medium text-slate-900">
                       <span th:text="${enrollment.student.fullName}"></span>
@@ -292,6 +284,14 @@
                   </td>
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200"
+                        th:onclick="|openUserProfileView(${enrollment.student.id})|"
+                        title="View student profile"
+                      >
+                        Profile
+                      </button>
                       <button
                         type="button"
                         style="
@@ -378,7 +378,7 @@
         class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all duration-300 animate-slideUp"
       >
         <div
-          class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-lg"
+          class="bg-blue-600 px-6 py-4 rounded-t-lg"
         >
           <div class="flex items-center justify-between text-white">
             <h3 class="text-xl font-bold">Add New Enrollment</h3>
@@ -465,7 +465,7 @@
         class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all duration-300 animate-slideUp"
       >
         <div
-          class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4 rounded-t-lg"
+          class="bg-purple-600 px-6 py-4 rounded-t-lg"
         >
           <div class="flex items-center justify-between text-white">
             <h3 class="text-xl font-bold">Update Grade</h3>
@@ -559,7 +559,24 @@
               >
                 F
               </button>
+              <button
+                type="button"
+                onclick="selectGrade('W')"
+                class="grade-btn px-3 py-2 text-sm font-semibold border-2 border-slate-300 rounded-lg hover:border-gray-500 hover:bg-gray-50 hover:text-gray-700 transition"
+                title="Withdrawal"
+              >
+                W
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('I')"
+                class="grade-btn px-3 py-2 text-sm font-semibold border-2 border-slate-300 rounded-lg hover:border-gray-500 hover:bg-gray-50 hover:text-gray-700 transition"
+                title="Incomplete"
+              >
+                I
+              </button>
             </div>
+            <p class="text-xs text-slate-500 mt-2">W = Withdrawal, I = Incomplete</p>
             <input type="hidden" id="selectedGrade" required />
           </div>
           <div class="flex gap-3 pt-4">
@@ -596,7 +613,7 @@
         class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all duration-300 animate-slideUp"
       >
         <div
-          class="bg-gradient-to-r from-yellow-600 to-yellow-700 px-6 py-4 rounded-t-lg"
+          class="bg-yellow-600 px-6 py-4 rounded-t-lg"
         >
           <div class="flex items-center justify-between text-white">
             <h3 class="text-xl font-bold">Update Status</h3>
@@ -720,7 +737,7 @@
       <div
         class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slideUp"
       >
-        <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+        <div class="bg-red-500 px-6 py-4">
           <div class="flex items-center justify-between text-white">
             <div class="flex items-center gap-3">
               <div
@@ -802,7 +819,7 @@
             </button>
             <button
               id="confirmDeleteBtn"
-              class="flex-1 px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition shadow-lg"
+              class="flex-1 px-5 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition shadow-lg"
             >
               Yes, Delete
             </button>

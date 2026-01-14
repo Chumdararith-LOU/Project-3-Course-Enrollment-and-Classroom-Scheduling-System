@@ -7,12 +7,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.Primary;
-// import java.util.List;
 
 // @Service
-@Service("appUserDetailsService")
-@Primary
+@Service
+
 public class CustomUserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -22,9 +20,9 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         var authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().getRoleCode());
 

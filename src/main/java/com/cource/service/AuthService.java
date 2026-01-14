@@ -1,5 +1,7 @@
 package com.cource.service;
 
-public class AuthService {
+import com.cource.dto.auth.AuthResult;
 
+public interface AuthService {
+    AuthResult signIn(String email, String password);
 }
