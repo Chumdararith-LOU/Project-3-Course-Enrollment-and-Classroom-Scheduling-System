@@ -1,67 +1,48 @@
 package com.cource.controller.Auth;
 
-import com.cource.service.AuthService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.cource.config.JwtUtil;
+import com.cource.dto.auth.AuthResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 @PreAuthorize("permitAll()")
 public class AuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
-    private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
-    @GetMapping({ "/", "/index" })
-    public String index() {
-        return "index";
-    }
+    @PostMapping("/api/login")
+    public ResponseEntity<AuthResponse> loginAPI(@RequestBody LoginRequest loginRequest) {
 
-    @GetMapping("/signin")
-    public String signinPage() {
-        return "auth/signin";
-    }
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
+                )
+        );
 
-    @PostMapping("/api/auth/signin")
-    public String signin(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
-        log.info("Login attempt for email: {}", email);
-        try {
-            var result = authService.signIn(email, password);
-            log.info("Login successful for email: {}, role: {}", email, result.getRoleCode());
+        UserDetails user = (UserDetails) auth.getPrincipal();
 
-            Cookie cookie = new Cookie("JWT", result.getToken());
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            response.addCookie(cookie);
+        String token = jwtUtil.generateToken(user.getUsername());
 
-            log.info("Redirecting to: {}", result.getRedirectUrl());
-            return "redirect:" + result.getRedirectUrl();
-        } catch (IllegalArgumentException ex) {
-            log.warn("Login failed: {}", ex.getMessage());
-            return "redirect:/signin?error";
-        }
-    }
-
-    @GetMapping("/signout")
-    public String signout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("JWT", "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
-        return "redirect:/";
+        return new ResponseEntity<>(
+                new AuthResponse(user.getUsername(), token),
+                HttpStatus.ACCEPTED
+        );
     }
 
 }
