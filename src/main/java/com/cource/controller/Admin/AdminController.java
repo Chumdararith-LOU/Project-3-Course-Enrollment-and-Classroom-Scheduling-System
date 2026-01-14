@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Admin;
 
 import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseUpdateRequest;
@@ -365,7 +365,7 @@ public class AdminController {
         String dayOfWeek = request.get("dayOfWeek").toString();
         LocalTime startTime = LocalTime.parse(request.get("startTime").toString());
         LocalTime endTime = LocalTime.parse(request.get("endTime").toString());
-        
+
         if (roomId == null) {
             String building = request.containsKey("building") && request.get("building") != null
                     ? request.get("building").toString()

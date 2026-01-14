@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Lecture;
 
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;

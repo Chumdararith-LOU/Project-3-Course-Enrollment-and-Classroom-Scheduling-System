@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Admin;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

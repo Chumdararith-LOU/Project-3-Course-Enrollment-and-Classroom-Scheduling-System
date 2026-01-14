@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Admin;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Student;
 
 import java.time.LocalDate;
 

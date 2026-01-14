@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Lecture;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

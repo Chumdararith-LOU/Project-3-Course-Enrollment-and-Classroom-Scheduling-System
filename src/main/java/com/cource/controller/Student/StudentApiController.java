@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Student;
 
 import com.cource.dto.enrollment.EnrollmentResult;
 import com.cource.entity.CourseOffering;

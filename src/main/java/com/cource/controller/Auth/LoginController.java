@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Auth;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

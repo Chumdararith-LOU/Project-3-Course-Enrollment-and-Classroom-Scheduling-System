@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Lecture;
 
 import java.util.List;
 import java.util.Map;

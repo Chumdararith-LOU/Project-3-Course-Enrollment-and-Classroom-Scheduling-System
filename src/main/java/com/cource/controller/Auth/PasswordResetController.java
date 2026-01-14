@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Auth;
 
 import com.cource.dto.forgetpassword.ResetPasswordRequest;
 import jakarta.validation.Valid;

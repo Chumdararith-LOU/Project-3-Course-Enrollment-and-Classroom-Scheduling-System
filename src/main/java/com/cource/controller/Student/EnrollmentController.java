@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Student;
 
 import com.cource.entity.User;
 import com.cource.service.EnrollmentService;

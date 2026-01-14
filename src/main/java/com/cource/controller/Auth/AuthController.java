@@ -1,4 +1,4 @@
-package com.cource.controller;
+package com.cource.controller.Auth;
 
 import com.cource.service.AuthService;
 import org.slf4j.Logger;

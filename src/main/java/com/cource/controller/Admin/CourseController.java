@@ -1,5 +1,5 @@
 
-package com.cource.controller;
+package com.cource.controller.Admin;
 
 import com.cource.dto.course.CourseCreateRequest;
 import com.cource.dto.course.CourseUpdateRequest;
