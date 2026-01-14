@@ -88,6 +88,22 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    public EnrollmentResult enrollStudentWithOfferingCode(Long studentId, Long offeringId, String enrollmentCode) {
+        if (enrollmentCode == null || enrollmentCode.isBlank()) {
+            throw new IllegalArgumentException("Enrollment code is required");
+        }
+
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new RuntimeException("Offering not found"));
+
+        if (offering.getEnrollmentCode() == null || !offering.getEnrollmentCode().equals(enrollmentCode)) {
+            throw new IllegalArgumentException("Invalid enrollment code");
+        }
+
+        return enrollStudent(studentId, offeringId);
+    }
+
+    @Override
     public EnrollmentResult dropCourse(Long studentId, Long offeringId) {
         Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found"));
@@ -96,6 +112,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         processWaitlist(offeringId);
         return new EnrollmentResult("DROPPED", "Course dropped successfully");
+    }
+
+    @Override
+    public EnrollmentResult removeFromWaitlist(Long studentId, Long offeringId) {
+        var entry = waitlistRepository.findByStudentIdAndOfferingIdAndStatus(studentId, offeringId, "PENDING");
+        if (entry.isEmpty()) {
+            return new EnrollmentResult("NOT_WAITLISTED", "You are not currently on the waitlist for this course");
+        }
+        waitlistRepository.delete(entry.get());
+        return new EnrollmentResult("REMOVED", "Removed from waitlist successfully");
     }
 
     @Override

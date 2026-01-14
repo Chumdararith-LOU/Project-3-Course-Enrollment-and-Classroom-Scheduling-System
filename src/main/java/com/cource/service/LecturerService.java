@@ -6,6 +6,7 @@ import com.cource.dto.attendance.AttendanceRequestDTO;
 import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.Course;
+import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 
 public interface LecturerService {
@@ -60,6 +61,9 @@ public interface LecturerService {
 
         // Course performance (average numeric grade) for courses taught by lecturer
         java.util.Map<String, Double> getCourseAverageGradeByLecturer(long lecturerId);
+
+        // Enrollment grade update (only allowed for lecturer who owns the offering)
+        Enrollment updateEnrollmentGrade(long lecturerId, long enrollmentId, String grade);
 
         // Course offering CRUD
         com.cource.entity.CourseOffering createCourseOffering(long lecturerId,

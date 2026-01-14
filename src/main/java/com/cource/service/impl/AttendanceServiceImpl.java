@@ -8,10 +8,10 @@ import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.*;
 import com.cource.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -39,15 +39,11 @@ public class AttendanceServiceImpl implements AttendanceService {
                 request.getStudentId(), schedule.getOffering().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found for student"));
 
-        // Check if attendance already exists
-        boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
-                request.getStudentId(), request.getScheduleId(), enrollment.getId(), request.getAttendanceDate());
-        if (exists) {
-            throw new IllegalArgumentException("Attendance already recorded for this student on this date");
-        }
+        Attendance attendance = attendanceRepository
+                .findByEnrollmentScheduleAndDate(enrollment.getId(), request.getScheduleId(),
+                        request.getAttendanceDate())
+                .orElseGet(Attendance::new);
 
-        // Create attendance record
-        Attendance attendance = new Attendance();
         attendance.setEnrollment(enrollment);
         attendance.setSchedule(schedule);
         attendance.setAttendanceDate(request.getAttendanceDate());
@@ -60,7 +56,20 @@ public class AttendanceServiceImpl implements AttendanceService {
             attendance.setRecordedBy(recorder);
         }
 
-        return attendanceRepository.save(attendance);
+        try {
+            return attendanceRepository.save(attendance);
+        } catch (DataIntegrityViolationException dive) {
+            // Defensive fallback in case of concurrent inserts hitting the unique
+            // constraint
+            Attendance existing = attendanceRepository
+                    .findByEnrollmentScheduleAndDate(enrollment.getId(), request.getScheduleId(),
+                            request.getAttendanceDate())
+                    .orElseThrow(() -> dive);
+            existing.setStatus(attendance.getStatus());
+            existing.setNotes(attendance.getNotes());
+            existing.setRecordedBy(attendance.getRecordedBy());
+            return attendanceRepository.save(existing);
+        }
     }
 
     @Override
@@ -190,12 +199,9 @@ public class AttendanceServiceImpl implements AttendanceService {
                 if (enrollment == null)
                     continue;
 
-                boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
-                        studentId, scheduleId, enrollment.getId(), date);
-                if (exists)
-                    continue;
-
-                Attendance attendance = new Attendance();
+                Attendance attendance = attendanceRepository
+                        .findByEnrollmentScheduleAndDate(enrollment.getId(), scheduleId, date)
+                        .orElseGet(Attendance::new);
                 attendance.setEnrollment(enrollment);
                 attendance.setSchedule(schedule);
                 attendance.setAttendanceDate(date);

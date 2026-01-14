@@ -68,6 +68,14 @@ public class Waitlist {
         this.position = position;
     }
 
+    public LocalDateTime getAddedAt() {
+        return addedAt;
+    }
+
+    public void setAddedAt(LocalDateTime addedAt) {
+        this.addedAt = addedAt;
+    }
+
     public LocalDateTime getNotifiedAt() {
         return notifiedAt;
     }

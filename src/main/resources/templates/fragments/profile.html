@@ -12,107 +12,115 @@
           <div th:case="'ADMIN'">
             <a
               th:href="@{/admin/dashboard(adminId=${userId})}"
-              class="flex items-center px-4 py-3 text-sm font-medium rounded-lg"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/dashboard')} 
+              ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' 
+              : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Dashboard</a
             >
             <a
               th:href="@{/admin/users(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/users')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/users')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Users</a
             >
             <a
               th:href="@{/admin/courses(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Courses</a
             >
             <a
               th:href="@{/admin/offerings(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/offerings')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/offerings')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Offering</a
             >
             <a
               th:href="@{/admin/enrollments(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/enrollments')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/enrollments')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Enrollments</a
             >
             <a
               th:href="@{/admin/rooms(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/rooms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/rooms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Rooms</a
             >
             <a
               th:href="@{/admin/schedules(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/schedules')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/schedules')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Schedules</a
             >
             <a
               th:href="@{/admin/terms(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/terms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/terms')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Terms</a
             >
             <a
               th:href="@{/admin/attendance(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Attendance</a
             >
             <a
               th:href="@{/admin/reports(adminId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/admin/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Reports</a
             >
           </div>
+
           <div th:case="'LECTURER'">
             <a
               th:href="@{/lecturer/dashboard(lecturerId=${userId})}"
-              class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Dashboard</a
             >
             <a
               th:href="@{/lecturer/courses(lecturerId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and (#httpServletRequest.getServletPath().startsWith('/lecturer/courses') or #httpServletRequest.getServletPath().startsWith('/lecturer/students'))} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >My Courses</a
             >
             <a
               th:href="@{/lecturer/schedule(lecturerId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Schedule</a
             >
             <a
               th:href="@{/lecturer/attendance(lecturerId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Attendance</a
             >
             <a
               th:href="@{/lecturer/reports(lecturerId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/lecturer/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/lecturer/reports')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Reports</a
             >
           </div>
+
           <div th:case="'STUDENT'">
             <a
               th:href="@{/student/dashboard(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/dashboard')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Dashboard</a
             >
             <a
               th:href="@{/student/courses(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/courses')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Browse Courses</a
             >
             <a
+              th:href="@{/student/waitlist(studentId=${userId})}"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/waitlist')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Waitlist</a
+            >
+            <a
               th:href="@{/student/schedule(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >My Schedule</a
             >
             <a
               th:href="@{/student/attendance(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/attendance')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >Attendance</a
             >
             <a
               th:href="@{/student/grades(studentId=${userId})}"
-              th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/student/grades')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              th:class="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/grades')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >My Grades</a
             >
           </div>
@@ -129,6 +137,7 @@
       <div
         class="px-4 py-6 border-t border-slate-700"
         id="sidebarProfileFragment"
+        style="display: none"
       >
         <div class="flex items-center">
           <div
@@ -171,7 +180,6 @@
       </div>
     </div>
   </aside>
-  <!-- Profile Modal (moved here for reuse) -->
   <div
     id="profileModal"
     class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40"
@@ -282,8 +290,99 @@
       </form>
     </div>
   </div>
+
+  <div
+    id="userViewModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">User Profile</h3>
+        <button
+          type="button"
+          onclick="closeUserViewModal()"
+          class="text-slate-400 hover:text-slate-700"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <img
+          id="userViewAvatarImg"
+          src="/images/default-avatar.svg"
+          alt="avatar"
+          class="w-16 h-16 rounded-full object-cover"
+        />
+        <div class="min-w-0">
+          <p id="userViewName" class="text-lg font-semibold text-slate-900">
+            User
+          </p>
+          <p id="userViewEmail" class="text-sm text-slate-500 truncate">
+            user@example.com
+          </p>
+          <p id="userViewRole" class="text-xs text-slate-400">ROLE</p>
+        </div>
+      </div>
+
+      <div class="mt-5 space-y-3">
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+          >
+            Phone
+          </p>
+          <p id="userViewPhone" class="text-sm text-slate-800">-</p>
+        </div>
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+          >
+            Date of Birth
+          </p>
+          <p id="userViewDob" class="text-sm text-slate-800">-</p>
+        </div>
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+          >
+            Bio
+          </p>
+          <p
+            id="userViewBio"
+            class="text-sm text-slate-800 whitespace-pre-wrap"
+          >
+            -
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button
+          type="button"
+          onclick="closeUserViewModal()"
+          class="px-4 py-2 border rounded"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
   <script th:inline="javascript">
     /*<![CDATA[*/
+    function setProfileUiVisible(visible) {
+      const sidebar = document.getElementById("sidebarProfileFragment");
+      if (sidebar) sidebar.style.display = visible ? "" : "none";
+
+      const modal = document.getElementById("profileModal");
+      if (!visible && modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    }
+
     function openProfileModal() {
       let m = document.getElementById("profileModal");
       if (m) {
@@ -298,11 +397,83 @@
         m.classList.remove("flex");
       }
     }
+
+    function openUserViewModal() {
+      const m = document.getElementById("userViewModal");
+      if (m) {
+        m.classList.remove("hidden");
+        m.classList.add("flex");
+      }
+    }
+
+    function closeUserViewModal() {
+      const m = document.getElementById("userViewModal");
+      if (m) {
+        m.classList.add("hidden");
+        m.classList.remove("flex");
+      }
+    }
+
+    async function openUserProfileView(userId) {
+      if (userId == null || userId === "") return;
+
+      // Reset UI
+      const avatar = document.getElementById("userViewAvatarImg");
+      if (avatar) avatar.src = "/api/users/avatar/" + userId;
+      const nameEl = document.getElementById("userViewName");
+      const emailEl = document.getElementById("userViewEmail");
+      const roleEl = document.getElementById("userViewRole");
+      const phoneEl = document.getElementById("userViewPhone");
+      const dobEl = document.getElementById("userViewDob");
+      const bioEl = document.getElementById("userViewBio");
+
+      if (nameEl) nameEl.innerText = "User";
+      if (emailEl) emailEl.innerText = "";
+      if (roleEl) roleEl.innerText = "";
+      if (phoneEl) phoneEl.innerText = "-";
+      if (dobEl) dobEl.innerText = "-";
+      if (bioEl) bioEl.innerText = "-";
+
+      openUserViewModal();
+
+      try {
+        const res = await fetch(`/api/users/${userId}/public-profile`);
+        if (!res.ok)
+          throw new Error((await res.text()) || "Failed to load user");
+        const data = await res.json();
+
+        const fullName =
+          ((data.firstName || "") + " " + (data.lastName || "")).trim() ||
+          "User";
+        if (nameEl) nameEl.innerText = fullName;
+        if (emailEl) emailEl.innerText = data.email || "";
+        if (roleEl) roleEl.innerText = data.role || "";
+
+        const p = data.profile || {};
+        if (phoneEl) phoneEl.innerText = p.phone || "-";
+        if (dobEl) dobEl.innerText = p.dateOfBirth || "-";
+        if (bioEl) bioEl.innerText = p.bio || "-";
+      } catch (err) {
+        console.error("openUserProfileView failed", err);
+        const toast = document.createElement("div");
+        toast.className =
+          "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-red-600";
+        toast.innerText = "Error loading profile: " + (err.message || err);
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+    }
     async function loadProfileFragment() {
       try {
+        // Hide by default; only show if authenticated
+        setProfileUiVisible(false);
+
         // Use /api/users/me which works for all authenticated users
         let res = await fetch("/api/users/me");
         if (!res.ok) return;
+
+        setProfileUiVisible(true);
+
         let u = await res.json();
         document.getElementById("profileId").value = u.id;
         document.getElementById("profileFirstName").value = u.firstName || "";
@@ -317,137 +488,141 @@
             .charAt(0)
             .toUpperCase();
 
-            // fetch profile data (extended fields)
+        // fetch profile data (extended fields)
+        try {
+          const pRes = await fetch("/api/users/me/profile");
+          if (pRes && pRes.ok) {
+            const p = await pRes.json();
             try {
-              const pRes = await fetch("/api/users/me/profile");
-              if (pRes && pRes.ok) {
-                const p = await pRes.json();
-                try {
-                  const dobEl = document.getElementById("profileDob");
-                  if (dobEl && p.dateOfBirth) dobEl.value = p.dateOfBirth;
-                  const phoneEl = document.getElementById("profilePhone");
-                  if (phoneEl) phoneEl.value = p.phone || "";
-                  const bioEl = document.getElementById("profileBio");
-                  if (bioEl) bioEl.value = p.bio || "";
-                } catch (e) {}
+              const dobEl = document.getElementById("profileDob");
+              if (dobEl && p.dateOfBirth) dobEl.value = p.dateOfBirth;
+              const phoneEl = document.getElementById("profilePhone");
+              if (phoneEl) phoneEl.value = p.phone || "";
+              const bioEl = document.getElementById("profileBio");
+              if (bioEl) bioEl.value = p.bio || "";
+            } catch (e) {}
 
-                // avatar present on profile? show it
-                if (p.avatarUrl) {
-                  const avatarUrl = "/api/users/me/avatar-image";
-                  const big = document.getElementById("profileAvatarImg");
-                  const small = document.getElementById("profileAvatarSmallImg");
-                  if (big) big.src = avatarUrl;
-                  if (small) {
-                    small.src = avatarUrl;
-                    small.style.display = "block";
-                  }
-                  const initial = document.getElementById("profileInitialFrag");
-                  if (initial) initial.style.display = "none";
-                } else {
-                  // no avatar
-                  const small = document.getElementById("profileAvatarSmallImg");
-                  if (small) small.style.display = "none";
-                  const initial = document.getElementById("profileInitialFrag");
-                  if (initial) initial.style.display = "flex";
-                }
+            // avatar present on profile? show it
+            if (p.avatarUrl) {
+              const avatarUrl = "/api/users/me/avatar-image";
+              const big = document.getElementById("profileAvatarImg");
+              const small = document.getElementById("profileAvatarSmallImg");
+              if (big) big.src = avatarUrl;
+              if (small) {
+                small.src = avatarUrl;
+                small.style.display = "block";
               }
-            } catch (e) {
-              // ignore profile load errors
+              const initial = document.getElementById("profileInitialFrag");
+              if (initial) initial.style.display = "none";
+            } else {
+              // no avatar
+              const small = document.getElementById("profileAvatarSmallImg");
+              if (small) small.style.display = "none";
+              const initial = document.getElementById("profileInitialFrag");
+              if (initial) initial.style.display = "flex";
             }
-          } catch (e) {
-            console.warn("loadProfileFragment failed", e);
           }
+        } catch (e) {
+          // ignore profile load errors
         }
-        // Submit handler for profile form
-        document.addEventListener("DOMContentLoaded", function () {
-          const form = document.getElementById("profileForm");
-          const fileInput = document.getElementById("profileAvatarFile");
-          if (fileInput) {
-            fileInput.addEventListener("change", function (ev) {
-              if (fileInput.files && fileInput.files.length > 0) {
-                const url = URL.createObjectURL(fileInput.files[0]);
-                const img = document.getElementById("profileAvatarImg");
-                if (img) img.src = url;
-                const small = document.getElementById("profileAvatarSmallImg");
-                const initial = document.getElementById("profileInitialFrag");
-                if (small) {
-                  small.src = url;
-                  small.style.display = "block";
-                }
-                if (initial) initial.style.display = "none";
-              }
-            });
+      } catch (e) {
+        console.warn("loadProfileFragment failed", e);
+      }
+    }
+    // Submit handler for profile form
+    document.addEventListener("DOMContentLoaded", function () {
+      // If the user isn't authenticated, keep profile UI hidden.
+      setProfileUiVisible(false);
+
+      const form = document.getElementById("profileForm");
+      const fileInput = document.getElementById("profileAvatarFile");
+      if (fileInput) {
+        fileInput.addEventListener("change", function (ev) {
+          if (fileInput.files && fileInput.files.length > 0) {
+            const url = URL.createObjectURL(fileInput.files[0]);
+            const img = document.getElementById("profileAvatarImg");
+            if (img) img.src = url;
+            const small = document.getElementById("profileAvatarSmallImg");
+            const initial = document.getElementById("profileInitialFrag");
+            if (small) {
+              small.src = url;
+              small.style.display = "block";
+            }
+            if (initial) initial.style.display = "none";
           }
-          if (form) {
-            form.addEventListener("submit", async function (e) {
-              e.preventDefault();
-              const payload = {
-                firstName: document.getElementById("profileFirstName").value,
-                lastName: document.getElementById("profileLastName").value,
-                email: document.getElementById("profileEmailInput").value,
-                idCard: document.getElementById("profileIdCard").value,
-              };
-              const pwd = document.getElementById("profilePassword").value;
-              if (pwd && pwd.length > 0) payload.password = pwd;
-              // include new fields if present
-              try {
-                const dobVal = document.getElementById("profileDob").value;
-                if (dobVal) payload.dob = dobVal;
-              } catch (e) {}
-              try {
-                const phoneVal = document.getElementById("profilePhone").value;
-                if (phoneVal) payload.phone = phoneVal;
-              } catch (e) {}
-              try {
-                const bioVal = document.getElementById("profileBio").value;
-                if (bioVal) payload.bio = bioVal;
-              } catch (e) {}
-              try {
-                // Use /api/users/me which works for all authenticated users
-                const res = await fetch("/api/users/me", {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(payload),
-                });
-                if (!res.ok) throw new Error((await res.text()) || "Update failed");
-                // if a new avatar file is selected, upload it
-                const fileInput = document.getElementById("profileAvatarFile");
-                if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                  try {
-                    const fd = new FormData();
-                    fd.append("file", fileInput.files[0]);
-                    const up = await fetch("/api/users/me/avatar", {
-                      method: "POST",
-                      body: fd,
-                    });
-                    if (!up.ok) console.warn("Avatar upload failed");
-                  } catch (e) {
-                    console.warn("Avatar upload error", e);
-                  }
-                }
-                // simple toast
-                const toast = document.createElement("div");
-                toast.className =
-                  "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-green-600";
-                toast.innerText = "Profile saved.";
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 1800);
-                closeProfileModal();
-                loadProfileFragment();
-              } catch (err) {
-                console.error("Error saving profile", err);
-                const toast = document.createElement("div");
-                toast.className =
-                  "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-red-600";
-                toast.innerText = "Error saving profile: " + err.message;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
-              }
-            });
-          }
-          // Load profile on page load for any authenticated user
-          loadProfileFragment();
         });
-        /*]]>*/
-    </script>
+      }
+      if (form) {
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const payload = {
+            firstName: document.getElementById("profileFirstName").value,
+            lastName: document.getElementById("profileLastName").value,
+            email: document.getElementById("profileEmailInput").value,
+            idCard: document.getElementById("profileIdCard").value,
+          };
+          const pwd = document.getElementById("profilePassword").value;
+          if (pwd && pwd.length > 0) payload.password = pwd;
+
+          // include profile fields (send even if empty so user can clear them)
+          try {
+            const dobEl = document.getElementById("profileDob");
+            payload.dob = dobEl ? dobEl.value : "";
+          } catch (e) {}
+          try {
+            const phoneEl = document.getElementById("profilePhone");
+            payload.phone = phoneEl ? phoneEl.value : "";
+          } catch (e) {}
+          try {
+            const bioEl = document.getElementById("profileBio");
+            payload.bio = bioEl ? bioEl.value : "";
+          } catch (e) {}
+          try {
+            // Use /api/users/me which works for all authenticated users
+            const res = await fetch("/api/users/me", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error((await res.text()) || "Update failed");
+            // if a new avatar file is selected, upload it
+            const fileInput = document.getElementById("profileAvatarFile");
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+              try {
+                const fd = new FormData();
+                fd.append("file", fileInput.files[0]);
+                const up = await fetch("/api/users/me/avatar", {
+                  method: "POST",
+                  body: fd,
+                });
+                if (!up.ok) console.warn("Avatar upload failed");
+              } catch (e) {
+                console.warn("Avatar upload error", e);
+              }
+            }
+            // simple toast
+            const toast = document.createElement("div");
+            toast.className =
+              "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-green-600";
+            toast.innerText = "Profile saved.";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 1800);
+            closeProfileModal();
+            loadProfileFragment();
+          } catch (err) {
+            console.error("Error saving profile", err);
+            const toast = document.createElement("div");
+            toast.className =
+              "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-red-600";
+            toast.innerText = "Error saving profile: " + err.message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+          }
+        });
+      }
+      // Load profile on page load for any authenticated user
+      loadProfileFragment();
+    });
+    /*]]>*/
+  </script>
 </div>

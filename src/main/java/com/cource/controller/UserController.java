@@ -1,15 +1,16 @@
 package com.cource.controller;
 
 import com.cource.dto.user.UserProfileDTO;
+import com.cource.dto.user.UserPublicProfileDTO;
 import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.User;
-import com.cource.repository.UserRepository;
 import com.cource.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -21,30 +22,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Controller for user profile operations accessible by any authenticated user.
- * These endpoints allow users to view and update their own profile.
- */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
     private final UserService userService;
 
-    /**
-     * Get the current authenticated user's basic info
-     */
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(401).body(Collections.singletonMap("error", "Not authenticated"));
         }
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
-        if (user == null) {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "User not found"));
-        }
+        User user = userService.getUserByEmail(userDetails.getUsername());
 
         Map<String, Object> response = new HashMap<>();
         response.put("id", user.getId());
@@ -58,37 +49,52 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get the current authenticated user's profile (extended info)
-     */
     @GetMapping("/me/profile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCurrentUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(401).body(Collections.singletonMap("error", "Not authenticated"));
         }
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
-        if (user == null) {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "User not found"));
-        }
+        User user = userService.getUserByEmail(userDetails.getUsername());
 
         UserProfileDTO profile = userService.getUserProfile(user.getId());
         return ResponseEntity.ok(profile);
     }
 
-    /**
-     * Update the current authenticated user's profile
-     */
+    @GetMapping("/{id}/public-profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getUserPublicProfile(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(Collections.singletonMap("error", "Not authenticated"));
+        }
+
+        User user = userService.getUserById(id);
+
+        UserProfileDTO profile = userService.getUserProfile(user.getId());
+        UserPublicProfileDTO dto = new UserPublicProfileDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIdCard(),
+                user.getRole() != null ? user.getRole().getRoleCode() : null,
+                user.isActive(),
+                profile);
+
+        return ResponseEntity.ok(dto);
+    }
+
     @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateCurrentUser(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody UserUpdateRequest request) {
         if (userDetails == null) {
             return ResponseEntity.status(401).body(Collections.singletonMap("error", "Not authenticated"));
         }
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
-        if (user == null) {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "User not found"));
-        }
+        User user = userService.getUserByEmail(userDetails.getUsername());
 
         // Don't allow users to change their own role
         request.setRoleId(null);
@@ -101,20 +107,15 @@ public class UserController {
         }
     }
 
-    /**
-     * Upload avatar for the current authenticated user
-     */
     @PostMapping(path = "/me/avatar", consumes = "multipart/form-data")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> uploadCurrentUserAvatar(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("file") MultipartFile file) {
         if (userDetails == null) {
             return ResponseEntity.status(401).body(Collections.singletonMap("error", "Not authenticated"));
         }
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
-        if (user == null) {
-            return ResponseEntity.status(404).body(Collections.singletonMap("error", "User not found"));
-        }
+        User user = userService.getUserByEmail(userDetails.getUsername());
 
         try {
             userService.updateAvatar(user.getId(), file);
@@ -130,12 +131,6 @@ public class UserController {
         }
     }
 
-    /**
-     * Get avatar image for the current authenticated user
-     * 
-     * @deprecated Use /me/avatar-image?userId={id} or /avatar/{userId} instead for
-     *             user-specific avatars
-     */
     @GetMapping("/me/avatar-image")
     public ResponseEntity<Resource> getCurrentUserAvatarImage(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -150,25 +145,16 @@ public class UserController {
         if (userDetails == null) {
             return ResponseEntity.status(401).build();
         }
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
+        User user = userService.getUserByEmail(userDetails.getUsername());
 
         return getUserAvatarById(user.getId());
     }
 
-    /**
-     * Get avatar image for any user by ID (public endpoint)
-     */
     @GetMapping("/avatar/{userId}")
     public ResponseEntity<Resource> getUserAvatar(@PathVariable Long userId) {
         return getUserAvatarById(userId);
     }
 
-    /**
-     * Helper method to get avatar by user ID
-     */
     private ResponseEntity<Resource> getUserAvatarById(Long userId) {
         try {
             Resource res = userService.loadAvatarResource(userId);
