@@ -14,7 +14,9 @@
 
     <!-- Main Content -->
     <main class="ml-64 p-8">
-      <h1 class="text-3xl font-bold text-slate-900 mb-6">Reports & Analytics</h1>
+      <h1 class="text-3xl font-bold text-slate-900 mb-6">
+        Reports & Analytics
+      </h1>
 
       <!-- System Overview -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -28,7 +30,7 @@
           </div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-gray-500 text-sm font-medium">Total Lecturers</div>
+          <div class="text-slate-500 text-sm font-medium">Total Lecturers</div>
           <div
             class="text-3xl font-bold text-green-600"
             th:text="${totalLecturers != null ? totalLecturers : 0}"
@@ -37,7 +39,7 @@
           </div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-gray-500 text-sm font-medium">Total Courses</div>
+          <div class="text-slate-500 text-sm font-medium">Total Courses</div>
           <div
             class="text-3xl font-bold text-purple-600"
             th:text="${totalCourses != null ? totalCourses : 0}"
@@ -46,9 +48,11 @@
           </div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-gray-500 text-sm font-medium">Total Enrollments</div>
+          <div class="text-slate-500 text-sm font-medium">
+            Total Enrollments
+          </div>
           <div
-            class="text-3xl font-bold text-yellow-600"
+            class="text-3xl font-bold text-amber-600"
             th:text="${totalEnrollments != null ? totalEnrollments : 0}"
           >
             0
@@ -56,101 +60,95 @@
         </div>
       </div>
 
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-bold text-slate-800 mb-4">
+            Enrollment by Term
+          </h2>
+          <div class="relative h-64">
+            <canvas id="enrollmentChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-bold text-slate-800 mb-4">
+            User Distribution
+          </h2>
+          <div class="relative h-64">
+            <canvas id="userChart"></canvas>
+          </div>
+        </div>
+      </div>
+
       <!-- Enrollment Statistics by Term -->
       <div class="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">
+        <h2 class="text-xl font-bold text-slate-800 mb-4">
           Enrollment Statistics by Term
         </h2>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+        <div
+          th:if="${enrollmentStats != null && !enrollmentStats.isEmpty()}"
+          class="overflow-x-auto"
+        >
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
               <tr>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
                 >
                   Term
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
                 >
                   Total Enrollments
                 </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Active
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Completed
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Dropped
-                </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-slate-200">
               <tr th:each="stat : ${enrollmentStats}">
                 <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900"
                   th:text="${stat.key}"
                 >
                   Fall 2025
                 </td>
                 <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                  class="px-6 py-4 whitespace-nowrap text-sm text-slate-600"
                   th:text="${stat.value}"
                 >
                   100
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold"
-                >
-                  -
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold"
-                >
-                  -
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold"
-                >
-                  -
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
         <div
-          th:if="${enrollmentStats == null || #lists.isEmpty(enrollmentStats)}"
-          class="text-center py-8 text-gray-500"
+          th:if="${enrollmentStats == null || enrollmentStats.isEmpty()}"
+          class="text-center py-8 text-slate-500"
         >
           <p>No enrollment statistics available.</p>
         </div>
       </div>
 
       <!-- Course Popularity -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">
+      <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-bold text-slate-800 mb-4">
           Most Popular Courses
         </h2>
-        <div class="space-y-4">
+        <div
+          th:if="${coursePopularity != null && !coursePopularity.isEmpty()}"
+          class="space-y-4"
+        >
           <div
             th:each="course : ${coursePopularity}"
-            class="flex items-center justify-between border-b pb-3"
+            class="flex items-center justify-between border-b border-slate-100 pb-3 last:border-b-0"
           >
             <div class="flex-1">
-              <h3
-                class="font-semibold text-gray-800"
-                th:text="${course.key}"
-              >
+              <h3 class="font-semibold text-slate-800" th:text="${course.key}">
                 CS101 - Programming
               </h3>
-              <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div class="w-full bg-slate-200 rounded-full h-2 mt-2">
                 <div
                   class="bg-blue-600 h-2 rounded-full"
                   th:style="'width: ' + (${course.value} * 100.0 / (${courseMax} == 0 ? 1 : ${courseMax})) + '%'"
@@ -163,35 +161,19 @@
                 th:text="${course.value}"
                 >50</span
               >
-              <p class="text-xs text-gray-500">students</p>
+              <p class="text-xs text-slate-500">students</p>
             </div>
           </div>
         </div>
         <div
-          th:if="${coursePopularity == null || #lists.isEmpty(coursePopularity)}"
-          class="text-center py-8 text-gray-500"
+          th:if="${coursePopularity == null || coursePopularity.isEmpty()}"
+          class="text-center py-8 text-slate-500"
         >
           <p>No course popularity data available.</p>
         </div>
       </div>
-    </div>
+    </main>
 
-      <!-- Charts Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-4">Enrollment Trends</h2>
-          <div class="relative h-64">
-            <canvas id="enrollmentChart"></canvas>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-4">User Distribution</h2>
-          <div class="relative h-64">
-            <canvas id="userChart"></canvas>
-          </div>
-        </div>
-      </div>
     <script th:inline="javascript">
       /*<![CDATA[*/
       var enrollmentLabels = /*[[${enrollmentLabels}]]*/ [];
@@ -203,24 +185,66 @@
 
     <script>
       // Enrollment Trends (server data)
-      const enrollmentEl = document.getElementById('enrollmentChart');
-      if (enrollmentEl && typeof enrollmentLabels !== 'undefined') {
-        const ctx = enrollmentEl.getContext('2d');
+      const enrollmentEl = document.getElementById("enrollmentChart");
+      if (enrollmentEl && typeof enrollmentLabels !== "undefined") {
+        const ctx = enrollmentEl.getContext("2d");
         new Chart(ctx, {
-          type: 'line',
-          data: { labels: enrollmentLabels, datasets: [{ label: 'Enrollments', data: enrollmentData, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { grid: { display: false } } } }
+          type: "line",
+          data: {
+            labels: enrollmentLabels,
+            datasets: [
+              {
+                label: "Enrollments",
+                data: enrollmentData,
+                borderColor: "rgb(59,130,246)",
+                backgroundColor: "rgba(59,130,246,0.1)",
+                tension: 0.4,
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.05)" } },
+              x: { grid: { display: false } },
+            },
+          },
         });
       }
 
       // User Distribution (server data)
-      const userEl = document.getElementById('userChart');
-      if (userEl && typeof userLabels !== 'undefined') {
-        const ctx2 = userEl.getContext('2d');
+      const userEl = document.getElementById("userChart");
+      if (userEl && typeof userLabels !== "undefined") {
+        const ctx2 = userEl.getContext("2d");
         new Chart(ctx2, {
-          type: 'doughnut',
-          data: { labels: userLabels, datasets: [{ data: userData, backgroundColor: ['rgb(59,130,246)', 'rgb(34,197,94)', 'rgb(168,85,247)'], borderWidth: 0 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 20, font: { size: 12 } } } } }
+          type: "doughnut",
+          data: {
+            labels: userLabels,
+            datasets: [
+              {
+                data: userData,
+                backgroundColor: [
+                  "rgb(59,130,246)",
+                  "rgb(34,197,94)",
+                  "rgb(168,85,247)",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { padding: 20, font: { size: 12 } },
+              },
+            },
+          },
         });
       }
     </script>

@@ -5,11 +5,13 @@ import com.cource.dto.schedule.ClassScheduleMapper;
 import com.cource.entity.ClassSchedule;
 import com.cource.entity.CourseOffering;
 import com.cource.entity.Room;
+import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.exception.UnauthorizedException;
 import com.cource.repository.ClassScheduleRepository;
 import com.cource.repository.CourseLecturerRepository;
 import com.cource.repository.CourseOfferingRepository;
+import com.cource.repository.EnrollmentRepository;
 import com.cource.repository.RoomRepository;
 import com.cource.service.ClassScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
     private final RoomRepository roomRepository;
     private final CourseOfferingRepository courseOfferingRepository;
     private final CourseLecturerRepository courseLecturerRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,10 +61,36 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
             throw new IllegalArgumentException("room.id is required");
         }
 
+        // Validate time order
+        if (schedule.getStartTime() != null && schedule.getEndTime() != null
+                && schedule.getStartTime().isAfter(schedule.getEndTime())) {
+            throw new IllegalArgumentException("Start time cannot be after end time");
+        }
+
         CourseOffering offering = courseOfferingRepository.findById(schedule.getOffering().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
         Room room = roomRepository.findById(schedule.getRoom().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+        // Check for room time conflicts
+        if (classScheduleRepository.existsOverlap(
+                room.getId(),
+                schedule.getDayOfWeek(),
+                schedule.getStartTime(),
+                schedule.getEndTime())) {
+            throw new ConflictException(String.format(
+                    "Room %s is already booked on %s from %s to %s",
+                    room.getRoomNumber(), schedule.getDayOfWeek(),
+                    schedule.getStartTime(), schedule.getEndTime()));
+        }
+
+        // Check room capacity vs enrolled students
+        long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ACTIVE");
+        if (room.getCapacity() > 0 && enrolledCount > room.getCapacity()) {
+            throw new ConflictException(String.format(
+                    "Room %s capacity (%d) is less than enrolled students (%d)",
+                    room.getRoomNumber(), room.getCapacity(), enrolledCount));
+        }
 
         schedule.setOffering(offering);
         schedule.setRoom(room);
@@ -94,6 +123,34 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
             }
             if (schedule.getEndTime() != null) {
                 existing.setEndTime(schedule.getEndTime());
+            }
+
+            // Validate time order
+            if (existing.getStartTime() != null && existing.getEndTime() != null
+                    && existing.getStartTime().isAfter(existing.getEndTime())) {
+                throw new IllegalArgumentException("Start time cannot be after end time");
+            }
+
+            // Check for room time conflicts (exclude current schedule)
+            if (classScheduleRepository.existsOverlapWithId(
+                    existing.getRoom().getId(),
+                    existing.getDayOfWeek(),
+                    existing.getStartTime(),
+                    existing.getEndTime(),
+                    id)) {
+                throw new ConflictException(String.format(
+                        "Room %s is already booked on %s from %s to %s",
+                        existing.getRoom().getRoomNumber(), existing.getDayOfWeek(),
+                        existing.getStartTime(), existing.getEndTime()));
+            }
+
+            // Check room capacity vs enrolled students
+            long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(existing.getOffering().getId(),
+                    "ACTIVE");
+            if (existing.getRoom().getCapacity() > 0 && enrolledCount > existing.getRoom().getCapacity()) {
+                throw new ConflictException(String.format(
+                        "Room %s capacity (%d) is less than enrolled students (%d)",
+                        existing.getRoom().getRoomNumber(), existing.getRoom().getCapacity(), enrolledCount));
             }
         }
 
@@ -148,6 +205,14 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                     dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
         }
 
+        // Check room capacity vs enrolled students
+        long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ACTIVE");
+        if (room.getCapacity() > 0 && enrolledCount > room.getCapacity()) {
+            throw new ConflictException(String.format(
+                    "Room %s capacity (%d) is less than enrolled students (%d)",
+                    roomNumber, room.getCapacity(), enrolledCount));
+        }
+
         ClassSchedule cs = new ClassSchedule();
         cs.setOffering(offering);
         cs.setRoom(room);
@@ -196,6 +261,14 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
             throw new IllegalArgumentException(String.format(
                     "Lecturer already has a class on %s from %s to %s",
                     dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
+        }
+
+        // Check room capacity vs enrolled students
+        long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ACTIVE");
+        if (room.getCapacity() > 0 && enrolledCount > room.getCapacity()) {
+            throw new ConflictException(String.format(
+                    "Room %s capacity (%d) is less than enrolled students (%d)",
+                    roomNumber, room.getCapacity(), enrolledCount));
         }
 
         ClassSchedule cs;

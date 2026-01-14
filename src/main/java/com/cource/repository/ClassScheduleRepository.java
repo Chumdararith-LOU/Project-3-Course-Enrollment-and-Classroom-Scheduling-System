@@ -47,4 +47,28 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Lo
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime,
             @Param("excludeId") Long excludeId);
+
+    // Check for overlap when creating a new schedule (returns boolean for efficiency)
+    @Query("SELECT COUNT(cs) > 0 FROM ClassSchedule cs " +
+           "WHERE cs.room.id = :roomId " +
+           "AND cs.dayOfWeek = :dayOfWeek " +
+           "AND cs.startTime < :endTime " +
+           "AND cs.endTime > :startTime")
+    boolean existsOverlap(@Param("roomId") Long roomId, 
+                          @Param("dayOfWeek") String dayOfWeek,
+                          @Param("startTime") LocalTime startTime, 
+                          @Param("endTime") LocalTime endTime);
+
+    // Check for overlap when updating an existing schedule (exclude itself)
+    @Query("SELECT COUNT(cs) > 0 FROM ClassSchedule cs " +
+           "WHERE cs.room.id = :roomId " +
+           "AND cs.dayOfWeek = :dayOfWeek " +
+           "AND cs.startTime < :endTime " +
+           "AND cs.endTime > :startTime " +
+           "AND cs.id != :scheduleId")
+    boolean existsOverlapWithId(@Param("roomId") Long roomId, 
+                                @Param("dayOfWeek") String dayOfWeek,
+                                @Param("startTime") LocalTime startTime, 
+                                @Param("endTime") LocalTime endTime,
+                                @Param("scheduleId") Long scheduleId);
 }
