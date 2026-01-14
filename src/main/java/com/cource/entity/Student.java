@@ -65,6 +65,12 @@ public class Student {
     private List<Enrollment> enrollments;
 
     public String getFullName() {
-        return this.firstName + " " + this.lastName;
+        String fn = firstName == null ? "" : firstName;
+        String ln = lastName == null ? "" : lastName;
+        return (fn + " " + ln).trim();
+    }
+
+    public boolean isActive() {
+        return Boolean.TRUE.equals(isActive);
     }
 }

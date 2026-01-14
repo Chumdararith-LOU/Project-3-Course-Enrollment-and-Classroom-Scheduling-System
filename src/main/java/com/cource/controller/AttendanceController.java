@@ -11,6 +11,7 @@ import com.cource.util.SecurityHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ public class AttendanceController {
     private final SecurityHelper securityHelper;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<?> recordAttendance(@RequestBody AttendanceRequestDTO request) {
         try {
             if (request.getLecturerId() == null) {
@@ -47,6 +49,7 @@ public class AttendanceController {
     }
 
     @PostMapping("/bulk")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<?> bulkRecordAttendance(
             @RequestParam Long scheduleId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -66,11 +69,13 @@ public class AttendanceController {
     }
 
     @GetMapping("/schedule/{scheduleId}")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<List<AttendanceResponseDTO>> getBySchedule(@PathVariable Long scheduleId) {
         return ResponseEntity.ok(attendanceService.getAttendanceBySchedule(scheduleId));
     }
 
     @GetMapping("/schedule/{scheduleId}/date/{date}")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<List<AttendanceResponseDTO>> getByScheduleAndDate(
             @PathVariable Long scheduleId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -78,6 +83,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/student/{studentId}/offering/{offeringId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and @securityHelper.getCurrentUserId() == #studentId)")
     public ResponseEntity<List<AttendanceResponseDTO>> getStudentAttendance(
             @PathVariable Long studentId,
             @PathVariable Long offeringId) {
@@ -85,6 +91,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/student/{studentId}/offering/{offeringId}/summary")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and @securityHelper.getCurrentUserId() == #studentId)")
     public ResponseEntity<AttendanceSummaryDTO> getStudentSummary(
             @PathVariable Long studentId,
             @PathVariable Long offeringId) {
@@ -96,11 +103,13 @@ public class AttendanceController {
     }
 
     @GetMapping("/schedule/{scheduleId}/stats")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<Map<String, Object>> getScheduleStats(@PathVariable Long scheduleId) {
         return ResponseEntity.ok(attendanceService.getScheduleAttendanceStats(scheduleId));
     }
 
     @GetMapping("/student/{studentId}/offering/{offeringId}/rate")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and @securityHelper.getCurrentUserId() == #studentId)")
     public ResponseEntity<Map<String, Object>> getAttendanceRate(
             @PathVariable Long studentId,
             @PathVariable Long offeringId) {
@@ -109,6 +118,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/today")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<List<ClassSchedule>> getTodaySchedules(@RequestParam(required = false) Long lecturerId) {
         Long id = lecturerId != null ? lecturerId : securityHelper.getCurrentUserId();
         if (id == null) {
@@ -118,6 +128,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/exists")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and @securityHelper.getCurrentUserId() == #studentId)")
     public ResponseEntity<Map<String, Boolean>> checkExists(
             @RequestParam Long studentId,
             @RequestParam Long scheduleId,
@@ -127,6 +138,7 @@ public class AttendanceController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<?> updateAttendance(
             @PathVariable Long id,
             @RequestBody AttendanceRequestDTO request) {
@@ -143,6 +155,7 @@ public class AttendanceController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<?> deleteAttendance(@PathVariable Long id) {
         try {
             attendanceService.deleteAttendance(id);
@@ -153,6 +166,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/offering/{offeringId}")
+    @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<List<AttendanceResponseDTO>> getOfferingAttendance(
             @PathVariable Long offeringId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,

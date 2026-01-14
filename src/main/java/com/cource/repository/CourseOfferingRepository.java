@@ -11,11 +11,11 @@ import java.util.Optional;
 
 @Repository
 public interface CourseOfferingRepository extends JpaRepository<CourseOffering, Long> {
-    // Leverage idx_offerings_term index
-    List<CourseOffering> findByTermId(Long termId);
-
     // Leverage idx_offerings_course index
     List<CourseOffering> findByCourseId(Long courseId);
+
+    // Leverage idx_offerings_term index
+    List<CourseOffering> findByTermId(Long termId);
 
     // Leverage idx_offerings_active index
     List<CourseOffering> findByActive(Boolean active);

@@ -8,7 +8,6 @@
     <title>Enrolled Students</title>
   </head>
   <body class="bg-slate-100 font-sans">
-    <!-- Sidebar Navigation -->
     <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
 
     <!-- Top Bar -->
@@ -49,6 +48,16 @@
             <span class="ml-1">Students</span>
           </span>
         </div>
+      </div>
+    </div>
+    <div class="ml-64 px-8 py-0">
+      <div class="flex justify-end -mt-6 mb-4">
+        <a
+          th:href="@{/lecturer/students/export(offeringId=${offeringId},lecturerId=${lecturerId})}"
+          class="inline-flex items-center px-3 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+        >
+          Export Students (CSV)
+        </a>
       </div>
     </div>
 
@@ -143,7 +152,25 @@
                 scope="col"
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
+                Enrolled Date
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Deadline
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Status
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Grade
               </th>
               <th
                 scope="col"
@@ -154,12 +181,34 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr th:each="student : ${students}" class="hover:bg-gray-50">
+            <tr
+              th:each="student,iterStat : ${students}"
+              class="hover:bg-gray-50"
+            >
+              <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                <input
+                  type="checkbox"
+                  class="student-checkbox"
+                  th:value="${student.id}"
+                />
+              </td>
               <td
                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
                 th:text="${student.idCard ?: 'N/A'}"
               >
                 STU001
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                th:text="${enrollmentMap[student.id]?.enrolledAt != null ? #temporals.format(enrollmentMap[student.id].enrolledAt, 'yyyy-MM-dd') : 'N/A'}"
+              >
+                2025-12-26
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                th:text="${enrollmentMap[student.id]?.offering?.term?.endDate != null ? #temporals.format(enrollmentMap[student.id].offering.term.endDate, 'yyyy-MM-dd') : 'N/A'}"
+              >
+                2026-01-31
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
@@ -169,7 +218,7 @@
                     >
                       <span
                         class="text-indigo-600 font-semibold text-sm"
-                        th:text="${student.firstName != null ? student.firstName.substring(0,1) : 'S'}"
+                        th:text="${student != null and student.firstName != null and #strings.length(student.firstName) > 0 ? student.firstName.substring(0,1) : 'S'}"
                         >S</span
                       >
                     </div>
@@ -177,7 +226,7 @@
                   <div class="ml-4">
                     <div
                       class="text-sm font-medium text-gray-900"
-                      th:text="${student.firstName + ' ' + student.lastName}"
+                      th:text="${student != null ? (student.firstName != null ? student.firstName : '' ) + ' ' + (student.lastName != null ? student.lastName : '') : 'N/A'}"
                     >
                       John Doe
                     </div>
@@ -186,39 +235,328 @@
               </td>
               <td
                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                th:text="${student.email}"
+                th:text="${student != null && student.email != null ? student.email : 'N/A'}"
               >
                 john@example.com
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                  th:classappend="${student.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"
+                  th:classappend="${student != null && student.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"
                 >
-                  <span th:text="${student.active ? 'Active' : 'Inactive'}"
+                  <span
+                    th:text="${student != null && student.active ? 'Active' : 'Inactive'}"
                     >Active</span
                   >
                 </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <span
+                  th:if="${enrollmentMap[student.id] != null}"
+                  th:id="|grade-text-${enrollmentMap[student.id].id}|"
+                  th:text="${enrollmentMap[student.id]?.grade ?: '-'}"
+                  >-</span
+                >
+                <span th:if="${enrollmentMap[student.id] == null}">-</span>
               </td>
               <td
                 class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
               >
                 <button
                   type="button"
-                  class="text-indigo-600 hover:text-indigo-900 mr-3"
+                  class="text-slate-600 hover:text-slate-900 mr-3"
+                  th:onclick="|openUserProfileView(${student.id})|"
                 >
-                  View Details
+                  Profile
+                </button>
+                <button
+                  th:if="${enrollmentMap[student.id] != null}"
+                  type="button"
+                  class="text-indigo-600 hover:text-indigo-900 mr-3"
+                  th:onclick="|updateGrade(${enrollmentMap[student.id].id})|"
+                >
+                  Grade
                 </button>
                 <button
                   type="button"
+                  class="text-indigo-600 hover:text-indigo-900 mr-3"
+                  th:href="@{/student/dashboard(studentId=${student.id},offeringId=${offeringId})}"
+                  th:onclick="|window.location='@{/student/dashboard(studentId=${student.id},offeringId=${offeringId})}'|"
+                >
+                  View Details
+                </button>
+                <a
                   class="text-green-600 hover:text-green-900"
+                  th:href="@{/lecturer/attendance(lecturerId=${lecturerId},offeringId=${offeringId},studentId=${student.id})}"
                 >
                   Attendance
-                </button>
+                </a>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const input = document.getElementById("search");
+        if (!input) return;
+        input.addEventListener("input", function () {
+          const q = this.value.trim().toLowerCase();
+          const rows = document.querySelectorAll("tbody tr");
+          rows.forEach((r) => {
+            const text = r.textContent.toLowerCase();
+            r.style.display = q === "" || text.includes(q) ? "" : "none";
+          });
+        });
+      })();
+    </script>
+    <script th:inline="javascript">
+      const LECTURER_ID = /*[[${lecturerId}]]*/ null;
+
+      let selectedGradeValue = null;
+
+      function updateGrade(enrollmentId) {
+        openGradeModal(enrollmentId);
+      }
+
+      function openGradeModal(enrollmentId) {
+        const modal = document.getElementById("gradeModal");
+        const hiddenId = document.getElementById("gradeEnrollmentId");
+        const selectedGrade = document.getElementById("selectedGrade");
+        if (!modal || !hiddenId || !selectedGrade) return;
+
+        hiddenId.value = enrollmentId;
+        selectedGrade.value = "";
+        selectedGradeValue = null;
+        document.querySelectorAll(".grade-btn").forEach((btn) => {
+          btn.classList.remove(
+            "border-indigo-600",
+            "bg-indigo-50",
+            "text-indigo-700",
+            "ring-2",
+            "ring-indigo-500",
+            "ring-offset-2"
+          );
+        });
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+
+      function closeGradeModal() {
+        const modal = document.getElementById("gradeModal");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      function selectGrade(grade, btn) {
+        selectedGradeValue = grade;
+        const selectedGradeInput = document.getElementById("selectedGrade");
+        if (selectedGradeInput) selectedGradeInput.value = grade;
+        document.querySelectorAll(".grade-btn").forEach((b) => {
+          b.classList.remove(
+            "border-indigo-600",
+            "bg-indigo-50",
+            "text-indigo-700",
+            "ring-2",
+            "ring-indigo-500",
+            "ring-offset-2"
+          );
+        });
+        if (btn && btn.classList) {
+          btn.classList.add(
+            "border-indigo-600",
+            "bg-indigo-50",
+            "text-indigo-700",
+            "ring-2",
+            "ring-indigo-500",
+            "ring-offset-2"
+          );
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("gradeForm");
+        if (!form) return;
+
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const enrollmentId =
+            document.getElementById("gradeEnrollmentId")?.value;
+          const grade = document.getElementById("selectedGrade")?.value;
+
+          if (!enrollmentId) return;
+          if (!grade) {
+            alert("Please select a grade");
+            return;
+          }
+
+          const res = await fetch(
+            "/api/lecturer/enrollments/" +
+              enrollmentId +
+              "/grade?lecturerId=" +
+              LECTURER_ID,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ grade: grade }),
+            }
+          );
+
+          if (res.ok) {
+            closeGradeModal();
+            const gradeEl = document.getElementById(
+              "grade-text-" + enrollmentId
+            );
+            if (gradeEl) gradeEl.textContent = grade;
+            return;
+          }
+
+          let msg = "Failed to update grade";
+          try {
+            const data = await res.json();
+            if (data && data.message) msg = data.message;
+          } catch (e) {}
+          alert(msg);
+        });
+      });
+    </script>
+
+    <!-- Update Grade Modal (tap to select) -->
+    <div
+      id="gradeModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white rounded-xl shadow-lg max-w-md w-full border border-slate-200"
+      >
+        <div
+          class="px-6 py-4 border-b border-slate-200 flex items-center justify-between"
+        >
+          <h3 class="text-lg font-bold text-slate-900">Update Grade</h3>
+          <button
+            type="button"
+            onclick="closeGradeModal()"
+            class="px-2 py-1 text-slate-500 hover:text-slate-700"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <form id="gradeForm" class="p-6 space-y-4">
+          <input type="hidden" id="gradeEnrollmentId" />
+          <input type="hidden" id="selectedGrade" required />
+
+          <div>
+            <div class="text-sm font-medium text-slate-700 mb-2">
+              Select Grade
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              <button
+                type="button"
+                onclick="selectGrade('A+', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                A+
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('A', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                A
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('A-', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                A-
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('B+', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                B+
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('B', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('B-', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                B-
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('C+', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                C+
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('C', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                C
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('C-', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                C-
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('D+', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                D+
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('D', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                D
+              </button>
+              <button
+                type="button"
+                onclick="selectGrade('F', this)"
+                class="grade-btn px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                F
+              </button>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button
+              type="submit"
+              class="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700"
+            >
+              Update Grade
+            </button>
+            <button
+              type="button"
+              onclick="closeGradeModal()"
+              class="px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-300"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </body>

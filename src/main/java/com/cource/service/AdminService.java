@@ -1,110 +1,122 @@
 package com.cource.service;
 
+import com.cource.entity.*;
 import java.util.List;
 import java.util.Map;
 
-import com.cource.entity.AcademicTerm;
-import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
-import com.cource.entity.CourseOffering;
-import com.cource.entity.Enrollment;
-import com.cource.entity.Room;
-import com.cource.entity.User;
-
 public interface AdminService {
-    List<User> getAllUsers();
+        // User management
+        List<User> getAllUsers();
 
-    List<User> getUsersByRole(String roleName);
+        List<User> getUsersByRole(String roleName);
 
-    long getTotalStudents();
+        long getTotalStudents();
 
-    long getTotalLecturers();
+        long getTotalLecturers();
 
-    List<Course> getAllCourses();
+        // Course management
+        List<Course> getAllCourses();
 
-    long getTotalCourses();
+        long getTotalCourses();
 
-    List<CourseOffering> getAllCourseOfferings();
+        // Course offerings
+        List<CourseOffering> getAllCourseOfferings();
 
-    List<CourseOffering> getCourseOfferingsByTerm(Long termId);
+        List<CourseOffering> getCourseOfferingsByTerm(Long termId);
 
-    CourseOffering getOfferingById(Long id);
+        CourseOffering getOfferingById(Long id);
 
-    CourseOffering createOffering(Long courseId, Long termId, Integer capacity, Boolean isActive);
+        CourseOffering createOffering(Long courseId, Long termId, Integer capacity, Boolean isActive);
 
-    CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive);
+        CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive);
 
-    void deleteOffering(Long id);
+        CourseOffering regenerateOfferingEnrollmentCode(Long offeringId);
 
-    CourseOffering toggleOfferingStatus(Long id);
+        void deleteOffering(Long id);
 
-    List<Enrollment> getAllEnrollments();
+        CourseOffering toggleOfferingStatus(Long id);
 
-    List<Enrollment> getEnrollmentsByOffering(Long offeringId);
+        // Enrollment management
+        List<Enrollment> getAllEnrollments();
 
-    long getTotalEnrollments();
+        List<Enrollment> getEnrollmentsByOffering(Long offeringId);
 
-    Enrollment getEnrollmentById(Long id);
+        long getTotalEnrollments();
 
-    Enrollment createEnrollment(Long studentId, Long offeringId);
+        Enrollment getEnrollmentById(Long id);
 
-    Enrollment updateEnrollmentGrade(Long id, String grade);
+        Enrollment createEnrollment(Long studentId, Long offeringId);
 
-    Enrollment updateEnrollmentStatus(Long id, String status);
+        Enrollment updateEnrollmentGrade(Long id, String grade);
 
-    void deleteEnrollment(Long id);
+        Enrollment updateEnrollmentStatus(Long id, String status);
 
-    List<ClassSchedule> getAllSchedules();
+        void deleteEnrollment(Long id);
 
-    List<Room> getAllRooms();
+        // Schedule management
+        List<ClassSchedule> getAllSchedules();
 
-    List<AcademicTerm> getAllTerms();
+        // Room management
+        List<Room> getAllRooms();
 
-    AcademicTerm getTermById(Long id);
+        // Term management
+        List<AcademicTerm> getAllTerms();
 
-    AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
-                            java.time.LocalDate endDate);
+        AcademicTerm getTermById(Long id);
 
-    AcademicTerm updateTerm(Long id, String termCode, String termName, java.time.LocalDate startDate,
-                            java.time.LocalDate endDate);
+        String generateTermCode(java.time.LocalDate startDate);
 
-    void deleteTerm(Long id);
+        AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
+                        java.time.LocalDate endDate);
 
-    AcademicTerm toggleTermStatus(Long id);
+        AcademicTerm updateTerm(Long id, String termCode, String termName, java.time.LocalDate startDate,
+                        java.time.LocalDate endDate);
 
-    Room getRoomById(Long id);
+        void deleteTerm(Long id);
 
-    Room createRoom(String roomNumber, String building, Integer capacity, String roomType, Boolean isActive);
+        AcademicTerm toggleTermStatus(Long id);
 
-    Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
-                    Boolean isActive);
+        // Room management - CRUD
+        Room getRoomById(Long id);
 
-    void deleteRoom(Long id);
+        Room createRoom(String roomNumber, String building, Integer capacity, String roomType, Boolean isActive);
 
-    Room toggleRoomStatus(Long id);
+        Room updateRoom(Long id, String roomNumber, String building, Integer capacity, String roomType,
+                        Boolean isActive);
 
-    ClassSchedule getScheduleById(Long id);
+        void deleteRoom(Long id);
 
-    ClassSchedule createSchedule(Long offeringId, Long roomId, String dayOfWeek, java.time.LocalTime startTime,
-                                 java.time.LocalTime endTime);
+        Room toggleRoomStatus(Long id);
 
-    ClassSchedule updateSchedule(Long id, Long offeringId, Long roomId, String dayOfWeek,
-                                 java.time.LocalTime startTime,
-                                 java.time.LocalTime endTime);
+        // Schedule management - CRUD
+        ClassSchedule getScheduleById(Long id);
 
-    void deleteSchedule(Long id);
+        ClassSchedule createSchedule(Long offeringId, Long roomId, String dayOfWeek, java.time.LocalTime startTime,
+                        java.time.LocalTime endTime);
 
-    List<ClassSchedule> getSchedulesByOffering(Long offeringId);
+        ClassSchedule updateSchedule(Long id, Long offeringId, Long roomId, String dayOfWeek,
+                        java.time.LocalTime startTime,
+                        java.time.LocalTime endTime);
 
-    List<ClassSchedule> getSchedulesByRoom(Long roomId);
+        void deleteSchedule(Long id);
 
-    Map<String, Object> getEnrollmentStatsByTerm();
+        List<ClassSchedule> getSchedulesByOffering(Long offeringId);
 
-    Map<String, Object> getCoursePopularity();
+        List<ClassSchedule> getSchedulesByRoom(Long roomId);
 
-    List<User> getLecturersForOffering(Long offeringId);
+        // Statistics
+        Map<String, Object> getEnrollmentStatsByTerm();
 
-    void assignLecturersToOffering(Long offeringId, List<Long> lecturerIds);
+        Map<String, Object> getCoursePopularity();
 
-    void removeLecturerFromOffering(Long offeringId, Long lecturerId);
+        // Lecturer assignment for offerings
+        List<User> getLecturersForOffering(Long offeringId);
+
+        void assignLecturersToOffering(Long offeringId, List<Long> lecturerIds);
+
+        void removeLecturerFromOffering(Long offeringId, Long lecturerId);
+
+        // Bulk assign a lecturer to all existing offerings (safe, idempotent)
+        // Returns number of new assignments created
+        int bulkAssignLecturerToAllOfferings(Long lecturerId);
 }

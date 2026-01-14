@@ -1,192 +1,325 @@
 package com.cource.service.impl;
 
-import com.cource.dto.enrollment.EnrollmentResult;
 import com.cource.entity.*;
-import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.*;
-import com.cource.service.EnrollmentService;
 import com.cource.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@PreAuthorize("hasRole('STUDENT')")
 public class StudentServiceImpl implements StudentService {
 
-    private final StudentRepository studentRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final ClassScheduleRepository classScheduleRepository;
-    private final AcademicTermRepository academicTermRepository;
     private final AttendanceRepository attendanceRepository;
     private final WaitlistRepository waitlistRepository;
-    private final CourseOfferingRepository courseOfferingRepository;
-    private final EnrollmentService enrollmentService;
+    private final AcademicTermRepository academicTermRepository;
+    private final com.cource.repository.CourseOfferingRepository courseOfferingRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public List<Enrollment> getMyEnrollments(Long studentId) {
         return enrollmentRepository.findByStudentId(studentId);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<AcademicTerm> getActiveTerms() {
-        return academicTermRepository.findAll().stream()
-                .filter(AcademicTerm::isActive)
-                .collect(Collectors.toList());
+    public List<Enrollment> getMyGrades(Long studentId) {
+        return enrollmentRepository.findByStudentIdAndGradeIsNotNull(studentId);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    public List<ClassSchedule> getMySchedule(Long studentId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+        return enrollments.stream()
+                .flatMap(e -> classScheduleRepository.findByOfferingId(e.getOffering().getId()).stream())
+                .distinct()
+                .toList();
+    }
+
+    @Override
+    public java.util.List<com.cource.entity.CourseOffering> getAvailableOfferings(Long studentId, Long termId,
+            String keyword) {
+        log.info("🔍 getAvailableOfferings called - studentId: {}, termId: {}, keyword: {}", studentId, termId,
+                keyword);
+
+        java.util.List<com.cource.entity.CourseOffering> offerings;
+        if (keyword != null && !keyword.isBlank() && termId != null) {
+            offerings = courseOfferingRepository.findByCourseTitleContainingIgnoreCaseAndTermId(keyword, termId);
+            log.info("📚 Found {} offerings by keyword and term", offerings.size());
+        } else if (keyword != null && !keyword.isBlank()) {
+            offerings = courseOfferingRepository.findByCourseTitleContainingIgnoreCase(keyword);
+            log.info("📚 Found {} offerings by keyword", offerings.size());
+        } else if (termId != null) {
+            offerings = courseOfferingRepository.findActiveByTermId(termId);
+            log.info("📚 Found {} active offerings for termId {}", offerings.size(), termId);
+        } else {
+            // default: all active offerings
+            offerings = courseOfferingRepository.findByActive(true);
+            log.info("📚 Found {} active offerings (no filters)", offerings.size());
+        }
+
+        log.info("📊 Total offerings before enrollment filter: {}", offerings.size());
+
+        // Filter out offerings where student already enrolled
+        java.util.List<com.cource.entity.CourseOffering> out = new java.util.ArrayList<>();
+        for (var off : offerings) {
+            var exists = enrollmentRepository.findByStudentIdAndOfferingId(studentId, off.getId()).isPresent();
+            if (!exists) {
+                out.add(off);
+            } else {
+                log.debug("⏭️ Hiding offering {} - student already enrolled", off.getId());
+            }
+        }
+
+        log.info("✨ Returning {} available offerings (hiding enrolled)", out.size());
+        return out;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public com.cource.entity.Enrollment enrollInOffering(Long studentId, Long offeringId, String enrollmentCode) {
+        log.info("🎓 enrollInOffering - studentId: {}, offeringId: {}, code entered: '{}'",
+                studentId, offeringId, enrollmentCode);
+
+        var off = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new com.cource.exception.ResourceNotFoundException("Offering not found"));
+
+        log.info("📝 Offering found - ID: {}, Course: {}, Expected code: '{}'",
+                off.getId(), off.getCourse().getTitle(), off.getEnrollmentCode());
+
+        if (enrollmentCode == null || !off.getEnrollmentCode().equals(enrollmentCode)) {
+            log.warn("❌ Invalid enrollment code - Expected: '{}', Got: '{}'",
+                    off.getEnrollmentCode(), enrollmentCode);
+            throw new IllegalArgumentException("Invalid enrollment code. Expected: " + off.getEnrollmentCode());
+        }
+
+        var already = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId);
+        if (already.isPresent()) {
+            log.warn("⚠️ Student {} already enrolled in offering {}", studentId, offeringId);
+            throw new IllegalArgumentException("Student already enrolled");
+        }
+
+        Long enrolledCountNullable = courseOfferingRepository.countEnrolledStudents(offeringId);
+        long enrolledCount = enrolledCountNullable == null ? 0L : enrolledCountNullable;
+        if (enrolledCount >= off.getCapacity()) {
+            log.warn("⚠️ Offering {} is full ({}/{})", offeringId, enrolledCount, off.getCapacity());
+            throw new IllegalStateException("Offering is full");
+        }
+
+        com.cource.entity.User student = new com.cource.entity.User();
+        student.setId(studentId);
+        com.cource.entity.Enrollment e = new com.cource.entity.Enrollment();
+        e.setStudent(student);
+        e.setOffering(off);
+        e.setStatus("ENROLLED");
+
+        var saved = enrollmentRepository.save(e);
+        log.info("✅ Successfully enrolled student {} in offering {}", studentId, offeringId);
+        return saved;
+    }
+
+    @Override
+    public List<Attendance> getMyAttendance(Long studentId, Long offeringId) {
+        return attendanceRepository.findByStudentIdAndOfferingId(studentId, offeringId);
+    }
+
+    @Override
+    public double getAttendancePercentage(Long studentId, Long offeringId) {
+        List<Attendance> attendance = attendanceRepository.findByStudentIdAndOfferingId(studentId,
+                offeringId);
+        if (attendance.isEmpty()) {
+            return 0.0;
+        }
+        long presentCount = attendance.stream().filter(a -> "PRESENT".equals(a.getStatus())).count();
+        return (double) presentCount / attendance.size() * 100;
+    }
+
+    @Override
+    public List<Waitlist> getMyWaitlistEntries(Long studentId) {
+        return waitlistRepository.findByStudentIdAndStatusOrderByPositionAsc(studentId, "PENDING");
+    }
+
+    @Override
+    public List<AcademicTerm> getActiveTerms() {
+        LocalDate now = LocalDate.now();
+        return academicTermRepository.findByStartDateLessThanEqualAndEndDateGreaterThanEqual(now, now);
+    }
+
+    @Override
     public List<AcademicTerm> getAllTerms() {
         return academicTermRepository.findAll();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public double calculateGPA(Long studentId) {
-        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
-        double totalPoints = 0;
-        int totalCredits = 0;
+        List<Enrollment> grades = getMyGrades(studentId);
+        if (grades == null || grades.isEmpty())
+            return 0.0;
 
-        for (Enrollment e : enrollments) {
-            if ("COMPLETED".equalsIgnoreCase(e.getStatus()) && e.getGrade() != null) {
-                double points = convertGradeToPoints(e.getGrade());
-                int credits = e.getOffering().getCourse().getCredits();
-                totalPoints += (points * credits);
-                totalCredits += credits;
+        double totalPoints = 0.0;
+        int totalCredits = 0;
+        for (var e : grades) {
+            String g = e.getGrade();
+            if (g == null)
+                continue;
+            int credits = 0;
+            try {
+                credits = e.getOffering().getCourse().getCredits();
+            } catch (Exception ex) {
+                credits = 0;
+            }
+            double pts = switch (g.toUpperCase()) {
+                case "A+", "A" -> 4.0;
+                case "A-" -> 3.7;
+                case "B+" -> 3.3;
+                case "B" -> 3.0;
+                case "B-" -> 2.7;
+                case "C+" -> 2.3;
+                case "C" -> 2.0;
+                case "C-" -> 1.7;
+                case "D+" -> 1.3;
+                case "D" -> 1.0;
+                case "F", "W", "I" -> 0.0;
+                default -> 0.0;
+            };
+            totalPoints += pts * credits;
+            totalCredits += credits;
+        }
+        if (totalCredits == 0)
+            return 0.0;
+        return Math.round((totalPoints / totalCredits) * 100.0) / 100.0; // round to 2 decimals
+    }
+
+    @Override
+    public int getCreditsEarned(Long studentId) {
+        List<Enrollment> grades = getMyGrades(studentId);
+        if (grades == null || grades.isEmpty())
+            return 0;
+        int sum = 0;
+        for (var e : grades) {
+            String g = e.getGrade();
+            if (g == null)
+                continue;
+            if (g.equalsIgnoreCase("F") || g.equalsIgnoreCase("W") || g.equalsIgnoreCase("I"))
+                continue;
+            try {
+                sum += e.getOffering().getCourse().getCredits();
+            } catch (Exception ex) {
             }
         }
-        return totalCredits == 0 ? 0.0 : totalPoints / totalCredits;
+        return sum;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public int getCreditsEarned(Long studentId) {
-        return enrollmentRepository.findByStudentId(studentId).stream()
-                .filter(e -> "COMPLETED".equalsIgnoreCase(e.getStatus()))
-                .mapToInt(e -> e.getOffering().getCourse().getCredits())
-                .sum();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public int getCoursesCompleted(Long studentId) {
-        return (int) enrollmentRepository.findByStudentId(studentId).stream()
-                .filter(e -> "COMPLETED".equalsIgnoreCase(e.getStatus()))
-                .count();
+        List<Enrollment> grades = getMyGrades(studentId);
+        if (grades == null || grades.isEmpty())
+            return 0;
+        int count = 0;
+        for (var e : grades) {
+            String g = e.getGrade();
+            if (g == null)
+                continue;
+            if (g.equalsIgnoreCase("F") || g.equalsIgnoreCase("W") || g.equalsIgnoreCase("I"))
+                continue;
+            count++;
+        }
+        return count;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<ClassSchedule> getMySchedule(Long studentId) {
-        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+    @org.springframework.transaction.annotation.Transactional
+    public void dropEnrollment(Long studentId, Long enrollmentId) {
+        var enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new com.cource.exception.ResourceNotFoundException("Enrollment not found"));
+        if (enrollment.getStudent() == null || !enrollment.getStudent().getId().equals(studentId)) {
+            throw new SecurityException("Student does not have permission to drop this enrollment");
+        }
+        enrollment.setStatus("DROPPED");
+        enrollmentRepository.save(enrollment);
+    }
 
-        List<Long> offeringIds = enrollments.stream()
-                .filter(e -> "ENROLLED".equalsIgnoreCase(e.getStatus()))
-                .map(e -> e.getOffering().getId())
-                .collect(Collectors.toList());
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public com.cource.entity.Enrollment restoreEnrollment(Long studentId, Long enrollmentId) {
+        var enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new com.cource.exception.ResourceNotFoundException("Enrollment not found"));
+        if (enrollment.getStudent() == null || !enrollment.getStudent().getId().equals(studentId)) {
+            throw new SecurityException("Student does not have permission to restore this enrollment");
+        }
+        if (!"DROPPED".equalsIgnoreCase(enrollment.getStatus())) {
+            throw new IllegalArgumentException("Only dropped enrollments can be restored");
+        }
+        Long offeringId = enrollment.getOffering() == null ? null : enrollment.getOffering().getId();
+        if (offeringId == null) {
+            throw new com.cource.exception.ResourceNotFoundException("Associated offering not found");
+        }
+        Long enrolledCountNullable = courseOfferingRepository.countEnrolledStudents(offeringId);
+        long enrolledCount = enrolledCountNullable == null ? 0L : enrolledCountNullable;
+        var off = enrollment.getOffering();
+        if (off != null && enrolledCount >= off.getCapacity()) {
+            throw new IllegalStateException("Offering is full; cannot re-enroll");
+        }
+        enrollment.setStatus("ENROLLED");
+        return enrollmentRepository.save(enrollment);
+    }
 
-        if (offeringIds.isEmpty()) {
-            return Collections.emptyList();
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteEnrollment(Long studentId, Long enrollmentId) {
+        var enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new com.cource.exception.ResourceNotFoundException("Enrollment not found"));
+        if (enrollment.getStudent() == null || !enrollment.getStudent().getId().equals(studentId)) {
+            throw new SecurityException("Student does not have permission to delete this enrollment");
+        }
+        if (!"DROPPED".equalsIgnoreCase(enrollment.getStatus())) {
+            throw new IllegalArgumentException("Only dropped enrollments can be deleted by student");
+        }
+        enrollmentRepository.delete(enrollment);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public com.cource.entity.Attendance submitAttendanceRequest(Long studentId, Long scheduleId,
+            java.time.LocalDate attendanceDate, String notes) {
+        var schedule = classScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new com.cource.exception.ResourceNotFoundException("Schedule not found"));
+
+        var enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, schedule.getOffering().getId())
+                .orElseThrow(() -> new com.cource.exception.ResourceNotFoundException(
+                        "Enrollment not found for student/offering"));
+
+        boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(studentId, scheduleId, enrollment.getId(),
+                attendanceDate);
+        if (exists) {
+            throw new IllegalArgumentException("Attendance already submitted for this date");
         }
 
-        return classScheduleRepository.findByOfferingIdIn(offeringIds);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Enrollment> getMyGrades(Long studentId) {
-        // Typically returns all enrollments that have a grade or status is terminal
-        return enrollmentRepository.findByStudentId(studentId).stream()
-                .filter(e -> e.getGrade() != null || "COMPLETED".equals(e.getStatus()) || "FAILED".equals(e.getStatus()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Attendance> getMyAttendance(Long studentId, Long offeringId) {
-        Enrollment enrollment = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
-                .orElse(null);
-
-        if (enrollment == null) return Collections.emptyList();
-
-        return attendanceRepository.findAll().stream()
-                .filter(a -> a.getEnrollment().getId().equals(enrollment.getId()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public double getAttendancePercentage(Long studentId, Long offeringId) {
-        List<Attendance> records = getMyAttendance(studentId, offeringId);
-        if (records.isEmpty()) return 100.0; // Default if no records yet
-
-        long presentOrLate = records.stream()
-                .filter(a -> "PRESENT".equalsIgnoreCase(a.getStatus()) || "LATE".equalsIgnoreCase(a.getStatus()))
-                .count();
-
-        return ((double) presentOrLate / records.size()) * 100.0;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Waitlist> getMyWaitlistEntries(Long studentId) {
-        return waitlistRepository.findAll().stream()
-                .filter(w -> w.getStudent().getId().equals(studentId))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CourseOffering> getAvailableOfferings(Long studentId, Long termId, String keyword) {
-        List<CourseOffering> offerings;
-        if (termId != null) {
-            offerings = courseOfferingRepository.findAll().stream()
-                    .filter(o -> o.getTerm().getId().equals(termId))
-                    .collect(Collectors.toList());
-        } else {
-            offerings = courseOfferingRepository.findAll();
+        com.cource.entity.Attendance a = new com.cource.entity.Attendance();
+        a.setEnrollment(enrollment);
+        a.setSchedule(schedule);
+        a.setAttendanceDate(attendanceDate);
+        a.setStatus("REQUESTED");
+        com.cource.entity.User student = new com.cource.entity.User();
+        student.setId(studentId);
+        a.setRecordedBy(student);
+        if (notes != null) {
+            a.setNotes(notes);
         }
-
-        return offerings.stream()
-                .filter(CourseOffering::isActive)
-                .filter(o -> keyword == null || keyword.isEmpty()
-                        || o.getCourse().getTitle().toLowerCase().contains(keyword.toLowerCase())
-                        || o.getCourse().getCourseCode().toLowerCase().contains(keyword.toLowerCase()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional
-    public Enrollment enrollInOffering(Long studentId, Long offeringId, String enrollmentCode) {
-        EnrollmentResult result = enrollmentService.enrollByCode(studentId, enrollmentCode);
-
-        if ("ENROLLED".equals(result.getStatus())) {
-            return enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Enrollment successful but record not found"));
-        } else if ("WAITLISTED".equals(result.getStatus())) {
-            throw new IllegalStateException("Course is full. You have been added to the waitlist.");
-        } else {
-            throw new IllegalStateException(result.getMessage());
-        }
-    }
-
-    private double convertGradeToPoints(String grade) {
-        if (grade == null) return 0.0;
-        switch (grade.toUpperCase()) {
-            case "A": return 4.0;
-            case "B": return 3.0;
-            case "C": return 2.0;
-            case "D": return 1.0;
-            case "F": return 0.0;
-            default: return 0.0;
+        try {
+            return attendanceRepository.save(a);
+        } catch (org.springframework.dao.DataIntegrityViolationException dive) {
+            // likely unique constraint violation due to concurrent request
+            throw new IllegalArgumentException("Attendance already submitted for this date");
         }
     }
 }

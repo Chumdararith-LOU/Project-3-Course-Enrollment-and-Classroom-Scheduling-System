@@ -1,100 +1,339 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Attendance | Student Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link th:href="@{/css/output.css}" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-slate-100 font-sans text-slate-900">
-<div class="flex h-screen overflow-hidden">
+    <title>My Attendance</title>
+  </head>
+  <body class="bg-slate-100 font-sans">
+    <div th:replace="~{fragments/profile :: sidebar(${userId}, ${role})}"></div>
+    <main class="ml-64 p-8">
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-lg font-bold">Attendance</h2>
+        <p class="text-sm text-gray-500">
+          View your attendance records and enter attendance codes.
+        </p>
+      </div>
 
-    <div th:replace="~{fragments/student-sidebar :: sidebar(currentPage='attendance')}"></div>
+      <!-- Offering Selector -->
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Select Course</label
+        >
+        <select
+          id="offering-select"
+          th:onchange="if(this.value) window.location='?studentId='+[[${studentId}]]+'&offeringId='+this.value"
+          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        >
+          <option value="">Select a course offering</option>
+          <option
+            th:each="e : ${enrollments}"
+            th:value="${e.offering.id}"
+            th:text="${e.offering.course.courseCode + ' - ' + e.offering.course.title}"
+            th:selected="${offeringId != null and offeringId == e.offering.id}"
+          ></option>
+        </select>
+      </div>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-
-        <header class="bg-white border-b border-gray-100 h-16 flex items-center justify-between px-8 z-10 shrink-0">
-            <h2 class="text-gray-600 text-sm">Welcome back, <span class="text-gray-900 font-bold" th:text="${user.firstName}">Student</span></h2>
-
-            <div class="flex items-center gap-4">
-                <div class="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center text-xs font-bold"
-                     th:text="${#strings.substring(user.firstName,0,1) + #strings.substring(user.lastName,0,1)}">ST</div>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-8">
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-slate-900 mb-1">Attendance Records</h1>
-                <p class="text-gray-500 text-sm">Track your class attendance history.</p>
-            </div>
-
-            <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-6">Overall Attendance</h3>
-                <div class="flex items-end justify-between mb-2">
-                    <span class="text-gray-500 text-sm">Attendance Rate</span>
-                    <div class="flex gap-4 text-xs">
-                        <span class="text-green-600 font-bold">2 Present</span>
-                        <span class="text-yellow-600 font-bold">1 Late</span>
-                        <span class="text-red-600 font-bold">0 Absent</span>
-                    </div>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-3">
-                    <div class="bg-slate-800 h-3 rounded-full" style="width: 100%"></div>
-                </div>
-                <div class="text-right mt-1 font-bold text-slate-800">100%</div>
-            </div>
-
-            <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded w-fit mb-1">CS101</span>
-                        <h3 class="text-lg font-bold text-gray-900">Introduction to Computer Science</h3>
-                    </div>
-                    <div class="text-right">
-                        <h4 class="text-2xl font-bold text-slate-800">100%</h4>
-                        <p class="text-[10px] text-gray-500 uppercase">Attendance</p>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-500 border-b border-gray-100">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Date</th>
-                            <th class="px-4 py-3 font-medium">Day</th>
-                            <th class="px-4 py-3 font-medium">Status</th>
-                            <th class="px-4 py-3 font-medium">Notes</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                        <tr th:each="record : ${attendanceList}" class="hover:bg-gray-50">
-                            <td class="px-4 py-4 text-gray-900" th:text="${record.attendanceDate}">Date</td>
-                            <td class="px-4 py-4 text-gray-500" th:text="${record.schedule.dayOfWeek}">MON</td>
-                            <td class="px-4 py-4">
-                                <span th:if="${record.status == 'PRESENT'}" class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Present</span>
-                                <span th:if="${record.status == 'ABSENT'}" class="bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Absent</span>
-                                <span th:if="${record.status == 'LATE'}" class="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Late</span>
-                                <span th:if="${record.status == 'EXCUSED'}" class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Excused</span>
-                            </td>
-                            <td class="px-4 py-4 text-gray-500" th:text="${record.notes}">-</td>
-                        </tr>
-
-                        <tr th:if="${#lists.isEmpty(attendanceList)}">
-                            <td colspan="4" class="px-6 py-12 text-center text-gray-500">
-                                No attendance records found.
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <!-- Attendance Summary Card -->
+      <div
+        th:if="${offeringId != null}"
+        class="bg-white rounded-lg shadow p-6 mb-6"
+      >
+        <h3 class="font-bold text-lg mb-4">Attendance Summary</h3>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div class="bg-blue-50 rounded-lg p-4 text-center">
+            <p
+              class="text-2xl font-bold text-blue-600"
+              th:text="${percentage != null ? #numbers.formatDecimal(percentage, 1, 1) + '%' : '0%'}"
+            >
+              0%
+            </p>
+            <p class="text-sm text-gray-600">Attendance Rate</p>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4 text-center">
+            <p
+              class="text-2xl font-bold text-green-600"
+              th:text="${attendance != null ? #lists.size(attendance.?[status == 'PRESENT']) : 0}"
+            >
+              0
+            </p>
+            <p class="text-sm text-gray-600">Present</p>
+          </div>
+          <div class="bg-yellow-50 rounded-lg p-4 text-center">
+            <p
+              class="text-2xl font-bold text-yellow-600"
+              th:text="${attendance != null ? #lists.size(attendance.?[status == 'LATE']) : 0}"
+            >
+              0
+            </p>
+            <p class="text-sm text-gray-600">Late</p>
+          </div>
+          <div class="bg-red-50 rounded-lg p-4 text-center">
+            <p
+              class="text-2xl font-bold text-red-600"
+              th:text="${attendance != null ? #lists.size(attendance.?[status == 'ABSENT']) : 0}"
+            >
+              0
+            </p>
+            <p class="text-sm text-gray-600">Absent</p>
+          </div>
+          <div class="bg-purple-50 rounded-lg p-4 text-center">
+            <p
+              class="text-2xl font-bold text-purple-600"
+              th:text="${attendance != null ? #lists.size(attendance.?[status == 'EXCUSED']) : 0}"
+            >
+              0
+            </p>
+            <p class="text-sm text-gray-600">Excused</p>
+          </div>
         </div>
+      </div>
+
+      <!-- Enter Attendance Code Block -->
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h3 class="font-bold mb-3 flex items-center">
+          <svg
+            class="w-5 h-5 mr-2 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+            />
+          </svg>
+          Enter Attendance Code
+        </h3>
+        <p class="text-sm text-gray-500 mb-4">
+          Enter the code provided by your lecturer to mark your attendance.
+        </p>
+        <div class="space-y-4">
+          <div th:if="${schedules != null && !#lists.isEmpty(schedules)}">
+            <label class="block text-sm font-medium text-gray-700"
+              >Schedule</label
+            >
+            <select
+              id="ac-schedule"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="">Select schedule</option>
+              <option
+                th:each="s : ${schedules}"
+                th:value="${s.id}"
+                th:text="${s.dayOfWeek + ' ' + s.startTime + '-' + s.endTime + ' @ ' + (s.room != null ? s.room.roomNumber : 'TBD')}"
+              ></option>
+            </select>
+          </div>
+          <div th:if="${schedules == null || #lists.isEmpty(schedules)}">
+            <label class="block text-sm font-medium text-gray-700"
+              >Schedule ID</label
+            >
+            <input
+              id="ac-schedule"
+              type="number"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="Enter schedule ID"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Attendance Code</label
+            >
+            <input
+              id="ac-code"
+              type="text"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="Enter 6-digit code"
+              maxlength="6"
+            />
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button
+              id="ac-submit"
+              type="button"
+              class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Submit Code
+            </button>
+            <span id="ac-result" class="text-sm"></span>
+          </div>
+        </div>
+        <script>
+          document
+            .getElementById("ac-submit")
+            .addEventListener("click", async function () {
+              const scheduleVal = document.getElementById("ac-schedule").value;
+              const codeVal = document.getElementById("ac-code").value;
+              const resultEl = document.getElementById("ac-result");
+
+              if (!scheduleVal || !codeVal) {
+                resultEl.innerText = "Please provide schedule and code.";
+                resultEl.className = "text-sm text-red-600";
+                return;
+              }
+
+              resultEl.innerText = "Submitting...";
+              resultEl.className = "text-sm text-gray-500";
+
+              try {
+                const res = await fetch("/api/attendance-code/enter", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    scheduleId: parseInt(scheduleVal),
+                    code: codeVal,
+                  }),
+                });
+                const j = await res.json();
+                if (!res.ok) {
+                  resultEl.innerText =
+                    "Error: " + (j.error || JSON.stringify(j));
+                  resultEl.className = "text-sm text-red-600";
+                } else {
+                  resultEl.innerText =
+                    "✓ " + (j.message || "Attendance recorded successfully!");
+                  resultEl.className = "text-sm text-green-600 font-medium";
+                  // Reload page after success to update attendance list
+                  setTimeout(() => location.reload(), 1500);
+                }
+              } catch (e) {
+                resultEl.innerText = "Error: " + e;
+                resultEl.className = "text-sm text-red-600";
+              }
+            });
+        </script>
+      </div>
+
+      <!-- Attendance History -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="font-bold text-lg mb-4 flex items-center">
+          <svg
+            class="w-5 h-5 mr-2 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+          Attendance History
+        </h3>
+
+        <div
+          th:if="${attendance == null || #lists.isEmpty(attendance)}"
+          class="text-center py-8"
+        >
+          <svg
+            class="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <p class="mt-2 text-gray-500" th:if="${offeringId == null}">
+            Select a course to view attendance records
+          </p>
+          <p class="mt-2 text-gray-500" th:if="${offeringId != null}">
+            No attendance records found
+          </p>
+        </div>
+
+        <div
+          th:if="${attendance != null && !#lists.isEmpty(attendance)}"
+          class="overflow-x-auto"
+        >
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Date
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Notes
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr th:each="a : ${attendance}">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                  th:text="${#temporals.format(a.attendanceDate, 'MMM dd, yyyy')}"
+                ></td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    th:if="${a.status == 'PRESENT'}"
+                    class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800"
+                    >Present</span
+                  >
+                  <span
+                    th:if="${a.status == 'LATE'}"
+                    class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800"
+                    >Late</span
+                  >
+                  <span
+                    th:if="${a.status == 'ABSENT'}"
+                    class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800"
+                    >Absent</span
+                  >
+                  <span
+                    th:if="${a.status == 'EXCUSED'}"
+                    class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800"
+                    >Excused</span
+                  >
+                  <span
+                    th:if="${a.status == 'PENDING'}"
+                    class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800"
+                    >Pending</span
+                  >
+                </td>
+                <td
+                  class="px-6 py-4 text-sm text-gray-500"
+                  th:text="${a.notes ?: '-'}"
+                ></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </main>
-</div>
-</body>
+  </body>
 </html>

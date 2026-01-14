@@ -50,18 +50,12 @@
       .decorative-circle {
         position: absolute;
         border-radius: 50%;
-        background: linear-gradient(
-          135deg,
-          rgba(59, 130, 246, 0.1) 0%,
-          rgba(99, 102, 241, 0.1) 100%
-        );
+        background: rgba(59, 130, 246, 0.1);
       }
     </style>
   </head>
   <body class="bg-slate-50 min-h-screen">
-    <div
-      class="min-h-screen flex items-center justify-center p-4 md:p-8"
-    >
+    <div class="min-h-screen flex items-center justify-center p-4 md:p-8">
       <div
         class="bg-white rounded-lg shadow-sm max-w-4xl w-full overflow-hidden border border-slate-200"
       >
@@ -281,7 +275,23 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  ></path>2 pointer-events-none"
+                  ></path>
+                </svg>
+              </div>
+              <select
+                id="roleId"
+                required
+                class="w-full pl-10 pr-9 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white cursor-pointer transition-all duration-200"
+              >
+                <option
+                  th:each="role : ${roles}"
+                  th:value="${role.id}"
+                  th:text="${role.roleName}"
+                  th:selected="${user.role != null and role.id == user.role.id}"
+                ></option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
               >
                 <svg
                   class="w-4 h-4 text-slate-400"

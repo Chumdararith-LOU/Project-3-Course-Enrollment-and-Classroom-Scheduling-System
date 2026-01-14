@@ -20,10 +20,14 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
 
     boolean existsByStudentIdAndOfferingId(Long studentId, Long offeringId);
 
+    Optional<Waitlist> findByStudentIdAndOfferingIdAndStatus(Long studentId, Long offeringId, String status);
+
     @Query("SELECT COUNT(w) FROM Waitlist w WHERE w.offering.id = :offeringId AND w.status = 'PENDING'")
     long countByOfferingIdAndStatus(@Param("offeringId") Long offeringId);
 
     List<Waitlist> findByStudentIdOrderByPositionAsc(Long studentId);
+
+    List<Waitlist> findByStudentIdAndStatusOrderByPositionAsc(Long studentId, String status);
 
     List<Waitlist> findByOfferingIdOrderByPositionAsc(Long offeringId);
 }

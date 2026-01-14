@@ -11,15 +11,16 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class JwtService {
 
-    @Value("${app.jwt.secret:secret-key-which-should-be-changed}")
+    // Prefer app.jwt.* but fall back to legacy jwt.* keys used in
+    // application.properties.
+    @Value("${app.jwt.secret:${jwt.secret:secret-key-which-should-be-changed}}")
     private String secret;
 
-    @Value("${app.jwt.expiration-ms:86400000}")
+    @Value("${app.jwt.expiration-ms:${jwt.expiration:86400000}}")
     private long expirationMs;
 
     private Key getSigningKey() {

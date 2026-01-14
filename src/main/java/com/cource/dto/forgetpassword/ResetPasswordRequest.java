@@ -16,3 +16,4 @@ public class ResetPasswordRequest {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 }
+
