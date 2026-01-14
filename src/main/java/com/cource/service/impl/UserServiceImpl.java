@@ -108,26 +108,33 @@ public class UserServiceImpl implements UserService {
                         return p;
                     });
             if (request.getPhone() != null) {
-                profile.setPhone(request.getPhone());
+                String phone = request.getPhone();
+                profile.setPhone(phone != null && !phone.isBlank() ? phone : null);
             }
             if (request.getBio() != null) {
-                profile.setBio(request.getBio());
+                String bio = request.getBio();
+                profile.setBio(bio != null && !bio.isBlank() ? bio : null);
             }
-            if (request.getDob() != null && !request.getDob().isEmpty()) {
-                // try ISO first, then dd/MM/yyyy
-                LocalDate dob = null;
-                try {
-                    dob = LocalDate.parse(request.getDob());
-                } catch (DateTimeParseException ex) {
+            if (request.getDob() != null) {
+                if (request.getDob().isBlank()) {
+                    profile.setDateOfBirth(null);
+                } else {
+                    // try ISO first, then dd/MM/yyyy
+                    LocalDate dob = null;
                     try {
-                        DateTimeFormatter f = DateTimeFormatter.ofPattern("d/M/yyyy");
-                        dob = LocalDate.parse(request.getDob(), f);
-                    } catch (DateTimeParseException ex2) {
-                        // ignore invalid format
+                        dob = LocalDate.parse(request.getDob());
+                    } catch (DateTimeParseException ex) {
+                        try {
+                            DateTimeFormatter f = DateTimeFormatter.ofPattern("d/M/yyyy");
+                            dob = LocalDate.parse(request.getDob(), f);
+                        } catch (DateTimeParseException ex2) {
+                            // ignore invalid format
+                        }
+                    }
+                    if (dob != null) {
+                        profile.setDateOfBirth(dob);
                     }
                 }
-                if (dob != null)
-                    profile.setDateOfBirth(dob);
             }
             userProfileRepository.save(profile);
         } catch (Exception ex) {
@@ -232,7 +239,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByEmail(String email) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getUserByEmail'");
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

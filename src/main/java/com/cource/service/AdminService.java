@@ -30,6 +30,8 @@ public interface AdminService {
 
         CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive);
 
+        CourseOffering regenerateOfferingEnrollmentCode(Long offeringId);
+
         void deleteOffering(Long id);
 
         CourseOffering toggleOfferingStatus(Long id);

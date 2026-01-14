@@ -5,6 +5,7 @@ import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.*;
 import com.cource.service.AdminService;
+import com.cource.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final RoomRepository roomRepository;
     private final AcademicTermRepository academicTermRepository;
     private final CourseLecturerRepository courseLecturerRepository;
+    private final EnrollmentService enrollmentService;
 
     @Override
     public List<User> getLecturersForOffering(Long offeringId) {
@@ -172,6 +174,9 @@ public class AdminServiceImpl implements AdminService {
     public CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive) {
         CourseOffering offering = getOfferingById(id);
 
+        Integer oldCapacity = offering.getCapacity();
+        boolean oldActive = offering.isActive();
+
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         AcademicTerm term = academicTermRepository.findById(termId)
@@ -184,6 +189,30 @@ public class AdminServiceImpl implements AdminService {
             offering.setActive(isActive);
         }
 
+        CourseOffering saved = courseOfferingRepository.save(offering);
+
+        boolean capacityIncreased = capacity != null && (oldCapacity == null || capacity > oldCapacity);
+        boolean activated = isActive != null && isActive && !oldActive;
+        if (saved.isActive() && (capacityIncreased || activated)) {
+            enrollmentService.processWaitlist(saved.getId());
+        }
+
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public CourseOffering regenerateOfferingEnrollmentCode(Long offeringId) {
+        CourseOffering offering = getOfferingById(offeringId);
+        String newCode;
+        int attempts = 0;
+        do {
+            newCode = courseService.generateEnrollmentCode(offering.getCourse().getCourseCode());
+            attempts++;
+            if (attempts > 10)
+                break; // safety
+        } while (courseOfferingRepository.existsByEnrollmentCode(newCode));
+        offering.setEnrollmentCode(newCode);
         return courseOfferingRepository.save(offering);
     }
 
@@ -198,8 +227,13 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public CourseOffering toggleOfferingStatus(Long id) {
         CourseOffering offering = getOfferingById(id);
-        offering.setActive(!offering.isActive());
-        return courseOfferingRepository.save(offering);
+        boolean oldActive = offering.isActive();
+        offering.setActive(!oldActive);
+        CourseOffering saved = courseOfferingRepository.save(offering);
+        if (!oldActive && saved.isActive()) {
+            enrollmentService.processWaitlist(saved.getId());
+        }
+        return saved;
     }
 
     @Override

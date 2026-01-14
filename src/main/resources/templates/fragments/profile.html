@@ -101,6 +101,11 @@
               >Browse Courses</a
             >
             <a
+              th:href="@{/student/waitlist(studentId=${userId})}"
+              th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/waitlist')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
+              >Waitlist</a
+            >
+            <a
               th:href="@{/student/schedule(studentId=${userId})}"
               th:classappend="${#httpServletRequest != null and #httpServletRequest.getServletPath().startsWith('/student/schedule')} ? 'flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-slate-800 text-white' : 'flex items-center px-4 py-3 text-sm rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition'"
               >My Schedule</a
@@ -129,6 +134,7 @@
       <div
         class="px-4 py-6 border-t border-slate-700"
         id="sidebarProfileFragment"
+        style="display: none"
       >
         <div class="flex items-center">
           <div
@@ -282,8 +288,100 @@
       </form>
     </div>
   </div>
+
+  <!-- View Other User Modal (reusable across all roles) -->
+  <div
+    id="userViewModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">User Profile</h3>
+        <button
+          type="button"
+          onclick="closeUserViewModal()"
+          class="text-slate-400 hover:text-slate-700"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <img
+          id="userViewAvatarImg"
+          src="/images/default-avatar.svg"
+          alt="avatar"
+          class="w-16 h-16 rounded-full object-cover"
+        />
+        <div class="min-w-0">
+          <p id="userViewName" class="text-lg font-semibold text-slate-900">
+            User
+          </p>
+          <p id="userViewEmail" class="text-sm text-slate-500 truncate">
+            user@example.com
+          </p>
+          <p id="userViewRole" class="text-xs text-slate-400">ROLE</p>
+        </div>
+      </div>
+
+      <div class="mt-5 space-y-3">
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+          >
+            Phone
+          </p>
+          <p id="userViewPhone" class="text-sm text-slate-800">-</p>
+        </div>
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+          >
+            Date of Birth
+          </p>
+          <p id="userViewDob" class="text-sm text-slate-800">-</p>
+        </div>
+        <div>
+          <p
+            class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+          >
+            Bio
+          </p>
+          <p
+            id="userViewBio"
+            class="text-sm text-slate-800 whitespace-pre-wrap"
+          >
+            -
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button
+          type="button"
+          onclick="closeUserViewModal()"
+          class="px-4 py-2 border rounded"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
   <script th:inline="javascript">
     /*<![CDATA[*/
+    function setProfileUiVisible(visible) {
+      const sidebar = document.getElementById("sidebarProfileFragment");
+      if (sidebar) sidebar.style.display = visible ? "" : "none";
+
+      const modal = document.getElementById("profileModal");
+      if (!visible && modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    }
+
     function openProfileModal() {
       let m = document.getElementById("profileModal");
       if (m) {
@@ -298,11 +396,83 @@
         m.classList.remove("flex");
       }
     }
+
+    function openUserViewModal() {
+      const m = document.getElementById("userViewModal");
+      if (m) {
+        m.classList.remove("hidden");
+        m.classList.add("flex");
+      }
+    }
+
+    function closeUserViewModal() {
+      const m = document.getElementById("userViewModal");
+      if (m) {
+        m.classList.add("hidden");
+        m.classList.remove("flex");
+      }
+    }
+
+    async function openUserProfileView(userId) {
+      if (userId == null || userId === "") return;
+
+      // Reset UI
+      const avatar = document.getElementById("userViewAvatarImg");
+      if (avatar) avatar.src = "/api/users/avatar/" + userId;
+      const nameEl = document.getElementById("userViewName");
+      const emailEl = document.getElementById("userViewEmail");
+      const roleEl = document.getElementById("userViewRole");
+      const phoneEl = document.getElementById("userViewPhone");
+      const dobEl = document.getElementById("userViewDob");
+      const bioEl = document.getElementById("userViewBio");
+
+      if (nameEl) nameEl.innerText = "User";
+      if (emailEl) emailEl.innerText = "";
+      if (roleEl) roleEl.innerText = "";
+      if (phoneEl) phoneEl.innerText = "-";
+      if (dobEl) dobEl.innerText = "-";
+      if (bioEl) bioEl.innerText = "-";
+
+      openUserViewModal();
+
+      try {
+        const res = await fetch(`/api/users/${userId}/public-profile`);
+        if (!res.ok)
+          throw new Error((await res.text()) || "Failed to load user");
+        const data = await res.json();
+
+        const fullName =
+          ((data.firstName || "") + " " + (data.lastName || "")).trim() ||
+          "User";
+        if (nameEl) nameEl.innerText = fullName;
+        if (emailEl) emailEl.innerText = data.email || "";
+        if (roleEl) roleEl.innerText = data.role || "";
+
+        const p = data.profile || {};
+        if (phoneEl) phoneEl.innerText = p.phone || "-";
+        if (dobEl) dobEl.innerText = p.dateOfBirth || "-";
+        if (bioEl) bioEl.innerText = p.bio || "-";
+      } catch (err) {
+        console.error("openUserProfileView failed", err);
+        const toast = document.createElement("div");
+        toast.className =
+          "fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold text-sm bg-red-600";
+        toast.innerText = "Error loading profile: " + (err.message || err);
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+    }
     async function loadProfileFragment() {
       try {
+        // Hide by default; only show if authenticated
+        setProfileUiVisible(false);
+
         // Use /api/users/me which works for all authenticated users
         let res = await fetch("/api/users/me");
         if (!res.ok) return;
+
+        setProfileUiVisible(true);
+
         let u = await res.json();
         document.getElementById("profileId").value = u.id;
         document.getElementById("profileFirstName").value = u.firstName || "";
@@ -360,6 +530,9 @@
     }
     // Submit handler for profile form
     document.addEventListener("DOMContentLoaded", function () {
+      // If the user isn't authenticated, keep profile UI hidden.
+      setProfileUiVisible(false);
+
       const form = document.getElementById("profileForm");
       const fileInput = document.getElementById("profileAvatarFile");
       if (fileInput) {
@@ -389,18 +562,19 @@
           };
           const pwd = document.getElementById("profilePassword").value;
           if (pwd && pwd.length > 0) payload.password = pwd;
-          // include new fields if present
+
+          // include profile fields (send even if empty so user can clear them)
           try {
-            const dobVal = document.getElementById("profileDob").value;
-            if (dobVal) payload.dob = dobVal;
+            const dobEl = document.getElementById("profileDob");
+            payload.dob = dobEl ? dobEl.value : "";
           } catch (e) {}
           try {
-            const phoneVal = document.getElementById("profilePhone").value;
-            if (phoneVal) payload.phone = phoneVal;
+            const phoneEl = document.getElementById("profilePhone");
+            payload.phone = phoneEl ? phoneEl.value : "";
           } catch (e) {}
           try {
-            const bioVal = document.getElementById("profileBio").value;
-            if (bioVal) payload.bio = bioVal;
+            const bioEl = document.getElementById("profileBio");
+            payload.bio = bioEl ? bioEl.value : "";
           } catch (e) {}
           try {
             // Use /api/users/me which works for all authenticated users

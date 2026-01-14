@@ -13,6 +13,7 @@ import com.cource.service.LecturerService;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/lecturer")
-// @PreAuthorize("hasRole('LECTURER')") // DISABLED FOR TESTING
+@PreAuthorize("hasRole('LECTURER')") // DISABLED FOR TESTING
 public class LecturerController {
 
     private final LecturerService lecturerService;
@@ -35,7 +36,6 @@ public class LecturerController {
 
     @GetMapping("/courses")
     public List<Course> getCourses(@RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         return lecturerService.getCoursesByLecturerId(lecturerId);
     }
 
@@ -43,7 +43,6 @@ public class LecturerController {
     public List<ClassSchedule> getClassSchedules(
             @PathVariable long offeringId,
             @RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         return lecturerService.getClassSchedulesByLecturerId(offeringId, lecturerId);
     }
 
@@ -51,7 +50,6 @@ public class LecturerController {
     public List<User> getEnrolledStudents(
             @PathVariable long offeringId,
             @RequestParam long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         return lecturerService.getEnrolledStudents(offeringId, lecturerId);
     }
 
@@ -60,7 +58,6 @@ public class LecturerController {
             @RequestBody com.cource.dto.attendance.AttendanceRequestDTO attendanceRequestDTO,
             @RequestParam long studentId,
             @RequestParam String status) {
-        // TODO: After enabling security, validate lecturerId from Authentication
         lecturerService.recordAttendance(attendanceRequestDTO, studentId, status);
         return ResponseEntity.ok("Attendance recorded successfully.");
     }
@@ -177,7 +174,6 @@ public class LecturerController {
     public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getAttendanceRecords(
             @PathVariable long scheduleId,
             @RequestParam(required = false) Long lecturerId) {
-        // TODO: After enabling security, get lecturerId from Authentication
         try {
             var list = lecturerService.getAttendanceRecordsAsDto(scheduleId, lecturerId);
             return ResponseEntity.ok(list);

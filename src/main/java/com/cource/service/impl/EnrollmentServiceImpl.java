@@ -99,6 +99,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    public EnrollmentResult removeFromWaitlist(Long studentId, Long offeringId) {
+        var entry = waitlistRepository.findByStudentIdAndOfferingIdAndStatus(studentId, offeringId, "PENDING");
+        if (entry.isEmpty()) {
+            return new EnrollmentResult("NOT_WAITLISTED", "You are not currently on the waitlist for this course");
+        }
+        waitlistRepository.delete(entry.get());
+        return new EnrollmentResult("REMOVED", "Removed from waitlist successfully");
+    }
+
+    @Override
     public EnrollmentResult enrollByCode(Long studentId, String enrollmentCode) {
         CourseOffering offering = courseOfferingRepository.findByEnrollmentCode(enrollmentCode)
                 .orElseThrow(() -> new RuntimeException("Invalid enrollment code"));

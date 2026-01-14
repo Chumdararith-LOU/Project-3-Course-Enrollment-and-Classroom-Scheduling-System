@@ -18,6 +18,7 @@ import com.cource.repository.AttendanceRepository;
 import com.cource.repository.ClassScheduleRepository;
 import com.cource.repository.CourseLecturerRepository;
 import com.cource.repository.EnrollmentRepository;
+import com.cource.service.EnrollmentService;
 import com.cource.service.LecturerService;
 
 import jakarta.transaction.Transactional;
@@ -38,6 +39,7 @@ public class LecturerServiceImpl implements LecturerService {
     private final com.cource.repository.CourseRepository courseRepository;
     private final com.cource.repository.AcademicTermRepository academicTermRepository;
     private final com.cource.service.CourseService courseService;
+    private final EnrollmentService enrollmentService;
 
     public LecturerServiceImpl(CourseLecturerRepository courseLecturerRepository,
             AttendanceRepository attendanceRepository,
@@ -46,7 +48,8 @@ public class LecturerServiceImpl implements LecturerService {
             com.cource.repository.CourseOfferingRepository courseOfferingRepository,
             com.cource.repository.CourseRepository courseRepository,
             com.cource.repository.AcademicTermRepository academicTermRepository,
-            com.cource.service.CourseService courseService) {
+            com.cource.service.CourseService courseService,
+            EnrollmentService enrollmentService) {
         this.attendanceRepository = attendanceRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.enrollmentRepository = enrollmentRepository;
@@ -55,6 +58,7 @@ public class LecturerServiceImpl implements LecturerService {
         this.courseRepository = courseRepository;
         this.academicTermRepository = academicTermRepository;
         this.courseService = courseService;
+        this.enrollmentService = enrollmentService;
     }
 
     @Override
@@ -607,6 +611,9 @@ public class LecturerServiceImpl implements LecturerService {
         verifyOwnership(offeringId, lecturerId);
         var offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+
+        Integer oldCapacity = offering.getCapacity();
+        boolean oldActive = offering.isActive();
         if (dto.getCourseId() != null
                 && (offering.getCourse() == null || !offering.getCourse().getId().equals(dto.getCourseId()))) {
             var course = courseRepository.findById(dto.getCourseId())
@@ -635,7 +642,16 @@ public class LecturerServiceImpl implements LecturerService {
                 // if blank explicitly, ignore to avoid violating NOT NULL DB constraint
             }
         }
-        return courseOfferingRepository.save(offering);
+        var saved = courseOfferingRepository.save(offering);
+
+        boolean capacityIncreased = dto.getCapacity() != null
+                && (oldCapacity == null || dto.getCapacity() > oldCapacity);
+        boolean activated = dto.getActive() != null && dto.getActive() && !oldActive;
+        if (saved.isActive() && (capacityIncreased || activated)) {
+            enrollmentService.processWaitlist(saved.getId());
+        }
+
+        return saved;
     }
 
     @Override

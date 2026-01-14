@@ -122,7 +122,20 @@ public class AdminViewController {
             model.addAttribute("role", "ADMIN");
         }
 
-        model.addAttribute("courses", adminService.getAllCourses());
+        var courses = adminService.getAllCourses();
+        model.addAttribute("courses", courses);
+
+        var offerings = adminService.getAllCourseOfferings();
+        var offeringsByCourse = new java.util.HashMap<Long, java.util.List<com.cource.entity.CourseOffering>>();
+        for (var off : offerings) {
+            Long courseId = off.getCourse() != null ? off.getCourse().getId() : null;
+            if (courseId == null) {
+                continue;
+            }
+            offeringsByCourse.computeIfAbsent(courseId, k -> new java.util.ArrayList<>()).add(off);
+        }
+        model.addAttribute("offeringsByCourse", offeringsByCourse);
+
         model.addAttribute("lecturers", adminService.getUsersByRole("LECTURER"));
         return "admin/courses";
     }
@@ -403,6 +416,45 @@ public class AdminViewController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=rooms-export.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv.toString());
+    }
+
+    @GetMapping("/schedules/export")
+    public ResponseEntity<String> exportSchedules() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("Schedule ID,Course Code,Course Title,Term,Day,Start Time,End Time,Room,Building\n");
+
+        for (var schedule : adminService.getAllSchedules()) {
+            var offering = schedule.getOffering();
+            var course = offering != null ? offering.getCourse() : null;
+            var term = offering != null ? offering.getTerm() : null;
+            var room = schedule.getRoom();
+
+            String courseCode = course != null ? course.getCourseCode() : "";
+            String courseTitle = course != null && course.getTitle() != null ? course.getTitle().replace(",", ";") : "";
+            String termName = term != null && term.getTermName() != null ? term.getTermName().replace(",", ";") : "";
+            String day = schedule.getDayOfWeek() != null ? schedule.getDayOfWeek().toString() : "";
+            String start = schedule.getStartTime() != null ? schedule.getStartTime().toString() : "";
+            String end = schedule.getEndTime() != null ? schedule.getEndTime().toString() : "";
+            String roomNumber = room != null && room.getRoomNumber() != null ? room.getRoomNumber().replace(",", ";")
+                    : "";
+            String building = room != null && room.getBuilding() != null ? room.getBuilding().replace(",", ";") : "";
+
+            csv.append(String.format("%d,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                    schedule.getId(),
+                    courseCode,
+                    courseTitle,
+                    termName,
+                    day,
+                    start,
+                    end,
+                    roomNumber,
+                    building));
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=schedules-export.csv")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csv.toString());
     }

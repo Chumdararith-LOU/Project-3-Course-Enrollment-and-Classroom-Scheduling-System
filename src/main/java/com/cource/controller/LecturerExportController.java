@@ -6,8 +6,11 @@ import com.cource.service.LecturerService;
 import com.cource.service.AdminService;
 import com.cource.repository.AttendanceRepository;
 import com.cource.repository.EnrollmentRepository;
+import com.cource.util.SecurityHelper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,14 +27,62 @@ public class LecturerExportController {
     private final AdminService adminService;
     private final AttendanceRepository attendanceRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final SecurityHelper securityHelper;
 
     public LecturerExportController(LecturerService lecturerService, AdminService adminService,
             AttendanceRepository attendanceRepository,
-            EnrollmentRepository enrollmentRepository) {
+            EnrollmentRepository enrollmentRepository,
+            SecurityHelper securityHelper) {
         this.lecturerService = lecturerService;
         this.adminService = adminService;
         this.attendanceRepository = attendanceRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.securityHelper = securityHelper;
+    }
+
+    @GetMapping("/attendance/export")
+    public void exportAttendanceForSchedule(
+            @RequestParam Long scheduleId,
+            @RequestParam(required = false) Long lecturerId,
+            HttpServletResponse response) throws IOException {
+        Long currentLecturerId = securityHelper.getCurrentUserId();
+        if (currentLecturerId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+        }
+        if (lecturerId != null && !lecturerId.equals(currentLecturerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+        }
+
+        // Enforces lecturer ownership of the schedule via service checks.
+        var rows = lecturerService.getAttendanceRecords(scheduleId, currentLecturerId);
+
+        String filename = "attendance_schedule_" + scheduleId + "_lecturer_" + currentLecturerId + ".csv";
+        response.setContentType("text/csv");
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=\"" + URLEncoder.encode(filename, StandardCharsets.UTF_8) + "\"");
+
+        var writer = response.getWriter();
+        writer.println(
+                "Date,Schedule ID,Student ID,Student Name,Student Email,Attendance Status,Notes,Recorded By,Recorded At");
+        for (var a : rows) {
+            var enrol = a.getEnrollment();
+            var student = enrol != null ? enrol.getStudent() : null;
+            String studentName = student != null ? (student.getFirstName() + " " + student.getLastName()).trim() : "";
+            String recordedBy = a.getRecordedBy() != null ? a.getRecordedBy().getFullName() : "";
+            String recordedAt = a.getRecordedAt() != null ? a.getRecordedAt().toString() : "";
+            writer.printf("%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                    a.getAttendanceDate() != null ? a.getAttendanceDate().toString() : "",
+                    a.getSchedule() != null ? a.getSchedule().getId() : scheduleId,
+                    student != null ? student.getId() : "",
+                    studentName.replaceAll(",", " "),
+                    student != null && student.getEmail() != null ? student.getEmail() : "",
+                    a.getStatus() != null ? a.getStatus() : "",
+                    a.getNotes() != null ? a.getNotes().replaceAll(",", " ") : "",
+                    recordedBy.replaceAll(",", " "),
+                    recordedAt.replaceAll(",", " "));
+        }
+        writer.flush();
     }
 
     @GetMapping("/courses/export")

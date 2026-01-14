@@ -158,9 +158,8 @@ public class AdminController {
     }
 
     @PostMapping("/courses/{id}/regenerate-code")
-    public ResponseEntity<?> regenerateEnrollmentCode(@PathVariable Long id) {
-        courseService.regenerateEnrollmentCode(id);
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+    public ResponseEntity<Course> regenerateEnrollmentCode(@PathVariable Long id) {
+        return ResponseEntity.ok(courseService.regenerateEnrollmentCode(id));
     }
 
     @GetMapping("/courses/stats/total")
@@ -172,6 +171,11 @@ public class AdminController {
     @GetMapping("/offerings")
     public ResponseEntity<List<CourseOffering>> getAllCourseOfferings() {
         return ResponseEntity.ok(adminService.getAllCourseOfferings());
+    }
+
+    @PostMapping("/offerings/{id}/regenerate-code")
+    public ResponseEntity<CourseOffering> regenerateOfferingEnrollmentCode(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.regenerateOfferingEnrollmentCode(id));
     }
 
     // --- Lecturer Assignment Endpoints ---

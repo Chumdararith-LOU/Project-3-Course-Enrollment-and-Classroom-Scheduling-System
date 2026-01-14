@@ -1,6 +1,7 @@
 package com.cource.controller;
 
 import com.cource.dto.user.UserProfileDTO;
+import com.cource.dto.user.UserPublicProfileDTO;
 import com.cource.dto.user.UserUpdateRequest;
 import com.cource.entity.User;
 import com.cource.repository.UserRepository;
@@ -73,6 +74,37 @@ public class UserController {
 
         UserProfileDTO profile = userService.getUserProfile(user.getId());
         return ResponseEntity.ok(profile);
+    }
+
+    /**
+     * Get another user's public profile (basic info + extended profile fields).
+     * Accessible to any authenticated user (ADMIN/LECTURER/STUDENT).
+     */
+    @GetMapping("/{id}/public-profile")
+    public ResponseEntity<?> getUserPublicProfile(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(Collections.singletonMap("error", "Not authenticated"));
+        }
+
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(Collections.singletonMap("error", "User not found"));
+        }
+
+        UserProfileDTO profile = userService.getUserProfile(user.getId());
+        UserPublicProfileDTO dto = new UserPublicProfileDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIdCard(),
+                user.getRole() != null ? user.getRole().getRoleCode() : null,
+                user.isActive(),
+                profile);
+
+        return ResponseEntity.ok(dto);
     }
 
     /**
