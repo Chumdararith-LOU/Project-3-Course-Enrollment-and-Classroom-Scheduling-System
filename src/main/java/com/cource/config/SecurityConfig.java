@@ -62,6 +62,7 @@ public class SecurityConfig {
                                 "/", "/index", "/home",
                                 "/signin", "/login", "/register",
                                 "/api/login",
+                                "/signout",
                                 "/api/auth/**",
                                 "/css/**", "/js/**", "/assets/**", "/images/**"
                         ).permitAll()
