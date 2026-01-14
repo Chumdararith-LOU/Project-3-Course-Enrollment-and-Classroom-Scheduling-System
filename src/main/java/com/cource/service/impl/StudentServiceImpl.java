@@ -145,7 +145,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<Waitlist> getMyWaitlistEntries(Long studentId) {
-        return waitlistRepository.findByStudentIdOrderByPositionAsc(studentId);
+        return waitlistRepository.findByStudentIdAndStatusOrderByPositionAsc(studentId, "PENDING");
     }
 
     @Override

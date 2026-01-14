@@ -263,6 +263,13 @@
                 class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
               >
                 <button
+                  type="button"
+                  class="text-slate-600 hover:text-slate-900 mr-3"
+                  th:onclick="|openUserProfileView(${student.id})|"
+                >
+                  Profile
+                </button>
+                <button
                   th:if="${enrollmentMap[student.id] != null}"
                   type="button"
                   class="text-indigo-600 hover:text-indigo-900 mr-3"

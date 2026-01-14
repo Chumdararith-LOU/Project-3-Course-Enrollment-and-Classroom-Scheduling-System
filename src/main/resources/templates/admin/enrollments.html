@@ -294,6 +294,14 @@
                     <div class="flex items-center gap-2">
                       <button
                         type="button"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200"
+                        th:onclick="|openUserProfileView(${enrollment.student.id})|"
+                        title="View student profile"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        type="button"
                         style="
                           background-color: #f3e8ff !important;
                           color: #7c3aed !important;

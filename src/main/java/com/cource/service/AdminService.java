@@ -30,6 +30,8 @@ public interface AdminService {
 
         CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive);
 
+        CourseOffering regenerateOfferingEnrollmentCode(Long offeringId);
+
         void deleteOffering(Long id);
 
         CourseOffering toggleOfferingStatus(Long id);
@@ -61,6 +63,8 @@ public interface AdminService {
         List<AcademicTerm> getAllTerms();
 
         AcademicTerm getTermById(Long id);
+
+        String generateTermCode(java.time.LocalDate startDate);
 
         AcademicTerm createTerm(String termCode, String termName, java.time.LocalDate startDate,
                         java.time.LocalDate endDate);
