@@ -2,6 +2,7 @@ package com.cource.controller.Auth;
 
 import com.cource.config.JwtUtil;
 import com.cource.dto.auth.AuthResponse;
+import com.cource.dto.auth.LoginRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
