@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 public class AuthResponse {
     private String username;
     private String token;
+    private String role;
 }

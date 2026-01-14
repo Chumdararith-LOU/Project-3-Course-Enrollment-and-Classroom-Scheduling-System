@@ -120,12 +120,11 @@
 
                     document.cookie = `JWT=${data.token}; path=/; max-age=86400; SameSite=Strict`;
 
-                    const payload = JSON.parse(atob(data.token.split('.')[1]));
-                    const role = payload.roles || payload.role; // Adjust based on your JWT structure
+                    console.log("User Role:", data.role);
 
-                    if (role && (role.includes('ADMIN') || role === 'ROLE_ADMIN')) {
+                    if (data.role === 'ROLE_ADMIN') {
                         window.location.href = '/admin/dashboard';
-                    } else if (role && (role.includes('LECTURER') || role === 'ROLE_LECTURER')) {
+                    } else if (data.role === 'ROLE_LECTURER') {
                         window.location.href = '/lecturer/dashboard';
                     } else {
                         window.location.href = '/student/dashboard';
