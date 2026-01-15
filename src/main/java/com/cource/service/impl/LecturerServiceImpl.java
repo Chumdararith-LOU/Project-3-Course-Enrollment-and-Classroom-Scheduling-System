@@ -18,7 +18,6 @@ import com.cource.dto.lecturer.LecturerCourseReportDTO;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.AttendanceRepository;
 import com.cource.repository.ClassScheduleRepository;
-import com.cource.repository.CourseLecturerRepository;
 import com.cource.repository.EnrollmentRepository;
 import com.cource.service.EnrollmentService;
 import com.cource.service.LecturerService;

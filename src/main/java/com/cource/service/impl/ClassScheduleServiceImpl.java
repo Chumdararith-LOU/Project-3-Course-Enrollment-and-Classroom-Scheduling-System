@@ -9,7 +9,6 @@ import com.cource.exception.ConflictException;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.exception.UnauthorizedException;
 import com.cource.repository.ClassScheduleRepository;
-import com.cource.repository.CourseLecturerRepository;
 import com.cource.repository.CourseOfferingRepository;
 import com.cource.repository.EnrollmentRepository;
 import com.cource.repository.RoomRepository;

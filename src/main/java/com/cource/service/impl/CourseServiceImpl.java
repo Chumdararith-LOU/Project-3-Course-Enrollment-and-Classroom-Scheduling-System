@@ -2,7 +2,6 @@ package com.cource.service.impl;
 
 import com.cource.repository.CourseOfferingRepository;
 import com.cource.repository.EnrollmentRepository;
-import com.cource.repository.CourseLecturerRepository;
 import com.cource.repository.ClassScheduleRepository;
 import com.cource.entity.CourseOffering;
 import com.cource.entity.Enrollment;
