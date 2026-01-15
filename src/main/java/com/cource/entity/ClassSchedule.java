@@ -44,7 +44,7 @@ public class ClassSchedule {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "scheduleId", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<AttendanceCode> attendanceCodes = new ArrayList<>();
 }
