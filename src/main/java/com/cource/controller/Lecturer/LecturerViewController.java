@@ -1,5 +1,11 @@
-package com.cource.controller.Lecture;
+package com.cource.controller.Lecturer;
 
+import com.cource.entity.CourseOffering;
+import com.cource.entity.Enrollment;
+import com.cource.entity.User;
+import com.cource.exception.ResourceNotFoundException;
+import com.cource.repository.CourseOfferingRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,11 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,8 +31,8 @@ import com.cource.repository.EnrollmentRepository;
 @Controller
 @RequestMapping("/lecturer")
 @PreAuthorize("hasRole('LECTURER')")
+@RequiredArgsConstructor
 public class LecturerViewController {
-
     private static final Logger log = LoggerFactory.getLogger(LecturerViewController.class);
 
     private final LecturerService lecturerService;
@@ -37,16 +40,9 @@ public class LecturerViewController {
     private final RoleRepository roleRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final CourseOfferingRepository courseOfferingRepository;
 
-    public LecturerViewController(LecturerService lecturerService, AdminService adminService,
-            RoleRepository roleRepository, ClassScheduleRepository classScheduleRepository,
-            EnrollmentRepository enrollmentRepository) {
-        this.lecturerService = lecturerService;
-        this.adminService = adminService;
-        this.roleRepository = roleRepository;
-        this.classScheduleRepository = classScheduleRepository;
-        this.enrollmentRepository = enrollmentRepository;
-    }
+
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long lecturerId, Model model) {
@@ -64,44 +60,38 @@ public class LecturerViewController {
             var today = java.time.LocalDate.now();
             if (offerings != null) {
                 for (var off : offerings) {
-                    try {
-                        var students = lecturerService.getEnrolledStudents(off.getId(), lecturerId);
-                        if (students != null)
-                            totalStudents += students.size();
-                    } catch (Exception ignored) {
+                    var enrollments = enrollmentRepository.findByOfferingId(off.getId());
+                    if (enrollments != null) {
+                        totalStudents += enrollments.size();
                     }
-                    try {
-                        var schedules = lecturerService.getClassSchedulesByLecturerId(off.getId(), lecturerId);
-                        if (schedules != null) {
-                            java.time.DayOfWeek dow = today.getDayOfWeek();
-                            String dowFull = dow.name(); // e.g., MONDAY
-                            String dowShort = dowFull.substring(0, 3); // e.g., MON
-                            String dowShortDisplay = dow.getDisplayName(java.time.format.TextStyle.SHORT,
-                                    Locale.ENGLISH).toUpperCase(); // e.g., Mon -> MON
-                            for (var s : schedules) {
-                                String schedDow = s.getDayOfWeek();
-                                if (schedDow == null)
-                                    continue;
-                                String sd = schedDow.trim().toUpperCase();
-                                if (sd.equals(dowFull) || sd.equals(dowShort) || sd.equals(dowShortDisplay)) {
-                                    classesToday++;
-                                }
+
+                    var schedules = classScheduleRepository.findByOfferingId(off.getId());
+                    if (schedules != null) {
+                        String todayDow = today.getDayOfWeek().name().substring(0, 3).toUpperCase();
+                        for (var s : schedules) {
+                            if (s.getDayOfWeek() != null && s.getDayOfWeek().equals(todayDow)) {
+                                classesToday++;
                             }
                         }
-                    } catch (Exception ignored) {
                     }
                 }
             }
             model.addAttribute("totalCourses", totalCourses);
             model.addAttribute("totalStudents", totalStudents);
             model.addAttribute("classesToday", classesToday);
+
+            var attendanceMap = lecturerService.getAttendanceCountsByDate(lecturerId, 7);
+            var enrollmentLabels = new ArrayList<>(attendanceMap.keySet());
+            var enrollmentData = new ArrayList<Number>();
+            for (String k : enrollmentLabels) {
+                enrollmentData.add(attendanceMap.getOrDefault(k, 0L));
+            }
+            model.addAttribute("enrollmentLabels", enrollmentLabels);
+            model.addAttribute("enrollmentData", enrollmentData);
         }
 
-        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-        if (auth != null && auth.getAuthorities() != null) {
-            isAdmin = auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-        }
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
         if (isAdmin) {
             model.addAttribute("systemTotalStudents", adminService.getTotalStudents());
             model.addAttribute("systemTotalLecturers", adminService.getTotalLecturers());
@@ -110,39 +100,24 @@ public class LecturerViewController {
             model.addAttribute("systemTotalLecturers", 0);
         }
 
-        if (lecturerId != null) {
-            var attendanceMap = lecturerService.getAttendanceCountsByDate(lecturerId, 7);
-            var enrollmentLabels = new ArrayList<String>(attendanceMap.keySet());
-            var enrollmentData = new ArrayList<Number>();
-            for (String k : enrollmentLabels) {
-                enrollmentData.add(attendanceMap.getOrDefault(k, 0L));
+        var roles = roleRepository.findAll();
+        var userLabels = new ArrayList<String>();
+        var userData = new ArrayList<Number>();
+        if (isAdmin) {
+            for (var r : roles) {
+                long count = adminService.getUsersByRole(r.getRoleCode()).size();
+                userLabels.add(r.getRoleName());
+                userData.add(count);
             }
-            model.addAttribute("enrollmentLabels", enrollmentLabels);
-            model.addAttribute("enrollmentData", enrollmentData);
-
-            var roles = roleRepository.findAll();
-            var userLabels = new ArrayList<String>();
-            var userData = new ArrayList<Number>();
-            if (isAdmin) {
-                for (var r : roles) {
-                    long count = adminService.getUsersByRole(r.getRoleCode()).size();
-                    userLabels.add(r.getRoleName());
-                    userData.add(count);
-                }
-            } else {
-                for (var r : roles) {
-                    userLabels.add(r.getRoleName());
-                    userData.add(0);
-                }
-            }
-            model.addAttribute("userLabels", userLabels);
-            model.addAttribute("userData", userData);
         } else {
-            model.addAttribute("enrollmentLabels", new ArrayList<String>());
-            model.addAttribute("enrollmentData", new ArrayList<Number>());
-            model.addAttribute("userLabels", new ArrayList<String>());
-            model.addAttribute("userData", new ArrayList<Number>());
+            for (var r : roles) {
+                userLabels.add(r.getRoleName());
+                userData.add(0);
+            }
         }
+        model.addAttribute("userLabels", userLabels);
+        model.addAttribute("userData", userData);
+
         return "lecturer/dashboard";
     }
 
@@ -188,7 +163,11 @@ public class LecturerViewController {
                 model.addAttribute("userId", lecturerId);
                 model.addAttribute("role", "LECTURER");
 
-                lecturerService.getEnrolledStudents(offeringId, lecturerId);
+                CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+                if (offering.getLecturer() == null || !offering.getLecturer().getId().equals(lecturerId)) {
+                    return "error/403";
+                }
 
                 var enrollments = enrollmentRepository.findByOfferingIdWithStudentFiltered(offeringId, "ENROLLED");
                 model.addAttribute("enrollments", enrollments);
@@ -271,14 +250,12 @@ public class LecturerViewController {
                 }
                 model.addAttribute("schedules", schedules);
             } catch (Exception ignored) {
-                model.addAttribute("schedules", new ArrayList<>());
+                model.addAttribute("schedules", List.of());
             }
         }
 
         if (studentId != null) {
             model.addAttribute("initialStudentId", studentId);
-        } else {
-            model.addAttribute("initialStudentId", null);
         }
 
         if (offeringId != null) {
@@ -296,13 +273,17 @@ public class LecturerViewController {
                 var schedOpt = classScheduleRepository.findById(scheduleId);
                 if (schedOpt.isPresent() && schedOpt.get().getOffering() != null) {
                     Long offId = schedOpt.get().getOffering().getId();
-                    var students = lecturerService.getEnrolledStudents(offId, lecturerId);
+                    var enrollments = enrollmentRepository.findByOfferingId(offId);
+                    List<User> students = enrollments.stream()
+                            .map(Enrollment::getStudent)
+                            .filter(Objects::nonNull)
+                            .toList();
                     model.addAttribute("students", students);
                 } else {
-                    model.addAttribute("students", new ArrayList<>());
+                    model.addAttribute("students", List.of());
                 }
             } catch (Exception ex) {
-                model.addAttribute("students", new ArrayList<>());
+                model.addAttribute("students", List.of());
             }
         }
         return "lecturer/attendance";
@@ -333,15 +314,12 @@ public class LecturerViewController {
             model.addAttribute("offerings", new ArrayList<>());
         }
         // Always provide all terms for the modal
-        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-        if (auth != null && auth.getAuthorities() != null) {
-            isAdmin = auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-        }
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
         if (isAdmin) {
             model.addAttribute("terms", adminService.getAllTerms());
         } else {
-            model.addAttribute("terms", new ArrayList<>());
+            model.addAttribute("terms", List.of());
         }
         return "lecturer/schedule";
     }
@@ -360,19 +338,8 @@ public class LecturerViewController {
             model.addAttribute("role", "LECTURER");
         }
 
-        java.time.LocalDate fromDate;
-        java.time.LocalDate toDate;
-        try {
-            fromDate = (from == null || from.isBlank()) ? java.time.LocalDate.now().minusDays(29)
-                    : java.time.LocalDate.parse(from);
-        } catch (Exception ex) {
-            fromDate = java.time.LocalDate.now().minusDays(29);
-        }
-        try {
-            toDate = (to == null || to.isBlank()) ? java.time.LocalDate.now() : java.time.LocalDate.parse(to);
-        } catch (Exception ex) {
-            toDate = java.time.LocalDate.now();
-        }
+        LocalDate fromDate = (from == null || from.isBlank()) ? LocalDate.now().minusDays(29) : LocalDate.parse(from);
+        LocalDate toDate = (to == null || to.isBlank()) ? LocalDate.now() : LocalDate.parse(to);
         if (toDate.isBefore(fromDate)) {
             var tmp = fromDate;
             fromDate = toDate;
@@ -412,6 +379,7 @@ public class LecturerViewController {
             if (offeringId != null) {
                 offeringIds = List.of(offeringId);
             }
+
             String statusToCount = (studentStatus == null || studentStatus.isBlank()) ? "ENROLLED" : studentStatus;
             long activeEnrollments = offeringIds.isEmpty() ? 0
                     : enrollmentRepository.countByOfferingIdsAndStatus(offeringIds, statusToCount);
@@ -440,26 +408,23 @@ public class LecturerViewController {
                 model.addAttribute("gradeData", gradeData);
             } else {
                 model.addAttribute("courseDetail", null);
-                model.addAttribute("gradeLabels", new ArrayList<String>());
-                model.addAttribute("gradeData", new ArrayList<Number>());
+                model.addAttribute("gradeLabels", List.of());
+                model.addAttribute("gradeData", List.of());
             }
         } else {
-            model.addAttribute("offerings", new ArrayList<>());
+            model.addAttribute("offerings", List.of());
             model.addAttribute("summaryAvgAttendance", 0.0);
             model.addAttribute("summaryPassRate", 0.0);
             model.addAttribute("summaryActiveEnrollments", 0L);
             model.addAttribute("summaryTotalClasses", 0L);
-            model.addAttribute("courseReports", new ArrayList<>());
+            model.addAttribute("courseReports", List.of());
             model.addAttribute("courseDetail", null);
-            model.addAttribute("gradeLabels", new ArrayList<String>());
-            model.addAttribute("gradeData", new ArrayList<Number>());
+            model.addAttribute("gradeLabels", List.of());
+            model.addAttribute("gradeData", List.of());
         }
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-        if (auth != null && auth.getAuthorities() != null) {
-            isAdmin = auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-        }
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
         if (isAdmin) {
             model.addAttribute("totalStudents", adminService.getTotalStudents());
             model.addAttribute("totalLecturers", adminService.getTotalLecturers());
@@ -467,6 +432,7 @@ public class LecturerViewController {
             model.addAttribute("totalStudents", 0);
             model.addAttribute("totalLecturers", 0);
         }
+
         if (lecturerId != null) {
             var attendanceMap = lecturerService.getAttendanceCountsByDateRange(lecturerId, fromDate, toDate, offeringId,
                     studentStatus);
@@ -487,10 +453,10 @@ public class LecturerViewController {
             model.addAttribute("courseLabels", courseLabels);
             model.addAttribute("courseData", courseData);
         } else {
-            model.addAttribute("enrollmentLabels", new ArrayList<String>());
-            model.addAttribute("enrollmentData", new ArrayList<Number>());
-            model.addAttribute("courseLabels", new ArrayList<String>());
-            model.addAttribute("courseData", new ArrayList<Number>());
+            model.addAttribute("enrollmentLabels", List.of());
+            model.addAttribute("enrollmentData", List.of());
+            model.addAttribute("courseLabels", List.of());
+            model.addAttribute("courseData", List.of());
         }
         return "lecturer/reports";
     }

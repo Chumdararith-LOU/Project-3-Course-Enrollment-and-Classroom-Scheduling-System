@@ -1,24 +1,19 @@
 package com.cource.service.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import com.cource.dto.course.CourseOfferingRequestDTO;
+import com.cource.entity.*;
+import com.cource.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.cource.dto.attendance.AttendanceRequestDTO;
-import com.cource.entity.Attendance;
-import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
-import com.cource.entity.Enrollment;
-import com.cource.entity.User;
 import com.cource.dto.lecturer.LecturerCourseDetailDTO;
 import com.cource.dto.lecturer.LecturerCourseReportDTO;
 import com.cource.exception.ResourceNotFoundException;
-import com.cource.repository.AttendanceRepository;
-import com.cource.repository.ClassScheduleRepository;
-import com.cource.repository.EnrollmentRepository;
 import com.cource.service.EnrollmentService;
 import com.cource.service.LecturerService;
 
@@ -26,6 +21,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class LecturerServiceImpl implements LecturerService {
 
     private static final Logger log = LoggerFactory.getLogger(LecturerServiceImpl.class);
@@ -41,55 +37,6 @@ public class LecturerServiceImpl implements LecturerService {
     private final com.cource.repository.AcademicTermRepository academicTermRepository;
     private final com.cource.service.CourseService courseService;
     private final EnrollmentService enrollmentService;
-
-    public LecturerServiceImpl(CourseLecturerRepository courseLecturerRepository,
-            AttendanceRepository attendanceRepository,
-            ClassScheduleRepository classScheduleRepository,
-            EnrollmentRepository enrollmentRepository,
-            com.cource.repository.CourseOfferingRepository courseOfferingRepository,
-            com.cource.repository.CourseRepository courseRepository,
-            com.cource.repository.AcademicTermRepository academicTermRepository,
-            com.cource.service.CourseService courseService,
-            EnrollmentService enrollmentService) {
-        this.attendanceRepository = attendanceRepository;
-        this.classScheduleRepository = classScheduleRepository;
-        this.enrollmentRepository = enrollmentRepository;
-        this.courseLecturerRepository = courseLecturerRepository;
-        this.courseOfferingRepository = courseOfferingRepository;
-        this.courseRepository = courseRepository;
-        this.academicTermRepository = academicTermRepository;
-        this.courseService = courseService;
-        this.enrollmentService = enrollmentService;
-    }
-
-    @Override
-    public List<Course> getCoursesByLecturerId(long lecturerId) {
-        return courseOfferingRepository.findAll().stream()
-                .filter(offering -> offering.getLecturer() != null &&
-                        offering.getLecturer().getId().equals(lecturerId))
-                .map(offering -> offering.getCourse())
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ClassSchedule> getClassSchedulesByLecturerId(long offeringId, long lecturerId) {
-        verifyOwnership(offeringId, lecturerId);
-        return classScheduleRepository.findByOfferingIdAndLecturerId(offeringId, lecturerId);
-    }
-
-    @Override
-    public List<User> getEnrolledStudents(long offeringId, long lecturerId) {
-        verifyOwnership(offeringId, lecturerId);
-        List<User> students = enrollmentRepository.findByOfferingId(offeringId).stream()
-                // Include students with null status (default) or ENROLLED status
-                .filter(e -> e.getStatus() == null || "ENROLLED".equalsIgnoreCase(e.getStatus()))
-                .map(Enrollment::getStudent)
-                .collect(Collectors.toList());
-        log.debug("getEnrolledStudents for offeringId={}, lecturerId={}, count={}", offeringId, lecturerId,
-                students.size());
-        return students;
-    }
 
     @Override
     public void recordAttendance(AttendanceRequestDTO attendanceRequestDTO, long studentId, String status) {
@@ -539,51 +486,40 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public java.util.List<com.cource.entity.CourseOffering> getOfferingsByLecturerId(long lecturerId) {
-        var offerings = courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering())
-                .distinct()
-                .toList();
-        log.debug("getOfferingsByLecturerId for lecturerId={}, count={}", lecturerId, offerings.size());
-        return offerings;
-    }
-
-    private void verifyOwnership(long offeringId, long lecturerId) {
-        boolean isOwner = courseLecturerRepository.existsByOfferingIdAndLecturerId(offeringId, lecturerId);
-        if (!isOwner) {
-            throw new SecurityException("Lecturer does not have access to this course offering.");
-        }
+    public List<CourseOffering> getOfferingsByLecturerId(long lecturerId) {
+        return courseOfferingRepository.findByLecturerId(lecturerId);
     }
 
     @Override
-    public com.cource.entity.CourseOffering createCourseOffering(long lecturerId,
-            com.cource.dto.course.CourseOfferingRequestDTO dto) {
+    @Transactional
+    public CourseOffering createCourseOffering(long lecturerId, CourseOfferingRequestDTO dto) {
         if (dto.getCourseId() == null || dto.getTermId() == null) {
             throw new IllegalArgumentException("courseId and termId are required");
         }
-        var course = courseRepository.findById(dto.getCourseId())
+
+        Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
         if (!course.isActive()) {
             throw new IllegalArgumentException("Cannot create offering for inactive course: " + course.getCourseCode());
         }
-        var term = academicTermRepository.findById(dto.getTermId())
+
+        AcademicTerm term = academicTermRepository.findById(dto.getTermId())
                 .orElseThrow(() -> new ResourceNotFoundException("Academic term not found"));
 
-        // Check unique offering
-        var existing = courseOfferingRepository.findByCourseIdAndTermId(course.getId(), term.getId());
-        if (existing.isPresent()) {
+        if (courseOfferingRepository.findByCourseIdAndTermId(dto.getCourseId(), dto.getTermId()).isPresent()) {
             throw new IllegalArgumentException("An offering for this course and term already exists");
         }
 
-        com.cource.entity.CourseOffering offering = new com.cource.entity.CourseOffering();
+        CourseOffering offering = new CourseOffering();
         offering.setCourse(course);
         offering.setTerm(term);
-        if (dto.getCapacity() != null)
-            offering.setCapacity(dto.getCapacity());
-        if (dto.getActive() != null)
-            offering.setActive(dto.getActive());
+        offering.setCapacity(dto.getCapacity() != null ? dto.getCapacity() : 30);
+        offering.setActive(dto.getActive() != null ? dto.getActive() : true);
 
-        // determine enrollment code: use provided or generate a new one
+        User lecturer = new User();
+        lecturer.setId(lecturerId);
+        offering.setLecturer(lecturer);
+
         if (dto.getEnrollmentCode() != null && !dto.getEnrollmentCode().isBlank()) {
             if (courseOfferingRepository.existsByEnrollmentCode(dto.getEnrollmentCode())) {
                 throw new IllegalArgumentException("Enrollment code already in use");
@@ -593,31 +529,19 @@ public class LecturerServiceImpl implements LecturerService {
             offering.setEnrollmentCode(courseService.generateEnrollmentCode(course.getCourseCode()));
         }
 
-        offering = courseOfferingRepository.save(offering);
-
-        // assign lecturer as primary
-        com.cource.entity.User lecturer = new com.cource.entity.User();
-        lecturer.setId(lecturerId);
-        com.cource.entity.CourseLecturer cl = new com.cource.entity.CourseLecturer();
-        cl.setOffering(offering);
-        cl.setLecturer(lecturer);
-        cl.setPrimary(true);
-        courseLecturerRepository.save(cl);
-
-        return offering;
+        return courseOfferingRepository.save(offering);
     }
 
     @Override
-    public com.cource.entity.CourseOffering updateCourseOffering(long lecturerId, long offeringId,
-            com.cource.dto.course.CourseOfferingRequestDTO dto) {
+    public CourseOffering updateCourseOffering(long lecturerId, long offeringId, CourseOfferingRequestDTO dto) {
         verifyOwnership(offeringId, lecturerId);
         var offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
 
         Integer oldCapacity = offering.getCapacity();
         boolean oldActive = offering.isActive();
-        if (dto.getCourseId() != null
-                && (offering.getCourse() == null || !offering.getCourse().getId().equals(dto.getCourseId()))) {
+
+        if (dto.getCourseId() != null && (offering.getCourse() == null || !offering.getCourse().getId().equals(dto.getCourseId()))) {
             var course = courseRepository.findById(dto.getCourseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
             if (!course.isActive()) {
@@ -625,16 +549,27 @@ public class LecturerServiceImpl implements LecturerService {
             }
             offering.setCourse(course);
         }
-        if (dto.getTermId() != null
-                && (offering.getTerm() == null || !offering.getTerm().getId().equals(dto.getTermId()))) {
+
+        if (dto.getTermId() != null && (offering.getTerm() == null || !offering.getTerm().getId().equals(dto.getTermId()))) {
             var term = academicTermRepository.findById(dto.getTermId())
                     .orElseThrow(() -> new ResourceNotFoundException("Term not found"));
             offering.setTerm(term);
         }
-        if (dto.getCapacity() != null)
+
+        if (dto.getCapacity() != null) {
             offering.setCapacity(dto.getCapacity());
-        if (dto.getActive() != null)
+        }
+
+        if (dto.getActive() != null) {
             offering.setActive(dto.getActive());
+        }
+
+        if (dto.getLecturerId() != null && !dto.getLecturerId().equals(lecturerId)) {
+            User newLecturer = new User();
+            newLecturer.setId(dto.getLecturerId());
+            offering.setLecturer(newLecturer);
+        }
+
         if (dto.getEnrollmentCode() != null) {
             String newCode = dto.getEnrollmentCode().trim();
             if (!newCode.isBlank()) {
@@ -643,14 +578,11 @@ public class LecturerServiceImpl implements LecturerService {
                     throw new IllegalArgumentException("Enrollment code already in use");
                 }
                 offering.setEnrollmentCode(newCode);
-            } else {
-                // if blank explicitly, ignore to avoid violating NOT NULL DB constraint
             }
         }
-        var saved = courseOfferingRepository.save(offering);
 
-        boolean capacityIncreased = dto.getCapacity() != null
-                && (oldCapacity == null || dto.getCapacity() > oldCapacity);
+        var saved = courseOfferingRepository.save(offering);
+        boolean capacityIncreased = dto.getCapacity() != null && (oldCapacity == null || dto.getCapacity() > oldCapacity);
         boolean activated = dto.getActive() != null && dto.getActive() && !oldActive;
         if (saved.isActive() && (capacityIncreased || activated)) {
             enrollmentService.processWaitlist(saved.getId());
@@ -689,4 +621,11 @@ public class LecturerServiceImpl implements LecturerService {
         courseOfferingRepository.deleteById(offeringId);
     }
 
+    private void verifyOwnership(Long offeringId, Long lecturerId) {
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+        if (offering.getLecturer() == null || !offering.getLecturer().getId().equals(lecturerId)) {
+            throw new SecurityException("Lecturer does not have access to this course offering.");
+        }
+    }
 }

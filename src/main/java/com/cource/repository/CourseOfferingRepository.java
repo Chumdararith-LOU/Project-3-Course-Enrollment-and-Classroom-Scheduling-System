@@ -45,4 +45,6 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
     boolean existsByEnrollmentCode(String enrollmentCode);
 
     Optional<CourseOffering> findByEnrollmentCode(String enrollmentCode);
+
+    List<CourseOffering> findByLecturerId(Long lecturerId);
 }

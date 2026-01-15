@@ -9,9 +9,7 @@ public interface ClassScheduleService {
     List<ClassScheduleDTO> getAll(Long offeringId);
 
     ClassScheduleDTO getById(Long id);
-
     ClassScheduleDTO create(ClassSchedule schedule);
-
     ClassScheduleDTO update(Long id, ClassSchedule schedule);
 
     void delete(Long id);

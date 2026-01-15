@@ -1,4 +1,4 @@
-package com.cource.controller.Lecture;
+package com.cource.controller.Lecturer;
 
 import com.cource.service.LecturerExportService;
 import com.cource.util.SecurityHelper;

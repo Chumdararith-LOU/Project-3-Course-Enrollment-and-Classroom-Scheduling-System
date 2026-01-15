@@ -1,5 +1,9 @@
 package com.cource.controller.Student;
 
+import com.cource.entity.CourseOffering;
+import com.cource.exception.ResourceNotFoundException;
+import com.cource.repository.CourseOfferingRepository;
+import com.cource.repository.EnrollmentRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +33,8 @@ public class StudentViewController {
     private final StudentService studentService;
     private final StudentReadService studentReadService;
     private final SecurityHelper securityHelper;
-    private final com.cource.repository.CourseLecturerRepository courseLecturerRepository;
-    private final com.cource.repository.EnrollmentRepository enrollmentRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final CourseOfferingRepository courseOfferingRepository;
 
     @GetMapping("/dashboard")
     public String dashboard(
@@ -68,7 +72,10 @@ public class StudentViewController {
                 return "error/403";
             }
 
-            boolean ownsOffering = courseLecturerRepository.existsByOfferingIdAndLecturerId(offeringId, currentUserId);
+            CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+            boolean ownsOffering = offering.getLecturer() != null &&
+                    offering.getLecturer().getId().equals(currentUserId);
             boolean studentEnrolled = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
                     .isPresent();
             if (!ownsOffering || !studentEnrolled) {
@@ -171,8 +178,10 @@ public class StudentViewController {
                 return "error/403";
             }
 
-            boolean ownsOffering = courseLecturerRepository.existsByOfferingIdAndLecturerId(offeringId, currentUserId);
-            boolean studentEnrolled = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
+            CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+            boolean ownsOffering = offering.getLecturer() != null &&
+                    offering.getLecturer().getId().equals(currentUserId);            boolean studentEnrolled = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
                     .isPresent();
             if (!ownsOffering || !studentEnrolled) {
                 return "error/403";
@@ -321,8 +330,11 @@ public class StudentViewController {
             if (offeringId == null || currentUserId == null) {
                 return ResponseEntity.status(403).build();
             }
-            boolean ownsOffering = courseLecturerRepository.existsByOfferingIdAndLecturerId(offeringId, currentUserId);
-            boolean studentEnrolled = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
+
+            CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+            boolean ownsOffering = offering.getLecturer() != null &&
+                    offering.getLecturer().getId().equals(currentUserId);            boolean studentEnrolled = enrollmentRepository.findByStudentIdAndOfferingId(studentId, offeringId)
                     .isPresent();
             if (!ownsOffering || !studentEnrolled) {
                 return ResponseEntity.status(403).build();

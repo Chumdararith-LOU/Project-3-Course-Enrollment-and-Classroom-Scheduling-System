@@ -194,7 +194,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         }
 
         // Check for lecturer time conflict
-        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findLecturerConflictingSchedules(
+        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findConflictingSchedulesForLecturer(
                 lecturerId, dayOfWeek.toUpperCase(), start, end, null);
         if (!lecturerConflicts.isEmpty()) {
             ClassSchedule conflict = lecturerConflicts.get(0);
@@ -252,7 +252,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         }
 
         // Check for lecturer time conflict (exclude current schedule)
-        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findLecturerConflictingSchedules(
+        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findConflictingSchedulesForLecturer(
                 lecturerId, dayOfWeek.toUpperCase(), start, end, scheduleId);
         if (!lecturerConflicts.isEmpty()) {
             ClassSchedule conflict = lecturerConflicts.get(0);
@@ -291,8 +291,9 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         if (offeringId == null || lecturerId == null) {
             throw new IllegalArgumentException("offeringId and lecturerId are required");
         }
-        boolean assigned = courseLecturerRepository.existsByOfferingIdAndLecturerId(offeringId, lecturerId);
-        if (!assigned) {
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+        if (offering.getLecturer() == null || !offering.getLecturer().getId().equals(lecturerId)) {
             throw new UnauthorizedException("Lecturer is not assigned to this offering");
         }
     }
