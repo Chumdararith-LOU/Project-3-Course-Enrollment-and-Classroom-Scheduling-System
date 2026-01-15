@@ -36,11 +36,10 @@ public class AttendanceCodeController {
     @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
         public ResponseEntity<?> generate(@RequestParam Long scheduleId,
             @RequestParam(required = false) Integer presentMinutes,
-            @RequestParam(required = false) Integer lateMinutes,
-            @RequestParam(required = false) Long issuedAt) {
+            @RequestParam(required = false) Integer lateMinutes) {
         Long lecturerId = securityHelper.getCurrentUserId();
         AttendanceCodeDetailsDTO details = attendanceCodeApplicationService.generateDetails(scheduleId, lecturerId,
-            presentMinutes, lateMinutes, issuedAt);
+            presentMinutes, lateMinutes);
         return ResponseEntity.ok(Map.of("code", details.getCode(), "issuedAt", details.getIssuedAt(), "presentMinutes",
             details.getPresentMinutes(), "lateMinutes", details.getLateMinutes(), "offeringId",
             details.getOfferingId(), "enrolledCount", details.getEnrolledCount()));
@@ -49,7 +48,7 @@ public class AttendanceCodeController {
     @DeleteMapping("/delete")
     @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
     public ResponseEntity<?> delete(@RequestParam Long scheduleId) {
-        attendanceCodeService.delete(scheduleId);
+        attendanceCodeService.deleteByScheduleId(scheduleId);
         return ResponseEntity.ok(Map.of("deleted", true));
     }
 
@@ -85,7 +84,7 @@ public class AttendanceCodeController {
         } catch (SecurityException ex) {
             return ResponseEntity.status(403).body(Map.of("error", ex.getMessage()));
 
-        } catch (Exception ex) {
+        } catch (Exception ex){
             log.error("Error entering attendance code", ex);
             return ResponseEntity.status(500).body(Map.of("error", ex.getMessage()));
         }

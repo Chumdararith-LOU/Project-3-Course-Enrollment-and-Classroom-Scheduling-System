@@ -36,7 +36,6 @@ public class AdminController {
     private final UserService userService;
     private final CourseService courseService;
 
-    // ===== User Management =====
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(adminService.getAllUsers());
@@ -163,11 +162,6 @@ public class AdminController {
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
-    @PostMapping("/courses/{id}/regenerate-code")
-    public ResponseEntity<Course> regenerateEnrollmentCode(@PathVariable Long id) {
-        return ResponseEntity.ok(courseService.regenerateEnrollmentCode(id));
-    }
-
     @GetMapping("/courses/stats/total")
     public ResponseEntity<Long> getTotalCourses() {
         return ResponseEntity.ok(adminService.getTotalCourses());
@@ -184,25 +178,6 @@ public class AdminController {
         return ResponseEntity.ok(adminService.regenerateOfferingEnrollmentCode(id));
     }
 
-    // --- Lecturer Assignment Endpoints ---
-    @GetMapping("/offerings/{offeringId}/lecturers")
-    public ResponseEntity<List<User>> getLecturersForOffering(@PathVariable Long offeringId) {
-        return ResponseEntity.ok(adminService.getLecturersForOffering(offeringId));
-    }
-
-    @PostMapping("/offerings/{offeringId}/lecturers")
-    public ResponseEntity<?> assignLecturersToOffering(@PathVariable Long offeringId,
-            @RequestBody List<Long> lecturerIds) {
-        adminService.assignLecturersToOffering(offeringId, lecturerIds);
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
-    }
-
-    @DeleteMapping("/offerings/{offeringId}/lecturers/{lecturerId}")
-    public ResponseEntity<?> removeLecturerFromOffering(@PathVariable Long offeringId, @PathVariable Long lecturerId) {
-        adminService.removeLecturerFromOffering(offeringId, lecturerId);
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
-    }
-
     @GetMapping("/offerings/{id}")
     public ResponseEntity<CourseOffering> getOfferingById(@PathVariable Long id) {
         return ResponseEntity.ok(adminService.getOfferingById(id));
@@ -217,50 +192,25 @@ public class AdminController {
     public ResponseEntity<?> createOffering(@RequestBody Map<String, Object> request) {
         Long courseId = Long.valueOf(request.get("courseId").toString());
         Long termId = Long.valueOf(request.get("termId").toString());
+        Long lecturerId = Long.valueOf(request.get("lecturerId").toString()); // 👈 ADD THIS
         Integer capacity = Integer.valueOf(request.get("capacity").toString());
         Boolean isActive = request.containsKey("isActive") ? (Boolean) request.get("isActive") : true;
-        List<Long> lecturerIds = null;
-        if (request.containsKey("lecturerIds")) {
-            lecturerIds = ((List<?>) request.get("lecturerIds")).stream()
-                    .map(Object::toString)
-                    .map(Long::valueOf)
-                    .toList();
-        }
-        var offering = adminService.createOffering(courseId, termId, capacity, isActive);
-        if (lecturerIds != null && !lecturerIds.isEmpty()) {
-            adminService.assignLecturersToOffering(offering.getId(), lecturerIds);
-        }
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
-    }
 
-    @PostMapping("/offerings/assign-all")
-    public ResponseEntity<Map<String, Object>> assignLecturerToAllOfferings(@RequestParam Long lecturerId) {
-        int created = adminService.bulkAssignLecturerToAllOfferings(lecturerId);
-        Map<String, Object> res = new java.util.HashMap<>();
-        res.put("status", "success");
-        res.put("created", created);
-        return ResponseEntity.ok(res);
+        var offering = adminService.createOffering(courseId, termId, lecturerId, capacity, isActive);
+        return ResponseEntity.ok(Collections.singletonMap("status", "success"));
     }
 
     @PutMapping("/offerings/{id}")
     public ResponseEntity<?> updateOffering(@PathVariable Long id,
-            @RequestBody Map<String, Object> request) {
+                                            @RequestBody Map<String, Object> request) {
         Long courseId = Long.valueOf(request.get("courseId").toString());
         Long termId = Long.valueOf(request.get("termId").toString());
+        Long lecturerId = Long.valueOf(request.get("lecturerId").toString());
         Integer capacity = Integer.valueOf(request.get("capacity").toString());
         Boolean isActive = request.containsKey("isActive") ? (Boolean) request.get("isActive") : null;
-        adminService.updateOffering(id, courseId, termId, capacity, isActive);
-        List<Long> lecturerIds = null;
-        if (request.containsKey("lecturerIds")) {
-            lecturerIds = ((List<?>) request.get("lecturerIds")).stream()
-                    .map(Object::toString)
-                    .map(Long::valueOf)
-                    .toList();
-        }
-        if (lecturerIds != null) {
-            adminService.assignLecturersToOffering(id, lecturerIds);
-        }
-        return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
+
+        adminService.updateOffering(id, courseId, termId, lecturerId, capacity, isActive);
+        return ResponseEntity.ok(Collections.singletonMap("status", "success"));
     }
 
     @DeleteMapping("/offerings/{id}")

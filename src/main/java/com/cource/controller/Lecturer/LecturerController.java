@@ -1,16 +1,17 @@
 package com.cource.controller.Lecturer;
 
+import com.cource.entity.*;
+import com.cource.repository.ClassScheduleRepository;
+import com.cource.repository.EnrollmentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cource.entity.ClassSchedule;
-import com.cource.entity.Course;
-import com.cource.entity.Enrollment;
-import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.service.LecturerService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,33 +29,42 @@ import org.slf4j.LoggerFactory;
 @RestController
 @RequestMapping("/api/lecturer")
 @PreAuthorize("hasRole('LECTURER')")
+@RequiredArgsConstructor
 public class LecturerController {
 
     private static final Logger log = LoggerFactory.getLogger(LecturerController.class);
 
     private final LecturerService lecturerService;
-
-    public LecturerController(LecturerService lecturerService) {
-        this.lecturerService = lecturerService;
-    }
+    private final ClassScheduleRepository classScheduleRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     @GetMapping("/courses")
     public List<Course> getCourses(@RequestParam long lecturerId) {
-        return lecturerService.getCoursesByLecturerId(lecturerId);
+        return lecturerService.getOfferingsByLecturerId(lecturerId).stream()
+                .map(CourseOffering::getCourse)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/courses/{offeringId}/schedule")
     public List<ClassSchedule> getClassSchedules(
             @PathVariable long offeringId,
             @RequestParam long lecturerId) {
-        return lecturerService.getClassSchedulesByLecturerId(offeringId, lecturerId);
+        // Verify ownership
+        lecturerService.getOfferingById(lecturerId, offeringId);
+        return classScheduleRepository.findByOfferingId(offeringId);
     }
 
     @GetMapping("/courses/{offeringId}/students")
     public List<User> getEnrolledStudents(
             @PathVariable long offeringId,
             @RequestParam long lecturerId) {
-        return lecturerService.getEnrolledStudents(offeringId, lecturerId);
+        // Verify ownership
+        lecturerService.getOfferingById(lecturerId, offeringId);
+        return enrollmentRepository.findByOfferingId(offeringId).stream()
+                .filter(e -> e.getStatus() != null && e.getStatus().equalsIgnoreCase("ENROLLED"))
+                .map(Enrollment::getStudent)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/attendance")

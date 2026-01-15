@@ -5,7 +5,10 @@ import com.cource.dto.attendance.AttendanceResponseDTO;
 import com.cource.dto.attendance.AttendanceSummaryDTO;
 import com.cource.entity.Attendance;
 import com.cource.entity.ClassSchedule;
+import com.cource.entity.CourseOffering;
 import com.cource.exception.ResourceNotFoundException;
+import com.cource.repository.ClassScheduleRepository;
+import com.cource.repository.CourseOfferingRepository;
 import com.cource.service.AttendanceService;
 import com.cource.util.SecurityHelper;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,8 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
     private final SecurityHelper securityHelper;
+    private final CourseOfferingRepository courseOfferingRepository;
+    private final ClassScheduleRepository classScheduleRepository;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
@@ -124,7 +129,21 @@ public class AttendanceController {
         if (id == null) {
             return ResponseEntity.ok(Collections.emptyList());
         }
-        return ResponseEntity.ok(attendanceService.getTodaySchedulesForLecturer(id));
+
+        List<CourseOffering> offerings = courseOfferingRepository.findByLecturerId(id);
+        List<Long> offeringIds = offerings.stream().map(CourseOffering::getId).toList();
+
+        if (offeringIds.isEmpty()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        String today = LocalDate.now().getDayOfWeek().name().substring(0, 3).toUpperCase();
+
+        List<ClassSchedule> schedules = classScheduleRepository.findByOfferingIdIn(offeringIds).stream()
+                .filter(s -> today.equals(s.getDayOfWeek()))
+                .toList();
+
+        return ResponseEntity.ok(schedules);
     }
 
     @GetMapping("/exists")
