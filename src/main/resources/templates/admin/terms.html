@@ -159,7 +159,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Term Code *</label>
-            <input type="text" id="termCode" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required />
+            <input type="text" id="termCode" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required readonly />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Start Date *</label>
@@ -193,7 +193,28 @@
         document.getElementById('termModalTitle').textContent = 'Add New Term';
         document.getElementById('termForm').reset();
         document.getElementById('termId').value = '';
+        document.getElementById('termCode').readOnly = true;
         document.getElementById('termModal').classList.remove('hidden');
+        // Auto-generate term code based on start date (or today if not set)
+        const startDateInput = document.getElementById('startDate');
+        let date = startDateInput.value;
+        if (!date) date = new Date().toISOString().slice(0, 10);
+        fetch(`/api/admin/terms/generate-code?startDate=${date}`)
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('termCode').value = data.termCode;
+          });
+        // When start date changes, regenerate code
+        startDateInput.onchange = async function() {
+          const date = startDateInput.value;
+          if (date) {
+            const res = await fetch(`/api/admin/terms/generate-code?startDate=${date}`);
+            if (res.ok) {
+              const data = await res.json();
+              document.getElementById('termCode').value = data.termCode;
+            }
+          }
+        };
       }
 
       function closeTermModal() {
@@ -209,6 +230,7 @@
           document.getElementById('termId').value = term.id;
           document.getElementById('termName').value = term.termName;
           document.getElementById('termCode').value = term.termCode;
+          document.getElementById('termCode').readOnly = false;
           document.getElementById('startDate').value = term.startDate;
           document.getElementById('endDate').value = term.endDate;
           document.getElementById('termModal').classList.remove('hidden');

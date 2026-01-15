@@ -52,30 +52,43 @@
             Configure Attendance Code
           </h3>
           <p class="text-sm text-gray-500 mt-1">
-            Set time windows (minutes after start)
+            Set time windows (minutes after start) and optionally set a custom date/time for code generation (for makeup classes).
           </p>
-          <div class="mt-4 grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Present Window (minutes)</label
-              >
-              <input
-                id="present-mins"
-                type="number"
-                min="0"
-                class="mt-1 block w-full rounded-md border-gray-300"
-              />
+          <div class="mt-4 grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Present Window (minutes)</label
+                >
+                <input
+                  id="present-mins"
+                  type="number"
+                  min="0"
+                  class="mt-1 block w-full rounded-md border-gray-300"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Late Window (minutes)</label
+                >
+                <input
+                  id="late-mins"
+                  type="number"
+                  min="0"
+                  class="mt-1 block w-full rounded-md border-gray-300"
+                />
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Late Window (minutes)</label
+                >Custom Date/Time (optional)</label
               >
               <input
-                id="late-mins"
-                type="number"
-                min="0"
+                id="custom-datetime"
+                type="datetime-local"
                 class="mt-1 block w-full rounded-md border-gray-300"
               />
+              <span class="text-xs text-gray-500">Leave blank to use current time</span>
             </div>
           </div>
           <div class="mt-6 flex justify-end gap-3">
@@ -781,9 +794,11 @@
         const presentInput = document.getElementById("present-mins");
         const lateInput = document.getElementById("late-mins");
 
+        const customDatetimeInput = document.getElementById("custom-datetime");
         function openCodeModal(present, late, onConfirm) {
           if (presentInput) presentInput.value = present ?? 15;
           if (lateInput) lateInput.value = late ?? 30;
+          if (customDatetimeInput) customDatetimeInput.value = "";
           codeModal.classList.remove("hidden");
           codeModal.classList.add("flex");
           const handler = async function () {
@@ -794,11 +809,16 @@
               alert("Invalid windows: ensure 0 <= present < late (minutes)");
               return;
             }
+            let issuedAt = null;
+            if (customDatetimeInput && customDatetimeInput.value) {
+              // Convert to epoch seconds
+              issuedAt = Math.floor(new Date(customDatetimeInput.value).getTime() / 1000);
+            }
             codeModal.classList.add("hidden");
             codeModal.classList.remove("flex");
             codeConfirm.removeEventListener("click", handler);
             codeCancel.removeEventListener("click", canceler);
-            await onConfirm(p, l);
+            await onConfirm(p, l, issuedAt);
           };
           const canceler = function () {
             codeModal.classList.add("hidden");
@@ -829,16 +849,17 @@
               openCodeModal(
                 cur.presentMinutes ?? 15,
                 cur.lateMinutes ?? 30,
-                async (p, l) => {
-                  const res = await fetch(
-                    "/api/attendance-code/generate?scheduleId=" +
-                      encodeURIComponent(sid) +
-                      "&presentMinutes=" +
-                      encodeURIComponent(p) +
-                      "&lateMinutes=" +
-                      encodeURIComponent(l),
-                    { method: "POST" }
-                  );
+                async (p, l, issuedAt) => {
+                  let url = "/api/attendance-code/generate?scheduleId=" +
+                    encodeURIComponent(sid) +
+                    "&presentMinutes=" +
+                    encodeURIComponent(p) +
+                    "&lateMinutes=" +
+                    encodeURIComponent(l);
+                  if (issuedAt) {
+                    url += "&issuedAt=" + encodeURIComponent(issuedAt);
+                  }
+                  const res = await fetch(url, { method: "POST" });
                   if (!res.ok) {
                     alert("Failed to generate");
                     return;
@@ -877,16 +898,17 @@
               openCodeModal(
                 cur.presentMinutes ?? 15,
                 cur.lateMinutes ?? 30,
-                async (p, l) => {
-                  const res = await fetch(
-                    "/api/attendance-code/generate?scheduleId=" +
-                      encodeURIComponent(sid) +
-                      "&presentMinutes=" +
-                      encodeURIComponent(p) +
-                      "&lateMinutes=" +
-                      encodeURIComponent(l),
-                    { method: "POST" }
-                  );
+                async (p, l, issuedAt) => {
+                  let url = "/api/attendance-code/generate?scheduleId=" +
+                    encodeURIComponent(sid) +
+                    "&presentMinutes=" +
+                    encodeURIComponent(p) +
+                    "&lateMinutes=" +
+                    encodeURIComponent(l);
+                  if (issuedAt) {
+                    url += "&issuedAt=" + encodeURIComponent(issuedAt);
+                  }
+                  const res = await fetch(url, { method: "POST" });
                   if (!res.ok) {
                     alert("Failed to regenerate");
                     return;

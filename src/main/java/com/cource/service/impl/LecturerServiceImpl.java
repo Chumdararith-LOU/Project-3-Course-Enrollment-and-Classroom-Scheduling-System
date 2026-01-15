@@ -3,6 +3,8 @@ package com.cource.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.cource.dto.attendance.AttendanceRequestDTO;
@@ -27,6 +29,7 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class LecturerServiceImpl implements LecturerService {
 
+    private static final Logger log = LoggerFactory.getLogger(LecturerServiceImpl.class);
     private static final java.util.List<String> ATTENDED_STATUSES = java.util.List.of("PRESENT", "LATE", "EXCUSED");
     private static final java.util.Set<String> PASSING_GRADES = java.util.Set.of("A", "B", "C", "D");
     private static final java.util.Set<String> GRADED_FOR_PASS_RATE = java.util.Set.of("A", "B", "C", "D", "F");
@@ -83,12 +86,8 @@ public class LecturerServiceImpl implements LecturerService {
                 .filter(e -> e.getStatus() == null || "ENROLLED".equalsIgnoreCase(e.getStatus()))
                 .map(Enrollment::getStudent)
                 .collect(Collectors.toList());
-        System.out.println("[DEBUG] getEnrolledStudents for offeringId=" + offeringId + ", lecturerId=" + lecturerId);
-        for (User s : students) {
-            System.out.println("[DEBUG] Student: id=" + s.getId() + ", email=" + s.getEmail() + ", firstName="
-                    + s.getFirstName() + ", lastName=" + s.getLastName() + ", active=" + s.isActive() + ", role="
-                    + (s.getRole() != null ? s.getRole().getRoleName() : "null"));
-        }
+        log.debug("getEnrolledStudents for offeringId={}, lecturerId={}, count={}", offeringId, lecturerId,
+                students.size());
         return students;
     }
 
@@ -201,12 +200,11 @@ public class LecturerServiceImpl implements LecturerService {
 
     @Override
     public java.util.List<java.util.Map<String, Object>> getAttendanceRecordsAsDto(long scheduleId, Long lecturerId) {
-        System.out.println(
-                "[DEBUG] getAttendanceRecordsAsDto start for scheduleId=" + scheduleId + ", lecturerId=" + lecturerId);
+        log.debug("getAttendanceRecordsAsDto start for scheduleId={}, lecturerId={}", scheduleId, lecturerId);
         java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
         try {
             List<Attendance> rows = attendanceRepository.findByScheduleIdWithStudent(scheduleId);
-            System.out.println("[DEBUG] loaded attendance rows count=" + (rows == null ? 0 : rows.size()));
+            log.debug("loaded attendance rows count={}", (rows == null ? 0 : rows.size()));
             if (rows == null) {
                 rows = java.util.Collections.emptyList();
             }
@@ -238,11 +236,10 @@ public class LecturerServiceImpl implements LecturerService {
                 }
                 out.add(m);
             }
-            System.out.println("[DEBUG] mapped dto count=" + out.size());
+            log.debug("mapped dto count={}", out.size());
             return out;
         } catch (Exception ex) {
-            System.err.println("[ERROR] getAttendanceRecordsAsDto failed: " + ex.getMessage());
-            ex.printStackTrace();
+            log.error("getAttendanceRecordsAsDto failed", ex);
             // fallback: try to load with the previous method (will initialize lazies)
             try {
                 List<Attendance> rows = getAttendanceRecords(scheduleId, lecturerId);
@@ -275,8 +272,7 @@ public class LecturerServiceImpl implements LecturerService {
                     out.add(m);
                 }
             } catch (Exception ex2) {
-                System.err.println("[ERROR] fallback mapping also failed: " + ex2.getMessage());
-                ex2.printStackTrace();
+                log.error("fallback mapping also failed", ex2);
             }
             return out;
         }
@@ -548,12 +544,7 @@ public class LecturerServiceImpl implements LecturerService {
                 .map(cl -> cl.getOffering())
                 .distinct()
                 .toList();
-        System.out.println("[DEBUG] getOfferingsByLecturerId for lecturerId=" + lecturerId);
-        for (var off : offerings) {
-            System.out.println("[DEBUG] Offering: id=" + off.getId() + ", course="
-                    + (off.getCourse() != null ? off.getCourse().getCourseCode() : "null") + ", term="
-                    + (off.getTerm() != null ? off.getTerm().getTermCode() : "null"));
-        }
+        log.debug("getOfferingsByLecturerId for lecturerId={}, count={}", lecturerId, offerings.size());
         return offerings;
     }
 
@@ -572,6 +563,9 @@ public class LecturerServiceImpl implements LecturerService {
         }
         var course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+        if (!course.isActive()) {
+            throw new IllegalArgumentException("Cannot create offering for inactive course: " + course.getCourseCode());
+        }
         var term = academicTermRepository.findById(dto.getTermId())
                 .orElseThrow(() -> new ResourceNotFoundException("Academic term not found"));
 
@@ -626,6 +620,9 @@ public class LecturerServiceImpl implements LecturerService {
                 && (offering.getCourse() == null || !offering.getCourse().getId().equals(dto.getCourseId()))) {
             var course = courseRepository.findById(dto.getCourseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+            if (!course.isActive()) {
+                throw new IllegalArgumentException("Cannot use inactive course for offering: " + course.getCourseCode());
+            }
             offering.setCourse(course);
         }
         if (dto.getTermId() != null

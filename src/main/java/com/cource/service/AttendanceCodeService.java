@@ -59,13 +59,14 @@ public class AttendanceCodeService {
     }
 
     public CodeInfo generate(Long scheduleId, Long creatorId) {
-        return generate(scheduleId, creatorId, null, null);
+        return generate(scheduleId, creatorId, null, null, null);
     }
 
     @Transactional
-    public CodeInfo generate(Long scheduleId, Long creatorId, Integer presentWindowMinutes, Integer lateWindowMinutes) {
+    public CodeInfo generate(Long scheduleId, Long creatorId, Integer presentWindowMinutes, Integer lateWindowMinutes,
+            Long issuedAt) {
         String code = generateShortCode();
-        long now = Instant.now().getEpochSecond();
+        long now = issuedAt != null ? issuedAt : Instant.now().getEpochSecond();
         // remove existing
         repo.deleteByScheduleId(scheduleId);
         AttendanceCode ac = new AttendanceCode(scheduleId, code, now, creatorId, presentWindowMinutes,

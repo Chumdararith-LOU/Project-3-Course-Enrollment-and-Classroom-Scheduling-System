@@ -68,7 +68,8 @@
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           ></path>
         </svg>
-        Invalid email or password.
+        <span th:if="${param.inactive}">Your account is inactive. Please contact the administrator.</span>
+        <span th:unless="${param.inactive}">Invalid email or password.</span>
       </div>
 
       <div

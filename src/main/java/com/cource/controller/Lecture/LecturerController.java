@@ -22,11 +22,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/lecturer")
 @PreAuthorize("hasRole('LECTURER')")
 public class LecturerController {
+
+    private static final Logger log = LoggerFactory.getLogger(LecturerController.class);
 
     private final LecturerService lecturerService;
 
@@ -94,7 +98,7 @@ public class LecturerController {
         } catch (SecurityException se) {
             return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error updating attendance", ex);
             return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
     }
@@ -110,7 +114,7 @@ public class LecturerController {
         } catch (SecurityException se) {
             return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error deleting attendance", ex);
             return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
     }
@@ -143,7 +147,7 @@ public class LecturerController {
         } catch (SecurityException se) {
             return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error getting offering", ex);
             return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
     }
@@ -159,7 +163,7 @@ public class LecturerController {
         } catch (SecurityException se) {
             return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error regenerating offering code", ex);
             return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
     }
@@ -180,7 +184,7 @@ public class LecturerController {
         } catch (ResourceNotFoundException rnfe) {
             return ResponseEntity.status(404).body(java.util.Collections.emptyList());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error getting attendance records", ex);
             return ResponseEntity.status(500).body(java.util.Collections.emptyList());
         }
     }
@@ -216,7 +220,7 @@ public class LecturerController {
         } catch (SecurityException se) {
             return ResponseEntity.status(403).body(java.util.Collections.singletonMap("message", se.getMessage()));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error updating enrollment grade", ex);
             return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", ex.toString()));
         }
     }

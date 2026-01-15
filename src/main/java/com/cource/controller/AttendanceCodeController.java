@@ -18,11 +18,15 @@ import com.cource.util.SecurityHelper;
 import com.cource.dto.attendance.AttendanceCodeDetailsDTO;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/attendance-code")
 @RequiredArgsConstructor
 public class AttendanceCodeController {
+
+    private static final Logger log = LoggerFactory.getLogger(AttendanceCodeController.class);
 
     private final AttendanceCodeService attendanceCodeService;
     private final AttendanceCodeApplicationService attendanceCodeApplicationService;
@@ -30,16 +34,17 @@ public class AttendanceCodeController {
 
     @PostMapping("/generate")
     @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
-    public ResponseEntity<?> generate(@RequestParam Long scheduleId,
+        public ResponseEntity<?> generate(@RequestParam Long scheduleId,
             @RequestParam(required = false) Integer presentMinutes,
-            @RequestParam(required = false) Integer lateMinutes) {
+            @RequestParam(required = false) Integer lateMinutes,
+            @RequestParam(required = false) Long issuedAt) {
         Long lecturerId = securityHelper.getCurrentUserId();
         AttendanceCodeDetailsDTO details = attendanceCodeApplicationService.generateDetails(scheduleId, lecturerId,
-                presentMinutes, lateMinutes);
+            presentMinutes, lateMinutes, issuedAt);
         return ResponseEntity.ok(Map.of("code", details.getCode(), "issuedAt", details.getIssuedAt(), "presentMinutes",
-                details.getPresentMinutes(), "lateMinutes", details.getLateMinutes(), "offeringId",
-                details.getOfferingId(), "enrolledCount", details.getEnrolledCount()));
-    }
+            details.getPresentMinutes(), "lateMinutes", details.getLateMinutes(), "offeringId",
+            details.getOfferingId(), "enrolledCount", details.getEnrolledCount()));
+        }
 
     @DeleteMapping("/delete")
     @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
@@ -81,7 +86,7 @@ public class AttendanceCodeController {
             return ResponseEntity.status(403).body(Map.of("error", ex.getMessage()));
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error entering attendance code", ex);
             return ResponseEntity.status(500).body(Map.of("error", ex.getMessage()));
         }
     }

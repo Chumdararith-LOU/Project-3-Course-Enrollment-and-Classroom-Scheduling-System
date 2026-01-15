@@ -50,6 +50,9 @@ public class AuthController {
             return "redirect:" + result.getRedirectUrl();
         } catch (IllegalArgumentException ex) {
             log.warn("Login failed: {}", ex.getMessage());
+            if (ex.getMessage() != null && ex.getMessage().contains("inactive")) {
+                return "redirect:/signin?error&inactive";
+            }
             return "redirect:/signin?error";
         }
     }

@@ -24,11 +24,15 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
@@ -171,11 +175,11 @@ public class UserServiceImpl implements UserService {
 
             // ensure directory exists
             Path uploadDir = Paths.get(avatarDir).toAbsolutePath();
-            System.out.println("Avatar upload directory: " + uploadDir);
+            log.debug("Avatar upload directory: {}", uploadDir);
 
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir);
-                System.out.println("Created avatar directory: " + uploadDir);
+                log.debug("Created avatar directory: {}", uploadDir);
             }
 
             String original = file.getOriginalFilename();
@@ -187,9 +191,9 @@ public class UserServiceImpl implements UserService {
             String filename = "user_" + id + "_" + System.currentTimeMillis() + ext;
             Path target = uploadDir.resolve(filename);
 
-            System.out.println("Saving avatar to: " + target);
+            log.debug("Saving avatar to: {}", target);
             file.transferTo(target.toFile());
-            System.out.println("Avatar file saved successfully");
+            log.debug("Avatar file saved successfully");
 
             // move avatar storage into user_profiles.avatar_url
             UserProfile profile = userProfileRepository.findByUserId(id)
@@ -201,11 +205,10 @@ public class UserServiceImpl implements UserService {
             profile.setAvatarUrl(filename);
             userProfileRepository.save(profile);
 
-            System.out.println("Avatar URL saved to profile: " + filename);
+            log.debug("Avatar URL saved to profile: {}", filename);
             return user;
         } catch (Exception e) {
-            System.err.println("Error in updateAvatar: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error in updateAvatar: {}", e.getMessage(), e);
             throw e;
         }
     }

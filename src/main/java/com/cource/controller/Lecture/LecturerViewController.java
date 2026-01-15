@@ -16,6 +16,8 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.cource.service.LecturerService;
 import com.cource.service.AdminService;
@@ -27,6 +29,8 @@ import com.cource.repository.EnrollmentRepository;
 @RequestMapping("/lecturer")
 @PreAuthorize("hasRole('LECTURER')")
 public class LecturerViewController {
+
+    private static final Logger log = LoggerFactory.getLogger(LecturerViewController.class);
 
     private final LecturerService lecturerService;
     private final AdminService adminService;
@@ -157,7 +161,10 @@ public class LecturerViewController {
                 isAdmin = auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
             }
             if (isAdmin) {
-                model.addAttribute("courses", adminService.getAllCourses());
+                // Filter only active courses for offering creation dropdown
+                var allCourses = adminService.getAllCourses();
+                var activeCourses = allCourses.stream().filter(c -> c.isActive()).toList();
+                model.addAttribute("courses", activeCourses);
                 model.addAttribute("terms", adminService.getAllTerms());
             } else {
                 model.addAttribute("courses", new ArrayList<>());
@@ -197,9 +204,9 @@ public class LecturerViewController {
                     }
                 }
 
-                System.out.println("[DEBUG] LecturerViewController.students offeringId=" + offeringId
-                        + ", enrollmentsCount=" + (enrollments == null ? 0 : enrollments.size())
-                        + ", studentsCount=" + (students == null ? 0 : students.size()));
+                log.debug("LecturerViewController.students offeringId={}, enrollmentsCount={}, studentsCount={}",
+                        offeringId, (enrollments == null ? 0 : enrollments.size()),
+                        (students == null ? 0 : students.size()));
 
                 model.addAttribute("students", students);
                 model.addAttribute("enrollmentMap", enrollmentMap);
@@ -309,25 +316,17 @@ public class LecturerViewController {
             model.addAttribute("role", "LECTURER");
 
             var offerings = lecturerService.getOfferingsByLecturerId(lecturerId);
-            System.out.println("[DEBUG] Offerings for lecturerId=" + lecturerId + ":");
-            for (var off : offerings) {
-                System.out.println("  OfferingId=" + off.getId() + ", Course=" + off.getCourse().getCourseCode() + " - "
-                        + off.getCourse().getTitle() + ", Term=" + off.getTerm().getTermName());
-            }
+            log.debug("Offerings for lecturerId={}, count={}", lecturerId, offerings.size());
             List<com.cource.entity.ClassSchedule> schedules = new ArrayList<>();
             for (var offering : offerings) {
                 var classSchedules = classScheduleRepository.findByOfferingId(offering.getId());
-                System.out.println("    Schedules for OfferingId=" + offering.getId() + ": "
-                        + (classSchedules != null ? classSchedules.size() : 0));
+                log.debug("Schedules for OfferingId={}: {}", offering.getId(),
+                        (classSchedules != null ? classSchedules.size() : 0));
                 if (classSchedules != null) {
-                    for (var sched : classSchedules) {
-                        System.out.println("      ScheduleId=" + sched.getId() + ", Day=" + sched.getDayOfWeek()
-                                + ", Start=" + sched.getStartTime() + ", End=" + sched.getEndTime());
-                    }
                     schedules.addAll(classSchedules);
                 }
             }
-            System.out.println("[DEBUG] Total schedules found: " + schedules.size());
+            log.debug("Total schedules found: {}", schedules.size());
             model.addAttribute("schedules", schedules);
             model.addAttribute("offerings", offerings); // <-- Add offerings for course selection
         } else {

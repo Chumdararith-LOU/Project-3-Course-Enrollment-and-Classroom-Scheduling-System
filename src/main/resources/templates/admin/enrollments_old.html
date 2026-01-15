@@ -25,44 +25,15 @@
           transform: translateY(0);
         }
       }
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          max-height: 0;
-        }
-        to {
-          opacity: 1;
-          max-height: 2000px;
-        }
-      }
       .animate-fadeIn {
         animation: fadeIn 0.3s ease-out;
       }
       .animate-slideUp {
         animation: slideUp 0.4s ease-out;
       }
-      .course-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-      }
-      .course-card {
-        transition: all 0.3s ease;
-      }
-      .expand-icon {
-        transition: transform 0.3s ease;
-      }
-      .expanded .expand-icon {
-        transform: rotate(180deg);
-      }
-      .enrollment-table {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease-out, opacity 0.3s ease;
-        opacity: 0;
-      }
-      .enrollment-table.show {
-        max-height: 2000px;
-        opacity: 1;
+      .enrollment-row:hover {
+        transform: translateX(4px);
+        transition: all 0.2s ease;
       }
     </style>
   </head>
@@ -79,7 +50,7 @@
               Student Enrollments
             </h2>
             <p class="text-slate-600 mt-1">
-              Manage student enrollments grouped by course
+              Manage student enrollments, grades, and enrollment status
             </p>
           </div>
           <div class="flex gap-3">
@@ -159,304 +130,221 @@
                 <input
                   type="text"
                   id="searchInput"
-                  placeholder="Search by course code or title..."
-                  onkeyup="filterCourses()"
+                  placeholder="Search by student name or course..."
+                  onkeyup="filterEnrollments()"
                   class="w-full px-4 py-2.5 pl-11 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
             <div class="min-w-[200px]">
               <select
-                id="termFilter"
-                onchange="filterCourses()"
+                id="statusFilter"
+                onchange="filterEnrollments()"
                 class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">All Terms</option>
+                <option value="">All Statuses</option>
+                <option value="ENROLLED">Enrolled</option>
+                <option value="DROPPED">Dropped</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+            </div>
+            <div class="min-w-[250px]">
+              <select
+                id="offeringFilter"
+                onchange="filterEnrollments()"
+                class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Offerings</option>
                 <option
-                  th:each="term : ${terms}"
-                  th:value="${term.id}"
-                  th:text="${term.termName}"
+                  th:each="offering : ${offerings}"
+                  th:value="${offering.id}"
+                  th:text="${offering.course.courseCode + ' - ' + offering.term.termName}"
                 ></option>
               </select>
             </div>
-            <button
-              onclick="expandAll()"
-              class="px-4 py-2.5 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition"
-            >
-              Expand All
-            </button>
-            <button
-              onclick="collapseAll()"
-              class="px-4 py-2.5 text-sm font-medium bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition"
-            >
-              Collapse All
-            </button>
           </div>
         </div>
 
-        <!-- Courses with Enrollments - Grouped View -->
-        <div id="coursesContainer" class="space-y-4">
-          <th:block th:each="entry : ${enrollmentsByCourse}">
-            <div
-              class="course-card bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
-              th:data-course-code="${entry.key.courseCode}"
-              th:data-course-title="${entry.key.title}"
-              th:data-term-ids="${entry.value.![offering.term.id]}"
-            >
-              <!-- Course Header (Clickable) -->
-              <div
-                class="course-header cursor-pointer p-6 bg-gradient-to-r from-slate-50 to-white hover:from-blue-50 hover:to-white transition-all duration-300"
-                onclick="toggleCourse(this)"
+        <!-- Enrollments Table -->
+        <div
+          class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden"
+        >
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Student
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Course
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Term
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Grade
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Enrolled Date
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="enrollmentsTableBody"
+                class="divide-y divide-slate-200"
               >
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-4">
-                    <div
-                      class="w-14 h-14 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg"
-                    >
+                <tr
+                  th:each="enrollment : ${enrollments}"
+                  th:attr="data-id=${enrollment.id},data-student=${enrollment.student.fullName},data-course=${enrollment.offering.course.courseCode + ' - ' + enrollment.offering.course.title},data-status=${enrollment.status},data-offering=${enrollment.offering.id}"
+                  class="enrollment-row hover:bg-slate-50"
+                >
+                  <td class="px-6 py-4">
+                    <div class="text-sm font-medium text-slate-900">
+                      <span th:text="${enrollment.student.fullName}"></span>
+                    </div>
+                    <div class="text-sm text-slate-500">
+                      <span th:text="${enrollment.student.email}"></span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-sm font-medium text-slate-900">
                       <span
-                        th:text="${#strings.substring(entry.key.courseCode, 0, 2)}"
-                        >CS</span
-                      >
+                        th:text="${enrollment.offering.course.courseCode}"
+                      ></span>
                     </div>
-                    <div>
-                      <div class="flex items-center gap-3">
-                        <h3
-                          class="text-xl font-bold text-slate-900"
-                          th:text="${entry.key.courseCode}"
-                        >
-                          CS101
-                        </h3>
-                        <span
-                          class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700"
-                          th:text="${#lists.size(entry.value)} + ' students'"
-                          >10 students</span
-                        >
-                      </div>
-                      <p
-                        class="text-slate-600 mt-1"
-                        th:text="${entry.key.title}"
-                      >
-                        Introduction to Computer Science
-                      </p>
+                    <div class="text-sm text-slate-500">
+                      <span
+                        th:text="${enrollment.offering.course.title}"
+                      ></span>
                     </div>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <div class="text-right">
-                      <p class="text-sm text-slate-500">Credits</p>
-                      <p
-                        class="text-lg font-semibold text-slate-900"
-                        th:text="${entry.key.credits}"
-                      >
-                        3
-                      </p>
-                    </div>
-                    <div
-                      class="expand-icon w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center"
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    <span th:text="${enrollment.offering.term.termName}"></span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span
+                      th:if="${enrollment.grade != null}"
+                      th:classappend="${#strings.startsWith(enrollment.grade, 'A')} ? 'bg-green-100 text-green-800' : (${#strings.startsWith(enrollment.grade, 'B')} ? 'bg-blue-100 text-blue-800' : (${#strings.startsWith(enrollment.grade, 'C')} ? 'bg-yellow-100 text-yellow-800' : (${#strings.startsWith(enrollment.grade, 'D')} ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')))"
+                      class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium"
                     >
-                      <svg
-                        class="w-5 h-5 text-slate-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                      <span th:text="${enrollment.grade}"></span>
+                    </span>
+                    <span
+                      th:unless="${enrollment.grade != null}"
+                      class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+                    >
+                      No Grade
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span
+                      th:if="${enrollment.status == 'ENROLLED'}"
+                      class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      Enrolled
+                    </span>
+                    <span
+                      th:if="${enrollment.status == 'DROPPED'}"
+                      class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                    >
+                      Dropped
+                    </span>
+                    <span
+                      th:if="${enrollment.status == 'COMPLETED'}"
+                      class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      Completed
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600">
+                    <span
+                      th:text="${#temporals.format(enrollment.enrolledAt, 'MMM dd, yyyy')}"
+                    ></span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200"
+                        th:onclick="|openUserProfileView(${enrollment.student.id})|"
+                        title="View student profile"
                       >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+                        Profile
+                      </button>
+                      <button
+                        type="button"
+                        style="
+                          background-color: #f3e8ff !important;
+                          color: #7c3aed !important;
+                          border: 1px solid #c4b5fd !important;
+                        "
+                        class="btn-grade px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm"
+                        th:attr="data-id=${enrollment.id}"
+                        onmouseover="this.style.backgroundColor='#e9d5ff'; this.style.color='#6d28d9'"
+                        onmouseout="this.style.backgroundColor='#f3e8ff'; this.style.color='#7c3aed'"
+                      >
+                        Grade
+                      </button>
+                      <button
+                        type="button"
+                        style="
+                          background-color: #fef3c7 !important;
+                          color: #d97706 !important;
+                          border: 1px solid #fcd34d !important;
+                        "
+                        class="btn-status px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm"
+                        th:attr="data-id=${enrollment.id}"
+                        onmouseover="this.style.backgroundColor='#fde68a'; this.style.color='#b45309'"
+                        onmouseout="this.style.backgroundColor='#fef3c7'; this.style.color='#d97706'"
+                      >
+                        Status
+                      </button>
+                      <button
+                        type="button"
+                        style="
+                          background-color: #fee2e2 !important;
+                          color: #dc2626 !important;
+                          border: 1px solid #fca5a5 !important;
+                        "
+                        class="btn-delete px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm"
+                        th:attr="data-id=${enrollment.id}"
+                        onmouseover="this.style.backgroundColor='#fecaca'; this.style.color='#b91c1c'"
+                        onmouseout="this.style.backgroundColor='#fee2e2'; this.style.color='#dc2626'"
+                      >
+                        Delete
+                      </button>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Enrollment Table (Expandable) -->
-              <div class="enrollment-table border-t border-slate-200">
-                <div class="overflow-x-auto">
-                  <table class="w-full">
-                    <thead class="bg-slate-50">
-                      <tr>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                        >
-                          Student
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                        >
-                          Term
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                        >
-                          Grade
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                        >
-                          Status
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                        >
-                          Enrolled Date
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                        >
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200">
-                      <tr
-                        th:each="enrollment : ${entry.value}"
-                        class="hover:bg-slate-50 transition"
-                        th:data-term-id="${enrollment.offering.term.id}"
-                      >
-                        <td class="px-6 py-4">
-                          <div class="flex items-center gap-3">
-                            <div
-                              class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold text-sm"
-                            >
-                              <span
-                                th:text="${#strings.substring(enrollment.student.firstName, 0, 1) + #strings.substring(enrollment.student.lastName, 0, 1)}"
-                                >JD</span
-                              >
-                            </div>
-                            <div>
-                              <p
-                                class="text-sm font-medium text-slate-900"
-                                th:text="${enrollment.student.fullName}"
-                              >
-                                John Doe
-                              </p>
-                              <p
-                                class="text-xs text-slate-500"
-                                th:text="${enrollment.student.email}"
-                              >
-                                john@email.com
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4">
-                          <span
-                            class="px-2.5 py-1 text-xs font-medium rounded-lg bg-purple-100 text-purple-700"
-                            th:text="${enrollment.offering.term.termName}"
-                            >Fall 2025</span
-                          >
-                        </td>
-                        <td class="px-6 py-4">
-                          <span
-                            th:if="${enrollment.grade != null}"
-                            th:classappend="${enrollment.grade == 'W'} ? 'bg-gray-100 text-gray-700' : (${#strings.startsWith(enrollment.grade, 'A')} ? 'bg-green-100 text-green-800' : (${#strings.startsWith(enrollment.grade, 'B')} ? 'bg-blue-100 text-blue-800' : (${#strings.startsWith(enrollment.grade, 'C')} ? 'bg-yellow-100 text-yellow-800' : (${#strings.startsWith(enrollment.grade, 'D')} ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'))))"
-                            class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium"
-                            th:text="${enrollment.grade}"
-                            >A</span
-                          >
-                          <span
-                            th:unless="${enrollment.grade != null}"
-                            class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
-                            >-</span
-                          >
-                        </td>
-                        <td class="px-6 py-4">
-                          <span
-                            th:if="${enrollment.status == 'ENROLLED'}"
-                            class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                            >Enrolled</span
-                          >
-                          <span
-                            th:if="${enrollment.status == 'DROPPED'}"
-                            class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
-                            >Dropped</span
-                          >
-                          <span
-                            th:if="${enrollment.status == 'COMPLETED'}"
-                            class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                            >Completed</span
-                          >
-                          <span
-                            th:if="${enrollment.status == 'WAITLISTED'}"
-                            class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
-                            >Waitlisted</span
-                          >
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">
-                          <span
-                            th:text="${#temporals.format(enrollment.enrolledAt, 'MMM dd, yyyy')}"
-                            >Jan 15, 2025</span
-                          >
-                        </td>
-                        <td class="px-6 py-4">
-                          <div class="flex items-center gap-2">
-                            <button
-                              type="button"
-                              class="px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200"
-                              th:onclick="|openUserProfileView(${enrollment.student.id})|"
-                              title="View profile"
-                            >
-                              Profile
-                            </button>
-                            <button
-                              type="button"
-                              class="btn-grade px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm"
-                              style="
-                                background-color: #f3e8ff !important;
-                                color: #7c3aed !important;
-                                border: 1px solid #c4b5fd !important;
-                              "
-                              th:data-id="${enrollment.id}"
-                              onmouseover="this.style.backgroundColor='#e9d5ff'; this.style.color='#6d28d9'"
-                              onmouseout="this.style.backgroundColor='#f3e8ff'; this.style.color='#7c3aed'"
-                            >
-                              Grade
-                            </button>
-                            <button
-                              type="button"
-                              class="btn-status px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm"
-                              style="
-                                background-color: #fef3c7 !important;
-                                color: #d97706 !important;
-                                border: 1px solid #fcd34d !important;
-                              "
-                              th:data-id="${enrollment.id}"
-                              onmouseover="this.style.backgroundColor='#fde68a'; this.style.color='#b45309'"
-                              onmouseout="this.style.backgroundColor='#fef3c7'; this.style.color='#d97706'"
-                            >
-                              Status
-                            </button>
-                            <button
-                              type="button"
-                              class="btn-delete px-3 py-1.5 text-xs font-medium rounded-lg transition shadow-sm"
-                              style="
-                                background-color: #fee2e2 !important;
-                                color: #dc2626 !important;
-                                border: 1px solid #fca5a5 !important;
-                              "
-                              th:data-id="${enrollment.id}"
-                              onmouseover="this.style.backgroundColor='#fecaca'; this.style.color='#b91c1c'"
-                              onmouseout="this.style.backgroundColor='#fee2e2'; this.style.color='#dc2626'"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </th:block>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- Empty State -->
         <div
-          th:if="${#maps.isEmpty(enrollmentsByCourse)}"
-          class="text-center py-12 bg-white rounded-lg shadow-sm border border-slate-200"
+          th:if="${#lists.isEmpty(enrollments)}"
+          class="text-center py-12 bg-white rounded-lg shadow-sm border border-slate-200 mt-6"
         >
           <svg
             class="mx-auto w-16 h-16 text-slate-400 mb-4"
@@ -475,7 +363,7 @@
             No enrollments found
           </p>
           <p class="text-slate-500 text-sm">
-            Add a new enrollment to get started
+            Try adjusting your filters or add a new enrollment
           </p>
         </div>
       </div>
@@ -489,7 +377,9 @@
       <div
         class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all duration-300 animate-slideUp"
       >
-        <div class="bg-blue-600 px-6 py-4 rounded-t-lg">
+        <div
+          class="bg-blue-600 px-6 py-4 rounded-t-lg"
+        >
           <div class="flex items-center justify-between text-white">
             <h3 class="text-xl font-bold">Add New Enrollment</h3>
             <button
@@ -514,9 +404,9 @@
         </div>
         <form id="createForm" class="p-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5"
-              ><span class="text-red-500">*</span> Student</label
-            >
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              <span class="text-red-500">*</span> Student
+            </label>
             <select
               id="studentId"
               required
@@ -531,9 +421,9 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5"
-              ><span class="text-red-500">*</span> Course Offering</label
-            >
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              <span class="text-red-500">*</span> Course Offering
+            </label>
             <select
               id="offeringId"
               required
@@ -574,7 +464,9 @@
       <div
         class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all duration-300 animate-slideUp"
       >
-        <div class="bg-purple-600 px-6 py-4 rounded-t-lg">
+        <div
+          class="bg-purple-600 px-6 py-4 rounded-t-lg"
+        >
           <div class="flex items-center justify-between text-white">
             <h3 class="text-xl font-bold">Update Grade</h3>
             <button
@@ -675,10 +567,16 @@
               >
                 W
               </button>
+              <button
+                type="button"
+                onclick="selectGrade('I')"
+                class="grade-btn px-3 py-2 text-sm font-semibold border-2 border-slate-300 rounded-lg hover:border-gray-500 hover:bg-gray-50 hover:text-gray-700 transition"
+                title="Incomplete"
+              >
+                I
+              </button>
             </div>
-            <p class="text-xs text-slate-500 mt-2">
-              W = Withdrawal (auto-set when status changed to Dropped)
-            </p>
+            <p class="text-xs text-slate-500 mt-2">W = Withdrawal, I = Incomplete</p>
             <input type="hidden" id="selectedGrade" required />
           </div>
           <div class="flex gap-3 pt-4">
@@ -714,7 +612,9 @@
       <div
         class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all duration-300 animate-slideUp"
       >
-        <div class="bg-yellow-600 px-6 py-4 rounded-t-lg">
+        <div
+          class="bg-yellow-600 px-6 py-4 rounded-t-lg"
+        >
           <div class="flex items-center justify-between text-white">
             <h3 class="text-xl font-bold">Update Status</h3>
             <button
@@ -749,10 +649,10 @@
                 onclick="selectStatus('ENROLLED')"
                 class="status-btn w-full px-4 py-3 text-left font-semibold border-2 border-slate-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition flex items-center justify-between"
               >
-                <span class="flex items-center gap-2"
-                  ><span class="w-3 h-3 bg-green-500 rounded-full"></span
-                  >Enrolled</span
-                >
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                  Enrolled
+                </span>
                 <svg
                   class="w-5 h-5 text-green-600 hidden"
                   fill="currentColor"
@@ -770,12 +670,10 @@
                 onclick="selectStatus('DROPPED')"
                 class="status-btn w-full px-4 py-3 text-left font-semibold border-2 border-slate-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition flex items-center justify-between"
               >
-                <span class="flex items-center gap-2"
-                  ><span class="w-3 h-3 bg-red-500 rounded-full"></span>Dropped
-                  <span class="text-xs text-slate-500 font-normal"
-                    >(Grade will be set to W)</span
-                  ></span
-                >
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                  Dropped
+                </span>
                 <svg
                   class="w-5 h-5 text-red-600 hidden"
                   fill="currentColor"
@@ -793,10 +691,10 @@
                 onclick="selectStatus('COMPLETED')"
                 class="status-btn w-full px-4 py-3 text-left font-semibold border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition flex items-center justify-between"
               >
-                <span class="flex items-center gap-2"
-                  ><span class="w-3 h-3 bg-blue-500 rounded-full"></span
-                  >Completed</span
-                >
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                  Completed
+                </span>
                 <svg
                   class="w-5 h-5 text-blue-600 hidden"
                   fill="currentColor"
@@ -945,79 +843,15 @@
       let selectedGradeValue = null;
       let selectedStatusValue = null;
 
+      // Attach event listeners
       document.addEventListener("DOMContentLoaded", function () {
         attachEventListeners();
       });
 
-      // Toggle course expansion
-      function toggleCourse(header) {
-        const card = header.closest(".course-card");
-        const table = card.querySelector(".enrollment-table");
-        card.classList.toggle("expanded");
-        table.classList.toggle("show");
-      }
-
-      // Expand all courses
-      function expandAll() {
-        document.querySelectorAll(".course-card").forEach((card) => {
-          card.classList.add("expanded");
-          card.querySelector(".enrollment-table").classList.add("show");
-        });
-      }
-
-      // Collapse all courses
-      function collapseAll() {
-        document.querySelectorAll(".course-card").forEach((card) => {
-          card.classList.remove("expanded");
-          card.querySelector(".enrollment-table").classList.remove("show");
-        });
-      }
-
-      // Filter courses by search and term
-      function filterCourses() {
-        const searchTerm = document
-          .getElementById("searchInput")
-          .value.toLowerCase();
-        const termFilter = document.getElementById("termFilter").value;
-        const cards = document.querySelectorAll(".course-card");
-
-        cards.forEach((card) => {
-          const courseCode = card
-            .getAttribute("data-course-code")
-            .toLowerCase();
-          const courseTitle = card
-            .getAttribute("data-course-title")
-            .toLowerCase();
-          const matchesSearch =
-            courseCode.includes(searchTerm) || courseTitle.includes(searchTerm);
-
-          // Filter rows by term within each card
-          const rows = card.querySelectorAll("tbody tr");
-          let visibleRows = 0;
-          rows.forEach((row) => {
-            const rowTermId = row.getAttribute("data-term-id");
-            const matchesTerm = !termFilter || rowTermId === termFilter;
-            row.style.display = matchesTerm ? "" : "none";
-            if (matchesTerm) visibleRows++;
-          });
-
-          // Show/hide card based on search and if any rows are visible
-          const shouldShow = matchesSearch && (visibleRows > 0 || !termFilter);
-          card.style.display = shouldShow ? "" : "none";
-
-          // Update student count
-          if (shouldShow && termFilter) {
-            const countSpan = card.querySelector(".course-header .bg-blue-100");
-            if (countSpan) countSpan.textContent = visibleRows + " students";
-          }
-        });
-      }
-
       function attachEventListeners() {
-        // Event delegation for buttons in tables
-        document
-          .getElementById("coursesContainer")
-          .addEventListener("click", function (e) {
+        const tableBody = document.getElementById("enrollmentsTableBody");
+        if (tableBody) {
+          tableBody.addEventListener("click", function (e) {
             const target = e.target.closest("button");
             if (!target) return;
 
@@ -1032,6 +866,7 @@
               openDeleteModal(enrollmentId);
             }
           });
+        }
 
         // Create form
         document
@@ -1124,11 +959,7 @@
               );
 
               if (response.ok) {
-                showToast(
-                  "Status updated successfully" +
-                    (status === "DROPPED" ? " (Grade set to W)" : ""),
-                  "success"
-                );
+                showToast("Status updated successfully", "success");
                 closeStatusModal();
                 setTimeout(() => location.reload(), 1000);
               } else {
@@ -1149,7 +980,9 @@
             try {
               const response = await fetch(
                 `/api/admin/enrollments/${deleteEnrollmentId}`,
-                { method: "DELETE" }
+                {
+                  method: "DELETE",
+                }
               );
 
               if (response.ok) {
@@ -1164,6 +997,32 @@
               showToast("Error deleting enrollment", "error");
             }
           });
+      }
+
+      // Filter enrollments
+      function filterEnrollments() {
+        const searchTerm = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const statusFilter = document.getElementById("statusFilter").value;
+        const offeringFilter = document.getElementById("offeringFilter").value;
+        const rows = document.querySelectorAll("#enrollmentsTableBody tr");
+
+        rows.forEach((row) => {
+          const studentText = row.getAttribute("data-student").toLowerCase();
+          const courseText = row.getAttribute("data-course").toLowerCase();
+          const status = row.getAttribute("data-status");
+          const offering = row.getAttribute("data-offering");
+
+          const matchesSearch =
+            studentText.includes(searchTerm) || courseText.includes(searchTerm);
+          const matchesStatus = !statusFilter || status === statusFilter;
+          const matchesOffering =
+            !offeringFilter || offering === offeringFilter;
+
+          row.style.display =
+            matchesSearch && matchesStatus && matchesOffering ? "" : "none";
+        });
       }
 
       // Modal functions
@@ -1181,15 +1040,14 @@
       function openGradeModal(id) {
         document.getElementById("gradeEnrollmentId").value = id;
         document.getElementById("selectedGrade").value = "";
-        document
-          .querySelectorAll(".grade-btn")
-          .forEach((btn) =>
-            btn.classList.remove(
-              "border-purple-500",
-              "bg-purple-100",
-              "text-purple-700"
-            )
+        selectedGradeValue = null;
+        document.querySelectorAll(".grade-btn").forEach((btn) => {
+          btn.classList.remove(
+            "border-purple-500",
+            "bg-purple-100",
+            "text-purple-700"
           );
+        });
         document.getElementById("gradeModal").classList.remove("hidden");
         document.getElementById("gradeModal").classList.add("flex");
       }
@@ -1200,16 +1058,15 @@
       }
 
       function selectGrade(grade) {
+        selectedGradeValue = grade;
         document.getElementById("selectedGrade").value = grade;
-        document
-          .querySelectorAll(".grade-btn")
-          .forEach((btn) =>
-            btn.classList.remove(
-              "border-purple-500",
-              "bg-purple-100",
-              "text-purple-700"
-            )
+        document.querySelectorAll(".grade-btn").forEach((btn) => {
+          btn.classList.remove(
+            "border-purple-500",
+            "bg-purple-100",
+            "text-purple-700"
           );
+        });
         event.target.classList.add(
           "border-purple-500",
           "bg-purple-100",
@@ -1220,6 +1077,7 @@
       function openStatusModal(id) {
         document.getElementById("statusEnrollmentId").value = id;
         document.getElementById("selectedStatus").value = "";
+        selectedStatusValue = null;
         document
           .querySelectorAll(".status-btn svg")
           .forEach((svg) => svg.classList.add("hidden"));
@@ -1233,14 +1091,12 @@
       }
 
       function selectStatus(status) {
+        selectedStatusValue = status;
         document.getElementById("selectedStatus").value = status;
         document
           .querySelectorAll(".status-btn svg")
           .forEach((svg) => svg.classList.add("hidden"));
-        event.target
-          .closest(".status-btn")
-          .querySelector("svg")
-          .classList.remove("hidden");
+        event.target.querySelector("svg").classList.remove("hidden");
       }
 
       function openDeleteModal(id) {
@@ -1255,16 +1111,21 @@
         deleteEnrollmentId = null;
       }
 
+      // Toast notification
       function showToast(message, type = "success") {
         const toast = document.getElementById("toast");
         const toastMessage = document.getElementById("toastMessage");
         const toastIcon = document.getElementById("toastIcon");
 
         toastMessage.textContent = message;
-        toastIcon.innerHTML =
-          type === "success"
-            ? '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
-            : '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+
+        if (type === "success") {
+          toastIcon.innerHTML =
+            '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        } else {
+          toastIcon.innerHTML =
+            '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        }
 
         toast.classList.remove("hidden");
         toast.classList.add("flex");

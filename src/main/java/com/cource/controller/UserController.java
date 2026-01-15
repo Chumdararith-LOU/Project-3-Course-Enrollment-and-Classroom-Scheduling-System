@@ -21,11 +21,15 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
 
@@ -121,8 +125,7 @@ public class UserController {
             userService.updateAvatar(user.getId(), file);
             return ResponseEntity.ok(Collections.singletonMap("status", "success"));
         } catch (Exception e) {
-            // Log the full error for debugging
-            e.printStackTrace();
+            log.error("Avatar upload failed for user {}", user.getId(), e);
             String errorMsg = e.getMessage();
             if (errorMsg == null || errorMsg.isEmpty()) {
                 errorMsg = "Avatar upload failed: " + e.getClass().getSimpleName();

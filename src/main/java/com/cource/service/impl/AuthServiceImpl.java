@@ -29,6 +29,9 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
+        if (!user.isActive()) {
+            throw new IllegalArgumentException("Your account is inactive. Please contact the administrator.");
+        }
 
         String roleCode = user.getRole() != null ? user.getRole().getRoleCode() : null;
         String token = jwtService.generateToken(user.getEmail(), roleCode == null ? List.of() : List.of(roleCode));

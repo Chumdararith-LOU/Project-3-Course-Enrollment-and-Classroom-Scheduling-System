@@ -152,8 +152,15 @@ public class AdminViewController {
             model.addAttribute("role", "ADMIN");
         }
 
-        model.addAttribute("terms", adminService.getAllTerms());
-        model.addAttribute("courses", adminService.getAllCourses());
+        // Filter only active terms for offering creation dropdown
+        var allTerms = adminService.getAllTerms();
+        var activeTerms = allTerms.stream().filter(t -> t.isActive()).toList();
+        model.addAttribute("terms", activeTerms);
+
+        // Filter only active courses for offering creation dropdown
+        var allCourses = adminService.getAllCourses();
+        var activeCourses = allCourses.stream().filter(c -> c.isActive()).toList();
+        model.addAttribute("courses", activeCourses);
 
         var lecturers = new java.util.ArrayList<>(adminService.getUsersByRole("LECTURER"));
         var admins = adminService.getUsersByRole("ADMIN");
@@ -224,14 +231,27 @@ public class AdminViewController {
             model.addAttribute("role", "ADMIN");
         }
 
+        java.util.List<com.cource.entity.Enrollment> enrollments;
         if (offeringId != null) {
-            model.addAttribute("enrollments", adminService.getEnrollmentsByOffering(offeringId));
+            enrollments = adminService.getEnrollmentsByOffering(offeringId);
             model.addAttribute("offeringId", offeringId);
         } else {
-            model.addAttribute("enrollments", adminService.getAllEnrollments());
+            enrollments = adminService.getAllEnrollments();
         }
+
+        // Group enrollments by course
+        java.util.Map<com.cource.entity.Course, java.util.List<com.cource.entity.Enrollment>> enrollmentsByCourse = enrollments
+                .stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        e -> e.getOffering().getCourse(),
+                        java.util.LinkedHashMap::new,
+                        java.util.stream.Collectors.toList()));
+
+        model.addAttribute("enrollmentsByCourse", enrollmentsByCourse);
+        model.addAttribute("enrollments", enrollments);
         model.addAttribute("offerings", adminService.getAllCourseOfferings());
         model.addAttribute("students", adminService.getUsersByRole("STUDENT"));
+        model.addAttribute("terms", adminService.getAllTerms());
         return "admin/enrollments";
     }
 
