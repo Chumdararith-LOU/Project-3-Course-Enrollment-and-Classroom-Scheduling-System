@@ -62,7 +62,6 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public Course updateCourse(Long id, CourseUpdateRequest request) {
         Course course = getCourseById(id);
-
         if (request.getCourseCode() != null) {
             course.setCourseCode(request.getCourseCode());
         }
@@ -78,7 +77,6 @@ public class CourseServiceImpl implements CourseService {
         if (request.getActive() != null) {
             course.setActive(request.getActive());
         }
-
         return courseRepository.save(course);
     }
 
@@ -86,12 +84,6 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public void deleteCourse(Long id) {
         Course course = getCourseById(id);
-
-        List<CourseOffering> offerings = courseOfferingRepository.findByCourseId(id);
-        for (CourseOffering offering : offerings) {
-        }
-
-        courseOfferingRepository.deleteAll(offerings);
         courseRepository.delete(course);
     }
 
