@@ -1,10 +1,12 @@
 package com.cource.service.impl;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 import com.cource.dto.course.CourseOfferingRequestDTO;
 import com.cource.entity.*;
 import com.cource.repository.*;
+import com.cource.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,17 +27,17 @@ import jakarta.transaction.Transactional;
 public class LecturerServiceImpl implements LecturerService {
 
     private static final Logger log = LoggerFactory.getLogger(LecturerServiceImpl.class);
-    private static final java.util.List<String> ATTENDED_STATUSES = java.util.List.of("PRESENT", "LATE", "EXCUSED");
-    private static final java.util.Set<String> PASSING_GRADES = java.util.Set.of("A", "B", "C", "D");
-    private static final java.util.Set<String> GRADED_FOR_PASS_RATE = java.util.Set.of("A", "B", "C", "D", "F");
+    private static final List<String> ATTENDED_STATUSES = List.of("PRESENT", "LATE", "EXCUSED");
+    private static final Set<String> PASSING_GRADES = Set.of("A", "B", "C", "D");
+    private static final Set<String> GRADED_FOR_PASS_RATE = Set.of("A", "B", "C", "D", "F");
 
     private final AttendanceRepository attendanceRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final com.cource.repository.CourseOfferingRepository courseOfferingRepository;
-    private final com.cource.repository.CourseRepository courseRepository;
-    private final com.cource.repository.AcademicTermRepository academicTermRepository;
-    private final com.cource.service.CourseService courseService;
+    private final CourseOfferingRepository courseOfferingRepository;
+    private final CourseRepository courseRepository;
+    private final AcademicTermRepository academicTermRepository;
+    private final CourseService courseService;
     private final EnrollmentService enrollmentService;
 
     @Override
@@ -75,14 +77,12 @@ public class LecturerServiceImpl implements LecturerService {
         var attendance = attendanceRepository.findById(attendanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Attendance not found"));
 
-        // verify lecturer owns the offering for this attendance
         if (attendance.getSchedule() == null || attendance.getSchedule().getOffering() == null) {
             throw new ResourceNotFoundException("Associated schedule/offering not found");
         }
         if (lecturerId != null) {
             verifyOwnership(attendance.getSchedule().getOffering().getId(), lecturerId);
         }
-
         if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
             attendance.setStatus(dto.getStatus());
         }
@@ -146,9 +146,9 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public java.util.List<java.util.Map<String, Object>> getAttendanceRecordsAsDto(long scheduleId, Long lecturerId) {
+    public List<Map<String, Object>> getAttendanceRecordsAsDto(long scheduleId, Long lecturerId) {
         log.debug("getAttendanceRecordsAsDto start for scheduleId={}, lecturerId={}", scheduleId, lecturerId);
-        java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
+        List<Map<String, Object>> out = new ArrayList<>();
         try {
             List<Attendance> rows = attendanceRepository.findByScheduleIdWithStudent(scheduleId);
             log.debug("loaded attendance rows count={}", (rows == null ? 0 : rows.size()));
@@ -156,14 +156,16 @@ public class LecturerServiceImpl implements LecturerService {
                 rows = java.util.Collections.emptyList();
             }
             for (Attendance a : rows) {
-                java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                Map<String, Object> m = new LinkedHashMap<>();
                 m.put("id", a.getId());
                 m.put("attendanceDate", a.getAttendanceDate());
                 m.put("status", a.getStatus());
                 m.put("notes", a.getNotes());
                 if (a.getEnrollment() != null && a.getEnrollment().getStudent() != null) {
                     var student = a.getEnrollment().getStudent();
-                    java.util.Map<String, Object> s = new java.util.LinkedHashMap<>();
+
+                    Map<String, Object> s = new LinkedHashMap<>();
+
                     s.put("id", student.getId());
                     s.put("firstName", student.getFirstName());
                     s.put("lastName", student.getLastName());
@@ -173,7 +175,7 @@ public class LecturerServiceImpl implements LecturerService {
                 }
                 if (a.getRecordedBy() != null) {
                     var rb = a.getRecordedBy();
-                    java.util.Map<String, Object> r = new java.util.LinkedHashMap<>();
+                    Map<String, Object> r = new LinkedHashMap<>();
                     r.put("id", rb.getId());
                     r.put("fullName", rb.getFullName());
                     m.put("recordedBy", r);
@@ -187,18 +189,17 @@ public class LecturerServiceImpl implements LecturerService {
             return out;
         } catch (Exception ex) {
             log.error("getAttendanceRecordsAsDto failed", ex);
-            // fallback: try to load with the previous method (will initialize lazies)
             try {
                 List<Attendance> rows = getAttendanceRecords(scheduleId, lecturerId);
                 for (Attendance a : rows) {
-                    java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    Map<String, Object> m = new LinkedHashMap<>();
                     m.put("id", a.getId());
                     m.put("attendanceDate", a.getAttendanceDate());
                     m.put("status", a.getStatus());
                     m.put("notes", a.getNotes());
                     if (a.getEnrollment() != null && a.getEnrollment().getStudent() != null) {
                         var student = a.getEnrollment().getStudent();
-                        java.util.Map<String, Object> s = new java.util.LinkedHashMap<>();
+                        Map<String, Object> s = new LinkedHashMap<>();
                         s.put("id", student.getId());
                         s.put("firstName", student.getFirstName());
                         s.put("lastName", student.getLastName());
@@ -208,7 +209,7 @@ public class LecturerServiceImpl implements LecturerService {
                     }
                     if (a.getRecordedBy() != null) {
                         var rb = a.getRecordedBy();
-                        java.util.Map<String, Object> r = new java.util.LinkedHashMap<>();
+                        Map<String, Object> r = new LinkedHashMap<>();
                         r.put("id", rb.getId());
                         r.put("fullName", rb.getFullName());
                         m.put("recordedBy", r);
@@ -226,18 +227,20 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public java.util.Map<String, Long> getAttendanceCountsByDate(long lecturerId, int days) {
-        var offerings = courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering().getId()).distinct().toList();
+    public Map<String, Long> getAttendanceCountsByDate(long lecturerId, int days) {
+        List<Long> offeringIds = courseOfferingRepository.findByLecturerId(lecturerId)
+                .stream()
+                .map(CourseOffering::getId)
+                .toList();
 
-        java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
-        if (offerings.isEmpty())
-            return result;
+        if (offeringIds.isEmpty()) return new LinkedHashMap<>();
 
-        java.time.LocalDate from = java.time.LocalDate.now().minusDays(days - 1);
-        var rows = attendanceRepository.countByOfferingIdsSince(offerings, from);
+        LocalDate from = LocalDate.now().minusDays(days - 1);
+        List<Object[]> rows = attendanceRepository.countByOfferingIdsSince(offeringIds, from);
+
+        Map<String, Long> result = new LinkedHashMap<>();
         for (Object[] r : rows) {
-            java.time.LocalDate date = (java.time.LocalDate) r[0];
+            LocalDate date = (LocalDate) r[0];
             Long count = ((Number) r[1]).longValue();
             result.put(date.toString(), count);
         }
@@ -245,20 +248,22 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public java.util.Map<String, Long> getAttendanceCountsByDateRange(long lecturerId, java.time.LocalDate from,
-            java.time.LocalDate to, Long offeringId, String studentStatus) {
-        java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
+    public Map<String, Long> getAttendanceCountsByDateRange(long lecturerId, LocalDate from,
+            LocalDate to, Long offeringId, String studentStatus) {
+        Map<String, Long> result = new LinkedHashMap<>();
         if (from == null || to == null) {
             return result;
         }
 
-        java.util.List<Long> offeringIds;
+        List<Long> offeringIds;
         if (offeringId != null) {
             verifyOwnership(offeringId, lecturerId);
-            offeringIds = java.util.List.of(offeringId);
+            offeringIds = List.of(offeringId);
         } else {
-            offeringIds = courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                    .map(cl -> cl.getOffering().getId()).distinct().toList();
+            offeringIds = courseOfferingRepository.findByLecturerId(lecturerId)
+                    .stream()
+                    .map(CourseOffering::getId)
+                    .toList();
         }
         if (offeringIds.isEmpty()) {
             return result;
@@ -311,14 +316,18 @@ public class LecturerServiceImpl implements LecturerService {
         if (from == null || to == null) {
             return 0.0;
         }
-        java.util.List<Long> offeringIds;
+
+        List<Long> offeringIds;
         if (offeringId != null) {
             verifyOwnership(offeringId, lecturerId);
-            offeringIds = java.util.List.of(offeringId);
+            offeringIds = List.of(offeringId);
         } else {
-            offeringIds = courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                    .map(cl -> cl.getOffering().getId()).distinct().toList();
+            offeringIds = courseOfferingRepository.findByLecturerId(lecturerId)
+                    .stream()
+                    .map(CourseOffering::getId)
+                    .toList();
         }
+
         if (offeringIds.isEmpty()) {
             return 0.0;
         }
@@ -337,32 +346,23 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public java.util.List<LecturerCourseReportDTO> getCourseReports(long lecturerId, java.time.LocalDate from,
-            java.time.LocalDate to, String studentStatus) {
-        var offerings = courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering()).distinct().toList();
-
-        java.util.List<LecturerCourseReportDTO> out = new java.util.ArrayList<>();
+    public List<LecturerCourseReportDTO> getCourseReports(long lecturerId, LocalDate from, LocalDate to, String studentStatus) {
+        var offerings = courseOfferingRepository.findByLecturerId(lecturerId);
+        List<LecturerCourseReportDTO> out = new ArrayList<>();
         for (var off : offerings) {
-            long studentCount;
-            if (studentStatus == null || studentStatus.isBlank()) {
-                studentCount = enrollmentRepository.countByOfferingId(off.getId());
-            } else {
-                studentCount = enrollmentRepository.findByOfferingId(off.getId()).stream()
-                        .filter(e -> e.getStatus() != null && e.getStatus().equalsIgnoreCase(studentStatus))
-                        .count();
-            }
+            long studentCount = getStudentCount(off.getId(), studentStatus);
             double avgAttendance = calculateAverageAttendance(lecturerId, from, to, off.getId(), studentStatus);
             double passRate = calculatePassRate(lecturerId, off.getId(), studentStatus);
-            var dto = new LecturerCourseReportDTO(off.getId(),
+            out.add(new LecturerCourseReportDTO(
+                    off.getId(),
                     off.getCourse() != null ? off.getCourse().getCourseCode() : "",
                     off.getCourse() != null ? off.getCourse().getTitle() : "",
                     off.getTerm() != null ? off.getTerm().getTermName() : "",
                     studentCount,
                     avgAttendance,
                     passRate,
-                    off.isActive());
-            out.add(dto);
+                    off.isActive()
+            ));
         }
         return out;
     }
@@ -424,13 +424,13 @@ public class LecturerServiceImpl implements LecturerService {
     }
 
     @Override
-    public java.util.Map<String, Double> getCourseAverageGradeByLecturer(long lecturerId) {
-        var offerings = courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering()).distinct().toList();
-        java.util.Map<String, Double> out = new java.util.LinkedHashMap<>();
+    public Map<String, Double> getCourseAverageGradeByLecturer(long lecturerId) {
+        var offerings = courseOfferingRepository.findByLecturerId(lecturerId);
+        Map<String, Double> out = new LinkedHashMap<>();
         for (var off : offerings) {
             var enrolls = enrollmentRepository.findByOfferingId(off.getId()).stream()
-                    .filter(e -> e.getGrade() != null && !e.getGrade().isEmpty()).toList();
+                    .filter(e -> e.getGrade() != null && !e.getGrade().isEmpty())
+                    .toList();
             if (enrolls.isEmpty()) {
                 out.put(off.getCourse().getCourseCode() + " - " + off.getCourse().getTitle(), 0.0);
                 continue;
@@ -564,10 +564,15 @@ public class LecturerServiceImpl implements LecturerService {
             offering.setActive(dto.getActive());
         }
 
-        if (dto.getLecturerId() != null && !dto.getLecturerId().equals(lecturerId)) {
-            User newLecturer = new User();
-            newLecturer.setId(dto.getLecturerId());
-            offering.setLecturer(newLecturer);
+        if (dto.getEnrollmentCode() != null) {
+            String newCode = dto.getEnrollmentCode().trim();
+            if (!newCode.isBlank()) {
+                boolean exists = courseOfferingRepository.existsByEnrollmentCode(newCode);
+                if (exists && (offering.getEnrollmentCode() == null || !offering.getEnrollmentCode().equals(newCode))) {
+                    throw new IllegalArgumentException("Enrollment code already in use");
+                }
+                offering.setEnrollmentCode(newCode);
+            }
         }
 
         if (dto.getEnrollmentCode() != null) {
@@ -627,5 +632,14 @@ public class LecturerServiceImpl implements LecturerService {
         if (offering.getLecturer() == null || !offering.getLecturer().getId().equals(lecturerId)) {
             throw new SecurityException("Lecturer does not have access to this course offering.");
         }
+    }
+
+    private long getStudentCount(Long offeringId, String studentStatus) {
+        if (studentStatus == null || studentStatus.isBlank()) {
+            return enrollmentRepository.countByOfferingId(offeringId);
+        }
+        return enrollmentRepository.findByOfferingId(offeringId).stream()
+                .filter(e -> e.getStatus() != null && e.getStatus().equalsIgnoreCase(studentStatus))
+                .count();
     }
 }

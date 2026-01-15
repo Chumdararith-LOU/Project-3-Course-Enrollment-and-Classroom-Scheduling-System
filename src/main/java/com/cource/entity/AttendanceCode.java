@@ -10,7 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "attendance_codes", indexes = { @Index(columnList = "schedule_id") })
+@Table(name = "attendance_codes",
+        indexes = @Index(columnList = "schedule_id"),
+        uniqueConstraints = @UniqueConstraint(columnNames = "code")
+)
 public class AttendanceCode {
 
     @Id
@@ -27,8 +30,9 @@ public class AttendanceCode {
     @Column(name = "issued_at", nullable = false)
     private Long issuedAt;
 
-    @Column(name = "created_by")
-    private Long createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     @Column(name = "present_window_minutes")
     private Integer presentWindowMinutes;
