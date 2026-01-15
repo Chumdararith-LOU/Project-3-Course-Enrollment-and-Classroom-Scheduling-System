@@ -1,6 +1,7 @@
 package com.cource.service.impl;
 
 import com.cource.entity.CourseOffering;
+import com.cource.entity.Enrollment;
 import com.cource.entity.User;
 import com.cource.repository.AttendanceRepository;
 import com.cource.repository.EnrollmentRepository;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +73,13 @@ public class LecturerExportServiceImpl implements LecturerExportService {
 
     @Override
     public String exportStudentsCsv(Long offeringId, Long currentLecturerId) {
-        List<User> students = lecturerService.getEnrolledStudents(offeringId, currentLecturerId);
+        lecturerService.getOfferingById(currentLecturerId, offeringId);
+
+        List<User> students = enrollmentRepository.findByOfferingIdWithStudentFiltered(offeringId, "ENROLLED")
+                .stream()
+                .map(Enrollment::getStudent)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         StringBuilder csv = new StringBuilder();
         csv.append("Student ID,First Name,Last Name,Email,Active\n");
