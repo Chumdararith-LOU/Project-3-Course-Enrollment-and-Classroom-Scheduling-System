@@ -16,9 +16,6 @@ public class Course {
     @Column(name = "course_code", nullable = false, unique = true)
     private String courseCode;
 
-    @Column(name = "enrollment_code", unique = true)
-    private String enrollmentCode;
-
     @Column(nullable = false)
     private String title;
 
@@ -53,13 +50,7 @@ public class Course {
         this.courseCode = courseCode;
     }
 
-    public String getEnrollmentCode() {
-        return enrollmentCode;
-    }
-
-    public void setEnrollmentCode(String enrollmentCode) {
-        this.enrollmentCode = enrollmentCode;
-    }
+    // enrollmentCode removed: enrollment codes are stored on CourseOffering
 
     public String getTitle() {
         return title;

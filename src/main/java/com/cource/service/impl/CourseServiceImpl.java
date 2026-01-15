@@ -54,7 +54,6 @@ public class CourseServiceImpl implements CourseService {
     public Course createCourse(CourseCreateRequest request) {
         Course course = new Course();
         course.setCourseCode(request.getCourseCode());
-        course.setEnrollmentCode(generateEnrollmentCode(request.getCourseCode()));
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
         course.setCredits(request.getCredits());
@@ -138,8 +137,10 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public Course regenerateEnrollmentCode(Long id) {
         Course course = getCourseById(id);
-        course.setEnrollmentCode(generateEnrollmentCode(course.getCourseCode()));
-        return courseRepository.save(course);
+        // Course-level enrollment codes were removed; regenerate is a no-op.
+        log.info("regenerateEnrollmentCode called for course {} but course-level codes are not stored; no action taken",
+                id);
+        return course;
     }
 
     @Override

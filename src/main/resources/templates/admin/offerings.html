@@ -274,6 +274,31 @@
                           />
                         </svg>
                       </button>
+                      <button
+                        type="button"
+                        th:data-offering-id="${offering.id}"
+                        onclick="regenerateOfferingCode(this.dataset.offeringId)"
+                        class="text-slate-400 hover:text-purple-600 transition"
+                        title="Regenerate offering enrollment code"
+                      >
+                        <svg
+                          class="w-6 h-6 text-gray-800 dark:text-white"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
+                          />
+                        </svg>
+                      </button>
                     </div>
                   </td>
                   <td class="px-6 py-4 text-sm text-slate-600">
@@ -1110,6 +1135,68 @@
           showToast("Could not copy enrollment code", "error");
         }
       }
+      // Regenerate enrollment code
+      async function regenerateCode(id) {
+        if (
+          confirm(
+            "Are you sure you want to regenerate the course enrollment code? This does not change offering enrollment codes."
+          )
+        ) {
+          try {
+            const response = await fetch(
+              `/api/admin/courses/${id}/regenerate-code`,
+              {
+                method: "POST",
+              }
+            );
+
+            if (response.ok) {
+              const course = await response.json();
+              const code =
+                course && course.enrollmentCode ? course.enrollmentCode : "–";
+              showToast("New course enrollment code: " + code, "success");
+              setTimeout(() => window.location.reload(), 2000);
+            } else {
+              showToast("Error regenerating code", "error");
+            }
+          } catch (error) {
+            showToast("Error regenerating code", "error");
+          }
+        }
+      }
+
+      // Regenerate offering enrollment code (the code students actually use)
+      async function regenerateOfferingCode(offeringId) {
+        if (
+          confirm(
+            "Are you sure you want to regenerate the offering enrollment code? Students must use the new code."
+          )
+        ) {
+          try {
+            const response = await fetch(
+              `/api/admin/offerings/${offeringId}/regenerate-code`,
+              {
+                method: "POST",
+              }
+            );
+
+            if (response.ok) {
+              const offering = await response.json();
+              showToast(
+                "New offering enrollment code: " + offering.enrollmentCode,
+                "success"
+              );
+              setTimeout(() => window.location.reload(), 2000);
+            } else {
+              const error = await response.text();
+              showToast("Error: " + error, "error");
+            }
+          } catch (error) {
+            showToast("Error regenerating offering code", "error");
+          }
+        }
+      }
+
       /*]]>*/
     </script>
   </body>
