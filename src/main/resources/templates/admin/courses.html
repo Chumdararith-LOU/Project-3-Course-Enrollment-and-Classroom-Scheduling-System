@@ -476,32 +476,7 @@
               Enrollment code will be auto-generated from this
             </p>
           </div>
-          <div>
-            <label
-              for="createLecturerIds"
-              class="block text-sm font-medium text-slate-700 mb-1.5"
-            >
-              <span class="text-red-500">*</span> Lecturers
-            </label>
-            <select
-              id="createLecturerIds"
-              name="lecturerIds"
-              multiple
-              required
-              aria-label="Select lecturers for this course"
-              size="5"
-              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[120px] overflow-y-auto"
-            >
-              <option
-                th:each="lecturer : ${lecturers}"
-                th:value="${lecturer.id}"
-                th:text="${lecturer.fullName + ' (' + lecturer.email + ')'}"
-              ></option>
-            </select>
-            <p class="text-xs text-slate-500 mt-1">
-              Hold Ctrl (Cmd on Mac) to select multiple.
-            </p>
-          </div>
+      
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5"
@@ -623,32 +598,6 @@
             <div id="editOfferingCodes" class="space-y-1"></div>
             <p class="text-xs text-slate-500 mt-1">
               This is the code students must enter.
-            </p>
-          </div>
-          <div>
-            <label
-              for="editLecturerIds"
-              class="block text-sm font-medium text-slate-700 mb-1.5"
-            >
-              <span class="text-red-500">*</span> Lecturers
-            </label>
-            <select
-              id="editLecturerIds"
-              name="lecturerIds"
-              multiple
-              required
-              aria-label="Select lecturers for this course"
-              size="5"
-              class="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[120px] overflow-y-auto"
-            >
-              <option
-                th:each="lecturer : ${lecturers}"
-                th:value="${lecturer.id}"
-                th:text="${lecturer.fullName + ' (' + lecturer.email + ')'}"
-              ></option>
-            </select>
-            <p class="text-xs text-slate-500 mt-1">
-              Hold Ctrl (Cmd on Mac) to select multiple.
             </p>
           </div>
 
@@ -815,15 +764,7 @@
         });
       }
 
-      // Copy enrollment code
       function copyCode(code) {
-        navigator.clipboard.writeText(code).then(() => {
-          showToast("Enrollment code copied: " + code, "success");
-        });
-      }
-
-      function copyEditCode() {
-        const code = document.getElementById("editEnrollmentCode").textContent;
         navigator.clipboard.writeText(code).then(() => {
           showToast("Enrollment code copied: " + code, "success");
         });
@@ -885,26 +826,25 @@
 
       // Edit course
       async function editCourse(id) {
-        try {
-          const response = await fetch(`/api/admin/courses/${id}`);
-          const course = await response.json();
+          try {
+            const response = await fetch(`/api/admin/courses/${id}`);
+            const course = await response.json();
 
-          document.getElementById("editCourseId").value = course.id;
-          document.getElementById("editCourseCode").value = course.courseCode;
-          document.getElementById("editTitle").value = course.title;
-          document.getElementById("editDescription").value =
-            course.description || "";
-          document.getElementById("editCredits").value = course.credits;
-          document.getElementById("editActive").checked = course.active;
+            document.getElementById("editCourseId").value = course.id;
+            document.getElementById("editCourseCode").value = course.courseCode;
+            document.getElementById("editTitle").value = course.title;
+            document.getElementById("editDescription").value = course.description || "";
+            document.getElementById("editCredits").value = course.credits;
+            document.getElementById("editActive").checked = course.active;
 
-          populateEditOfferingCodes(id);
+            populateEditOfferingCodes(id);
 
-          document.getElementById("editCourseModal").classList.remove("hidden");
-          document.getElementById("editCourseModal").classList.add("flex");
-        } catch (error) {
-          showToast("Error loading course", "error");
+            document.getElementById("editCourseModal").classList.remove("hidden");
+            document.getElementById("editCourseModal").classList.add("flex");
+          } catch (error) {
+            showToast("Error loading course", "error");
+          }
         }
-      }
 
       function populateEditOfferingCodes(courseId) {
         const container = document.getElementById("editOfferingCodes");
@@ -978,37 +918,6 @@
             }
           } catch (error) {
             showToast("Error updating status", "error");
-          }
-        }
-      }
-
-      // Regenerate enrollment code
-      async function regenerateCode(id) {
-        if (
-          confirm(
-            "Are you sure you want to regenerate the course enrollment code? This does not change offering enrollment codes."
-          )
-        ) {
-          try {
-            const response = await fetch(
-              `/api/admin/courses/${id}/regenerate-code`,
-              {
-                method: "POST",
-              }
-            );
-
-            if (response.ok) {
-              const course = await response.json();
-              showToast(
-                "New course enrollment code: " + course.enrollmentCode,
-                "success"
-              );
-              setTimeout(() => window.location.reload(), 2000);
-            } else {
-              showToast("Error regenerating code", "error");
-            }
-          } catch (error) {
-            showToast("Error regenerating code", "error");
           }
         }
       }
