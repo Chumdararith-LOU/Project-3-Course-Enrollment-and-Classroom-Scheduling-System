@@ -33,7 +33,6 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final CourseOfferingRepository courseOfferingRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final CourseLecturerRepository courseLecturerRepository;
     private final ClassScheduleRepository classScheduleRepository;
 
     @Override
@@ -87,16 +86,11 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public void deleteCourse(Long id) {
         Course course = getCourseById(id);
+
         List<CourseOffering> offerings = courseOfferingRepository.findByCourseId(id);
         for (CourseOffering offering : offerings) {
-            Long offeringId = offering.getId();
-            List<Enrollment> enrollments = enrollmentRepository.findByOfferingId(offeringId);
-            enrollmentRepository.deleteAll(enrollments);
-            List<CourseLecturer> lecturers = offering.getLecturers();
-            courseLecturerRepository.deleteAll(lecturers);
-            List<ClassSchedule> schedules = classScheduleRepository.findByOfferingId(offeringId);
-            classScheduleRepository.deleteAll(schedules);
         }
+
         courseOfferingRepository.deleteAll(offerings);
         courseRepository.delete(course);
     }
@@ -123,29 +117,5 @@ public class CourseServiceImpl implements CourseService {
         Random random = new Random();
         int number = random.nextInt(10000);
         return String.format("%s%04d", prefix, number);
-    }
-
-    @Override
-    @Transactional
-    public Course regenerateEnrollmentCode(Long id) {
-        Course course = getCourseById(id);
-        System.out.println("Warning: regenerateEnrollmentCode called on Course. This should be done on CourseOffering.");
-        return course;
-    }
-
-    @Override
-    public void assignLecturersToCourse(Long courseId, List<Long> lecturerIds) {
-        log.warn(
-                "assignLecturersToCourse called for courseId {}. Lecturers are assigned to Course Offerings, not the Course definition.",
-                courseId);
-    }
-
-    @Override
-    public List<User> getLecturersForCourse(Long courseId) {
-        return courseOfferingRepository.findByCourseId(courseId).stream()
-                .flatMap(offering -> offering.getLecturers().stream())
-                .map(CourseLecturer::getLecturer)
-                .distinct()
-                .collect(Collectors.toList());
     }
 }

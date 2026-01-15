@@ -28,7 +28,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
     private final ClassScheduleRepository classScheduleRepository;
     private final RoomRepository roomRepository;
     private final CourseOfferingRepository courseOfferingRepository;
-    private final CourseLecturerRepository courseLecturerRepository;
     private final EnrollmentRepository enrollmentRepository;
 
     @Override
