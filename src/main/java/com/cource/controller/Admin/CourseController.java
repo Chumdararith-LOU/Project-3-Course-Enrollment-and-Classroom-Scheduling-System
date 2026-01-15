@@ -36,16 +36,5 @@ public class CourseController {
         courseService.deleteCourse(id);
         return ResponseEntity.noContent().build();
     }
-
-    @PostMapping("/{id}/lecturers")
-    public ResponseEntity<Void> assignLecturers(@PathVariable Long id, @RequestBody List<Long> lecturerIds) {
-        courseService.assignLecturersToCourse(id, lecturerIds);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/{id}/lecturers")
-    public ResponseEntity<List<User>> getLecturers(@PathVariable Long id) {
-        List<User> lecturers = courseService.getLecturersForCourse(id);
-        return ResponseEntity.ok(lecturers);
-    }
+t
 }
