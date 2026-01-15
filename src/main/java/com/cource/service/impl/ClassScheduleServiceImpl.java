@@ -10,7 +10,6 @@ import com.cource.exception.ResourceNotFoundException;
 import com.cource.exception.UnauthorizedException;
 import com.cource.repository.ClassScheduleRepository;
 import com.cource.repository.CourseOfferingRepository;
-import com.cource.repository.EnrollmentRepository;
 import com.cource.repository.RoomRepository;
 import com.cource.service.ClassScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
     private final ClassScheduleRepository classScheduleRepository;
     private final RoomRepository roomRepository;
     private final CourseOfferingRepository courseOfferingRepository;
-    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -49,21 +47,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
     @Override
     public ClassScheduleDTO create(ClassSchedule schedule) {
-        if (schedule == null) {
-            throw new IllegalArgumentException("Schedule is required");
-        }
-        if (schedule.getOffering() == null || schedule.getOffering().getId() == null) {
-            throw new IllegalArgumentException("offering.id is required");
-        }
-        if (schedule.getRoom() == null || schedule.getRoom().getId() == null) {
-            throw new IllegalArgumentException("room.id is required");
-        }
-
-        // Validate time order
-        if (schedule.getStartTime() != null && schedule.getEndTime() != null
-                && schedule.getStartTime().isAfter(schedule.getEndTime())) {
-            throw new IllegalArgumentException("Start time cannot be after end time");
-        }
+        validateSchedule(schedule);
 
         CourseOffering offering = courseOfferingRepository.findById(schedule.getOffering().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
@@ -71,24 +55,18 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
 
         // Check for room time conflicts
-        if (classScheduleRepository.existsOverlap(
-                room.getId(),
-                schedule.getDayOfWeek(),
-                schedule.getStartTime(),
-                schedule.getEndTime())) {
-            throw new ConflictException(String.format(
-                    "Room %s is already booked on %s from %s to %s",
-                    room.getRoomNumber(), schedule.getDayOfWeek(),
-                    schedule.getStartTime(), schedule.getEndTime()));
-        }
+        checkRoomTimeConflict(room.getId(), schedule.getDayOfWeek(),
+                schedule.getStartTime(), schedule.getEndTime(), null);
 
-        // Check room capacity vs enrolled students
-        long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ACTIVE");
-        if (room.getCapacity() > 0 && enrolledCount > room.getCapacity()) {
-            throw new ConflictException(String.format(
-                    "Room %s capacity (%d) is less than enrolled students (%d)",
-                    room.getRoomNumber(), room.getCapacity(), enrolledCount));
+        // Check lecturer time conflicts
+        if (offering.getLecturer() == null) {
+            throw new IllegalStateException("Offering must have an assigned lecturer for scheduling.");
         }
+        checkLecturerTimeConflict(offering.getLecturer().getId(), schedule.getDayOfWeek(),
+                schedule.getStartTime(), schedule.getEndTime(), null);
+
+        // CRITICAL: Check room capacity vs offering capacity
+        checkRoomCapacity(room, offering.getCapacity());
 
         schedule.setOffering(offering);
         schedule.setRoom(room);
@@ -102,55 +80,51 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         ClassSchedule existing = classScheduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
-        if (schedule != null) {
-            if (schedule.getOffering() != null && schedule.getOffering().getId() != null) {
-                CourseOffering offering = courseOfferingRepository.findById(schedule.getOffering().getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
-                existing.setOffering(offering);
-            }
-            if (schedule.getRoom() != null && schedule.getRoom().getId() != null) {
-                Room room = roomRepository.findById(schedule.getRoom().getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
-                existing.setRoom(room);
-            }
-            if (schedule.getDayOfWeek() != null) {
-                existing.setDayOfWeek(schedule.getDayOfWeek());
-            }
-            if (schedule.getStartTime() != null) {
-                existing.setStartTime(schedule.getStartTime());
-            }
-            if (schedule.getEndTime() != null) {
-                existing.setEndTime(schedule.getEndTime());
-            }
-
-            // Validate time order
-            if (existing.getStartTime() != null && existing.getEndTime() != null
-                    && existing.getStartTime().isAfter(existing.getEndTime())) {
-                throw new IllegalArgumentException("Start time cannot be after end time");
-            }
-
-            // Check for room time conflicts (exclude current schedule)
-            if (classScheduleRepository.existsOverlapWithId(
-                    existing.getRoom().getId(),
-                    existing.getDayOfWeek(),
-                    existing.getStartTime(),
-                    existing.getEndTime(),
-                    id)) {
-                throw new ConflictException(String.format(
-                        "Room %s is already booked on %s from %s to %s",
-                        existing.getRoom().getRoomNumber(), existing.getDayOfWeek(),
-                        existing.getStartTime(), existing.getEndTime()));
-            }
-
-            // Check room capacity vs enrolled students
-            long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(existing.getOffering().getId(),
-                    "ACTIVE");
-            if (existing.getRoom().getCapacity() > 0 && enrolledCount > existing.getRoom().getCapacity()) {
-                throw new ConflictException(String.format(
-                        "Room %s capacity (%d) is less than enrolled students (%d)",
-                        existing.getRoom().getRoomNumber(), existing.getRoom().getCapacity(), enrolledCount));
-            }
+        // Validate input schedule
+        if (schedule == null) {
+            throw new IllegalArgumentException("Schedule update data cannot be null");
         }
+
+        CourseOffering offeringToUpdate = existing.getOffering();
+        Room roomToUpdate = existing.getRoom();
+
+        // Update fields if provided
+        if (schedule.getOffering() != null && schedule.getOffering().getId() != null) {
+            offeringToUpdate = courseOfferingRepository.findById(schedule.getOffering().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("New Offering not found"));
+        }
+
+        if (schedule.getRoom() != null && schedule.getRoom().getId() != null) {
+            roomToUpdate = roomRepository.findById(schedule.getRoom().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("New Room not found"));
+        }
+
+        String dayOfWeek = schedule.getDayOfWeek() != null ? schedule.getDayOfWeek() : existing.getDayOfWeek();
+        LocalTime startTime = schedule.getStartTime() != null ? schedule.getStartTime() : existing.getStartTime();
+        LocalTime endTime = schedule.getEndTime() != null ? schedule.getEndTime() : existing.getEndTime();
+
+        // Validate time order
+        if (startTime != null && endTime != null && !startTime.isBefore(endTime)) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
+        // Check for conflicts
+        checkRoomTimeConflict(roomToUpdate.getId(), dayOfWeek, startTime, endTime, id);
+
+        if (offeringToUpdate.getLecturer() == null) {
+            throw new IllegalStateException("Offering must have an assigned lecturer for scheduling.");
+        }
+        checkLecturerTimeConflict(offeringToUpdate.getLecturer().getId(), dayOfWeek, startTime, endTime, id);
+
+        // CRITICAL: Check room capacity vs offering capacity
+        checkRoomCapacity(roomToUpdate, offeringToUpdate.getCapacity());
+
+        // Apply updates
+        existing.setOffering(offeringToUpdate);
+        existing.setRoom(roomToUpdate);
+        existing.setDayOfWeek(dayOfWeek);
+        existing.setStartTime(startTime);
+        existing.setEndTime(endTime);
 
         ClassSchedule saved = classScheduleRepository.save(existing);
         return ClassScheduleMapper.toDto(saved);
@@ -166,50 +140,23 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
     @Override
     public ClassScheduleDTO createFromParams(Long lecturerId, Long offeringId, String dayOfWeek, String startTime,
-            String endTime, String roomNumber, String building, String roomType) {
+                                             String endTime, String roomNumber, String building, String roomType) {
 
-        verifyLecturerAssigned(offeringId, lecturerId);
-
-        CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid offeringId"));
+        CourseOffering offering = validateLecturerAssignment(offeringId, lecturerId);
 
         LocalTime start = parseTime(startTime);
         LocalTime end = parseTime(endTime);
 
-        // Validate start time is before end time
         if (!start.isBefore(end)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 
-        Room room = upsertRoom(roomNumber, building, roomType);
+        Room room = getOrCreateRoom(roomNumber, building, roomType);
 
-        // Check for room time conflict
-        List<ClassSchedule> roomConflicts = classScheduleRepository.findConflictingSchedules(
-                room.getId(), dayOfWeek.toUpperCase(), start, end, null);
-        if (!roomConflicts.isEmpty()) {
-            ClassSchedule conflict = roomConflicts.get(0);
-            throw new IllegalArgumentException(String.format(
-                    "Room %s is already booked on %s from %s to %s",
-                    roomNumber, dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
-        }
+        checkRoomTimeConflict(room.getId(), dayOfWeek.toUpperCase(), start, end, null);
+        checkLecturerTimeConflict(lecturerId, dayOfWeek.toUpperCase(), start, end, null);
 
-        // Check for lecturer time conflict
-        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findConflictingSchedulesForLecturer(
-                lecturerId, dayOfWeek.toUpperCase(), start, end, null);
-        if (!lecturerConflicts.isEmpty()) {
-            ClassSchedule conflict = lecturerConflicts.get(0);
-            throw new IllegalArgumentException(String.format(
-                    "Lecturer already has a class on %s from %s to %s",
-                    dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
-        }
-
-        // Check room capacity vs enrolled students
-        long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ACTIVE");
-        if (room.getCapacity() > 0 && enrolledCount > room.getCapacity()) {
-            throw new ConflictException(String.format(
-                    "Room %s capacity (%d) is less than enrolled students (%d)",
-                    roomNumber, room.getCapacity(), enrolledCount));
-        }
+        checkRoomCapacity(room, offering.getCapacity());
 
         ClassSchedule cs = new ClassSchedule();
         cs.setOffering(offering);
@@ -224,58 +171,30 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
     @Override
     public ClassScheduleDTO updateFromParams(Long scheduleId, Long lecturerId, Long offeringId, String dayOfWeek,
-            String startTime, String endTime, String roomNumber, String building, String roomType) {
+                                             String startTime, String endTime, String roomNumber, String building, String roomType) {
 
-        verifyLecturerAssigned(offeringId, lecturerId);
+        if (scheduleId == null) {
+            throw new IllegalArgumentException("scheduleId is required for update");
+        }
 
-        CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid offeringId"));
+        CourseOffering offering = validateLecturerAssignment(offeringId, lecturerId);
 
         LocalTime start = parseTime(startTime);
         LocalTime end = parseTime(endTime);
 
-        // Validate start time is before end time
         if (!start.isBefore(end)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 
-        Room room = upsertRoom(roomNumber, building, roomType);
+        Room room = getOrCreateRoom(roomNumber, building, roomType);
 
-        // Check for room time conflict (exclude current schedule)
-        List<ClassSchedule> roomConflicts = classScheduleRepository.findConflictingSchedules(
-                room.getId(), dayOfWeek.toUpperCase(), start, end, scheduleId);
-        if (!roomConflicts.isEmpty()) {
-            ClassSchedule conflict = roomConflicts.get(0);
-            throw new IllegalArgumentException(String.format(
-                    "Room %s is already booked on %s from %s to %s",
-                    roomNumber, dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
-        }
+        checkRoomTimeConflict(room.getId(), dayOfWeek.toUpperCase(), start, end, scheduleId);
+        checkLecturerTimeConflict(lecturerId, dayOfWeek.toUpperCase(), start, end, scheduleId);
 
-        // Check for lecturer time conflict (exclude current schedule)
-        List<ClassSchedule> lecturerConflicts = classScheduleRepository.findConflictingSchedulesForLecturer(
-                lecturerId, dayOfWeek.toUpperCase(), start, end, scheduleId);
-        if (!lecturerConflicts.isEmpty()) {
-            ClassSchedule conflict = lecturerConflicts.get(0);
-            throw new IllegalArgumentException(String.format(
-                    "Lecturer already has a class on %s from %s to %s",
-                    dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
-        }
+        checkRoomCapacity(room, offering.getCapacity());
 
-        // Check room capacity vs enrolled students
-        long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offeringId, "ACTIVE");
-        if (room.getCapacity() > 0 && enrolledCount > room.getCapacity()) {
-            throw new ConflictException(String.format(
-                    "Room %s capacity (%d) is less than enrolled students (%d)",
-                    roomNumber, room.getCapacity(), enrolledCount));
-        }
-
-        ClassSchedule cs;
-        if (scheduleId != null) {
-            cs = classScheduleRepository.findById(scheduleId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
-        } else {
-            cs = new ClassSchedule();
-        }
+        ClassSchedule cs = classScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
         cs.setOffering(offering);
         cs.setRoom(room);
@@ -287,14 +206,85 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         return ClassScheduleMapper.toDto(saved);
     }
 
-    private void verifyLecturerAssigned(Long offeringId, Long lecturerId) {
+    private void validateSchedule(ClassSchedule schedule) {
+        if (schedule == null) {
+            throw new IllegalArgumentException("Schedule is required");
+        }
+        if (schedule.getOffering() == null || schedule.getOffering().getId() == null) {
+            throw new IllegalArgumentException("offering.id is required");
+        }
+        if (schedule.getRoom() == null || schedule.getRoom().getId() == null) {
+            throw new IllegalArgumentException("room.id is required");
+        }
+        if (schedule.getDayOfWeek() == null || schedule.getDayOfWeek().trim().isEmpty()) {
+            throw new IllegalArgumentException("dayOfWeek is required");
+        }
+        if (schedule.getStartTime() == null) {
+            throw new IllegalArgumentException("startTime is required");
+        }
+        if (schedule.getEndTime() == null) {
+            throw new IllegalArgumentException("endTime is required");
+        }
+
+        if (!schedule.getStartTime().isBefore(schedule.getEndTime())) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+    }
+
+    private CourseOffering validateLecturerAssignment(Long offeringId, Long lecturerId) {
         if (offeringId == null || lecturerId == null) {
             throw new IllegalArgumentException("offeringId and lecturerId are required");
         }
+
         CourseOffering offering = courseOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("Offering not found"));
+
         if (offering.getLecturer() == null || !offering.getLecturer().getId().equals(lecturerId)) {
             throw new UnauthorizedException("Lecturer is not assigned to this offering");
+        }
+
+        return offering;
+    }
+
+    private void checkRoomTimeConflict(Long roomId, String dayOfWeek, LocalTime startTime,
+                                       LocalTime endTime, Long excludeScheduleId) {
+        List<ClassSchedule> conflicts = classScheduleRepository.findConflictingSchedules(
+                roomId, dayOfWeek.toUpperCase(), startTime, endTime, excludeScheduleId);
+
+        if (!conflicts.isEmpty()) {
+            ClassSchedule conflict = conflicts.get(0);
+            throw new ConflictException(String.format(
+                    "Room is already booked on %s from %s to %s for %s",
+                    dayOfWeek, conflict.getStartTime(), conflict.getEndTime(),
+                    conflict.getOffering().getCourse().getCourseCode()));
+        }
+    }
+
+    private void checkLecturerTimeConflict(Long lecturerId, String dayOfWeek, LocalTime startTime,
+                                           LocalTime endTime, Long excludeScheduleId) {
+        List<ClassSchedule> conflicts = classScheduleRepository.findConflictingSchedulesForLecturer(
+                lecturerId, dayOfWeek.toUpperCase(), startTime, endTime, excludeScheduleId);
+
+        if (!conflicts.isEmpty()) {
+            ClassSchedule conflict = conflicts.get(0);
+            throw new ConflictException(String.format(
+                    "Lecturer already has a class on %s from %s to %s for %s",
+                    dayOfWeek, conflict.getStartTime(), conflict.getEndTime(),
+                    conflict.getOffering().getCourse().getCourseCode()));
+        }
+    }
+
+    private void checkRoomCapacity(Room room, int offeringCapacity) {
+        if (room.getCapacity() <= 0) {
+            throw new ConflictException(String.format(
+                    "Room %s has no capacity set (0 or negative). Please update room capacity before scheduling.",
+                    room.getRoomNumber()));
+        }
+
+        if (offeringCapacity > room.getCapacity()) {
+            throw new ConflictException(String.format(
+                    "Room %s capacity (%d) is less than offering capacity (%d). Cannot schedule.",
+                    room.getRoomNumber(), room.getCapacity(), offeringCapacity));
         }
     }
 
@@ -309,35 +299,20 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         }
     }
 
-    private Room upsertRoom(String roomNumber, String building, String roomType) {
+    private Room getOrCreateRoom(String roomNumber, String building, String roomType) {
         if (roomNumber == null || roomNumber.isBlank()) {
             throw new IllegalArgumentException("roomNumber is required");
         }
 
-        Room room = roomRepository.findByRoomNumber(roomNumber).orElseGet(() -> {
-            Room r = new Room();
-            r.setRoomNumber(roomNumber);
-            r.setBuilding(building != null ? building : "");
-            r.setCapacity(0);
-            r.setRoomType(roomType != null ? roomType : "");
-            return roomRepository.save(r);
-        });
-
-        boolean changed = false;
-        if ((room.getBuilding() == null || room.getBuilding().isEmpty())
-                && building != null && !building.isEmpty()) {
-            room.setBuilding(building);
-            changed = true;
-        }
-        if ((room.getRoomType() == null || room.getRoomType().isEmpty())
-                && roomType != null && !roomType.isEmpty()) {
-            room.setRoomType(roomType);
-            changed = true;
-        }
-        if (changed) {
-            room = roomRepository.save(room);
-        }
-
-        return room;
+        return roomRepository.findByRoomNumber(roomNumber)
+                .orElseGet(() -> {
+                    Room newRoom = new Room();
+                    newRoom.setRoomNumber(roomNumber);
+                    newRoom.setBuilding(building != null ? building : "");
+                    newRoom.setCapacity(0); // Default capacity - admin should update
+                    newRoom.setRoomType(roomType != null ? roomType : "");
+                    newRoom.setActive(true); // Use the correct field name
+                    return roomRepository.save(newRoom);
+                });
     }
 }
