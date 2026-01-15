@@ -25,8 +25,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final ClassScheduleRepository classScheduleRepository;
-    private final UserRepository userRepository;
-    private final CourseLecturerRepository courseLecturerRepository;
 
     @Override
     public Attendance recordAttendance(AttendanceRequestDTO request) {
@@ -220,28 +218,6 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         return results;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ClassSchedule> getTodaySchedulesForLecturer(Long lecturerId) {
-        String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
-
-        // Get all offerings for this lecturer
-        var courseLecturers = courseLecturerRepository.findByLecturerId(lecturerId);
-        List<Long> offeringIds = courseLecturers.stream()
-                .map(cl -> cl.getOffering().getId())
-                .collect(Collectors.toList());
-
-        if (offeringIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // Get schedules for today
-        return classScheduleRepository.findAll().stream()
-                .filter(s -> offeringIds.contains(s.getOffering().getId()))
-                .filter(s -> s.getDayOfWeek().equalsIgnoreCase(today))
-                .collect(Collectors.toList());
     }
 
     @Override
