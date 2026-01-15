@@ -54,7 +54,6 @@ public class CourseServiceImpl implements CourseService {
     public Course createCourse(CourseCreateRequest request) {
         Course course = new Course();
         course.setCourseCode(request.getCourseCode());
-        course.setEnrollmentCode(generateEnrollmentCode(request.getCourseCode()));
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
         course.setCredits(request.getCredits());
@@ -90,23 +89,17 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public void deleteCourse(Long id) {
         Course course = getCourseById(id);
-        // Find all offerings for this course
         List<CourseOffering> offerings = courseOfferingRepository.findByCourseId(id);
         for (CourseOffering offering : offerings) {
             Long offeringId = offering.getId();
-            // Delete all enrollments for this offering
             List<Enrollment> enrollments = enrollmentRepository.findByOfferingId(offeringId);
             enrollmentRepository.deleteAll(enrollments);
-            // Delete all lecturer assignments for this offering
             List<CourseLecturer> lecturers = offering.getLecturers();
             courseLecturerRepository.deleteAll(lecturers);
-            // Delete all class schedules for this offering
             List<ClassSchedule> schedules = classScheduleRepository.findByOfferingId(offeringId);
             classScheduleRepository.deleteAll(schedules);
         }
-        // Delete all offerings for this course
         courseOfferingRepository.deleteAll(offerings);
-        // Now delete the course
         courseRepository.delete(course);
     }
 
@@ -138,16 +131,12 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public Course regenerateEnrollmentCode(Long id) {
         Course course = getCourseById(id);
-        course.setEnrollmentCode(generateEnrollmentCode(course.getCourseCode()));
-        return courseRepository.save(course);
+        System.out.println("Warning: regenerateEnrollmentCode called on Course. This should be done on CourseOffering.");
+        return course;
     }
 
     @Override
     public void assignLecturersToCourse(Long courseId, List<Long> lecturerIds) {
-        // Implementation Note: The 'Course' entity does not strictly possess lecturers.
-        // Lecturers are assigned to 'CourseOfferings'.
-        // This method is left as a safe no-op to satisfy the interface without
-        // crashing.
         log.warn(
                 "assignLecturersToCourse called for courseId {}. Lecturers are assigned to Course Offerings, not the Course definition.",
                 courseId);
@@ -155,7 +144,6 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<User> getLecturersForCourse(Long courseId) {
-        // Retrieve all unique lecturers associated with any offering of this course
         return courseOfferingRepository.findByCourseId(courseId).stream()
                 .flatMap(offering -> offering.getLecturers().stream())
                 .map(CourseLecturer::getLecturer)

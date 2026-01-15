@@ -40,11 +40,30 @@ public class CourseOffering {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "enrollment_code", nullable = false, unique = true, length = 16)
+    private String enrollmentCode;
+
+    @Column(name = "enrollment_code_expires_at")
+    private LocalDateTime enrollmentCodeExpiresAt;
+
     public CourseOffering() {
     }
 
-    @Column(name = "enrollment_code", nullable = false, unique = true, length = 16)
-    private String enrollmentCode;
+    public LocalDateTime getEnrollmentCodeExpiresAt() {
+        return enrollmentCodeExpiresAt;
+    }
+
+    public void setEnrollmentCodeExpiresAt(LocalDateTime enrollmentCodeExpiresAt) {
+        this.enrollmentCodeExpiresAt = enrollmentCodeExpiresAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
     public Long getId() {
         return id;
@@ -101,4 +120,5 @@ public class CourseOffering {
     public void setEnrollmentCode(String enrollmentCode) {
         this.enrollmentCode = enrollmentCode;
     }
+
 }

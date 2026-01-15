@@ -19,13 +19,7 @@ CREATE TABLE users (
     role_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (role_id) REFERENCES roles(id),
-    INDEX idx_users_email (email),
-    INDEX idx_users_id_card (id_card),
-    INDEX idx_users_role (role_id),
-    INDEX idx_users_active (is_active),
-    INDEX idx_users_name (first_name, last_name),
-    INDEX idx_users_active_role (is_active, role_id)
+    FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
 -- 3. USER PROFILES (Department Removed)
@@ -50,11 +44,7 @@ CREATE TABLE academic_terms (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_terms_code (term_code),
-    INDEX idx_terms_active (is_active),
-    INDEX idx_terms_dates (start_date, end_date),
-    INDEX idx_terms_active_start (is_active, start_date)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 5. COURSES
@@ -66,10 +56,7 @@ CREATE TABLE courses (
     credits INT NOT NULL DEFAULT 3,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_courses_code (course_code),
-    INDEX idx_courses_title (title),
-    INDEX idx_courses_active (is_active)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- 6. COURSE OFFERINGS (No Section)
@@ -82,11 +69,7 @@ CREATE TABLE course_offerings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (course_id) REFERENCES courses(id),
     FOREIGN KEY (term_id) REFERENCES academic_terms(id),
-    UNIQUE KEY uk_offering (course_id, term_id),
-    INDEX idx_offerings_course (course_id),
-    INDEX idx_offerings_term (term_id),
-    INDEX idx_offerings_active (is_active),
-    INDEX idx_offerings_term_active (term_id, is_active)
+    UNIQUE KEY uk_offering (course_id, term_id)
 );
 
 -- 7. COURSE LECTURERS
@@ -98,10 +81,7 @@ CREATE TABLE course_lecturers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (offering_id) REFERENCES course_offerings(id) ON DELETE CASCADE,
     FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY uk_course_lecturer (offering_id, lecturer_id),
-    INDEX idx_lecturer_id (lecturer_id),
-    INDEX idx_lecturer_primary (is_primary),
-    INDEX idx_lecturer_offering (offering_id)
+    UNIQUE KEY uk_course_lecturer (offering_id, lecturer_id)
 );
 
 -- 8. ENROLLMENTS
@@ -114,13 +94,7 @@ CREATE TABLE enrollments (
     grade VARCHAR(5) NULL,
     FOREIGN KEY (student_id) REFERENCES users(id),
     FOREIGN KEY (offering_id) REFERENCES course_offerings(id),
-    UNIQUE KEY uk_enrollment (student_id, offering_id),
-    INDEX idx_enrollment_student (student_id),
-    INDEX idx_enrollment_offering (offering_id),
-    INDEX idx_enrollment_status (status),
-    INDEX idx_enrollment_grade (grade),
-    INDEX idx_enrollment_offering_status (offering_id, status),
-    INDEX idx_enrollment_student_status (student_id, status)
+    UNIQUE KEY uk_enrollment (student_id, offering_id)
 );
 
 -- 9. WAITLIST
@@ -134,12 +108,7 @@ CREATE TABLE waitlist (
     status VARCHAR(20) DEFAULT 'PENDING',
     FOREIGN KEY (student_id) REFERENCES users(id),
     FOREIGN KEY (offering_id) REFERENCES course_offerings(id),
-    UNIQUE KEY uk_waitlist (student_id, offering_id),
-    INDEX idx_waitlist_student (student_id),
-    INDEX idx_waitlist_offering (offering_id),
-    INDEX idx_waitlist_position (position),
-    INDEX idx_waitlist_status (status),
-    INDEX idx_waitlist_offering_pos (offering_id, position)
+    UNIQUE KEY uk_waitlist (student_id, offering_id)
 );
 
 -- 10. ROOMS (Updated: room_type varchar, no facilities)
@@ -151,15 +120,7 @@ CREATE TABLE rooms (
     room_type VARCHAR(50), -- 'LECTURE_HALL, LAB, SEMINAR, OTHER'
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_rooms_number (room_number),
-    INDEX idx_rooms_building (building),
-    INDEX idx_rooms_capacity (capacity),
-    INDEX idx_rooms_type (room_type),
-    INDEX idx_rooms_active (is_active),
-    INDEX idx_rooms_building_num (building, room_number),
-    INDEX idx_rooms_cap_active (capacity, is_active),
-    INDEX idx_rooms_type_cap (room_type, capacity)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- 11. CLASS SCHEDULES
@@ -173,12 +134,7 @@ CREATE TABLE class_schedules (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (offering_id) REFERENCES course_offerings(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(id),
-    UNIQUE KEY uk_schedule (room_id, day_of_week, start_time, end_time),
-    INDEX idx_schedule_offering (offering_id),
-    INDEX idx_schedule_room (room_id),
-    INDEX idx_schedule_day (day_of_week),
-    INDEX idx_schedule_offering_day (offering_id, day_of_week),
-    INDEX idx_schedule_day_time (day_of_week, start_time)
+    UNIQUE KEY uk_schedule (room_id, day_of_week, start_time, end_time)
 );
 
 -- 12. ATTENDANCE
@@ -194,12 +150,5 @@ CREATE TABLE attendance (
     FOREIGN KEY (enrollment_id) REFERENCES enrollments(id),
     FOREIGN KEY (schedule_id) REFERENCES class_schedules(id),
     FOREIGN KEY (recorded_by) REFERENCES users(id),
-    UNIQUE KEY uk_attendance (enrollment_id, schedule_id, attendance_date),
-    INDEX idx_attendance_enrollment (enrollment_id),
-    INDEX idx_attendance_schedule (schedule_id),
-    INDEX idx_attendance_date (attendance_date),
-    INDEX idx_attendance_status (status),
-    INDEX idx_attendance_recorder (recorded_by),
-    INDEX idx_attendance_date_status (attendance_date, status),
-    INDEX idx_attendance_enrollment_date (enrollment_id, attendance_date)
+    UNIQUE KEY uk_attendance (enrollment_id, schedule_id, attendance_date)
 );

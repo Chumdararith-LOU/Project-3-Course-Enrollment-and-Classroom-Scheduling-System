@@ -1,8 +1,10 @@
 package com.cource.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
@@ -28,6 +30,13 @@ public class User {
     @Column(name = "id_card", unique = true)
     private String idCard;
 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Prevent infinite recursion in JSON
+    private List<Enrollment> enrollments;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserProfile profile;
+
     @Column(name = "is_active")
     private boolean active = true;
 
@@ -43,6 +52,22 @@ public class User {
     private LocalDateTime updatedAt;
 
     public User() {
+    }
+
+    public List<Enrollment> getEnrollments() {
+        return enrollments;
+    }
+
+    public void setEnrollments(List<Enrollment> enrollments) {
+        this.enrollments = enrollments;
+    }
+
+    public UserProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(UserProfile profile) {
+        this.profile = profile;
     }
 
     public Long getId() {
