@@ -29,8 +29,6 @@ public class CourseCreateRequest {
 
     private Boolean active = true;
 
-    private List<Long> lectureIds;
-
     public boolean isActive() {
         return active != null ? active : false;
     }

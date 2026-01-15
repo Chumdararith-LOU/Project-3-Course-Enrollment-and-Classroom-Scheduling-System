@@ -7,7 +7,6 @@ import com.cource.repository.ClassScheduleRepository;
 import com.cource.entity.CourseOffering;
 import com.cource.entity.Enrollment;
 import com.cource.entity.User;
-import com.cource.entity.CourseLecturer;
 import com.cource.entity.ClassSchedule;
 
 import com.cource.dto.course.CourseCreateRequest;

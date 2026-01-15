@@ -1,7 +1,7 @@
 -- 1. ROLES
 CREATE TABLE roles (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    role_code VARCHAR(20) NOT NULL UNIQUE COMMENT 'STUDENT, LECTURER, ADMIN',
+    role_code VARCHAR(20) NOT NULL UNIQUE COMMENT 'ADMIN, LECTURER, STUDENT',
     role_name VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_role_code (role_code)
@@ -19,10 +19,12 @@ CREATE TABLE users (
     role_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (role_id) REFERENCES roles(id)
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    INDEX idx_users_role (role_id),
+    INDEX idx_users_email (email)
 );
 
--- 3. USER PROFILES (Department Removed)
+-- 3. USER PROFILES
 CREATE TABLE user_profiles (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
@@ -59,32 +61,27 @@ CREATE TABLE courses (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 6. COURSE OFFERINGS (No Section)
+-- 6. COURSE OFFERINGS (now with lecturer_id)
 CREATE TABLE course_offerings (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     course_id BIGINT NOT NULL,
     term_id BIGINT NOT NULL,
+    lecturer_id BIGINT NOT NULL,
     capacity INT NOT NULL DEFAULT 30,
     is_active BOOLEAN DEFAULT TRUE,
+    enrollment_code VARCHAR(16) NOT NULL UNIQUE,
+    enrollment_code_expires_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (course_id) REFERENCES courses(id),
     FOREIGN KEY (term_id) REFERENCES academic_terms(id),
-    UNIQUE KEY uk_offering (course_id, term_id)
+    FOREIGN KEY (lecturer_id) REFERENCES users(id),
+    UNIQUE KEY uk_offering (course_id, term_id),
+    INDEX idx_offerings_course (course_id),
+    INDEX idx_offerings_term (term_id),
+    INDEX idx_offerings_lecturer (lecturer_id)
 );
 
--- 7. COURSE LECTURERS
-CREATE TABLE course_lecturers (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    offering_id BIGINT NOT NULL,
-    lecturer_id BIGINT NOT NULL,
-    is_primary BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (offering_id) REFERENCES course_offerings(id) ON DELETE CASCADE,
-    FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY uk_course_lecturer (offering_id, lecturer_id)
-);
-
--- 8. ENROLLMENTS
+-- 7. ENROLLMENTS
 CREATE TABLE enrollments (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     student_id BIGINT NOT NULL,
@@ -93,11 +90,13 @@ CREATE TABLE enrollments (
     status VARCHAR(20) DEFAULT 'ENROLLED',
     grade VARCHAR(5) NULL,
     FOREIGN KEY (student_id) REFERENCES users(id),
-    FOREIGN KEY (offering_id) REFERENCES course_offerings(id),
-    UNIQUE KEY uk_enrollment (student_id, offering_id)
+    FOREIGN KEY (offering_id) REFERENCES course_offerings(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_enrollment (student_id, offering_id),
+    INDEX idx_enrollments_student (student_id),
+    INDEX idx_enrollments_offering (offering_id)
 );
 
--- 9. WAITLIST
+-- 8. WAITLIST
 CREATE TABLE waitlist (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     student_id BIGINT NOT NULL,
@@ -107,48 +106,67 @@ CREATE TABLE waitlist (
     notified_at TIMESTAMP NULL,
     status VARCHAR(20) DEFAULT 'PENDING',
     FOREIGN KEY (student_id) REFERENCES users(id),
-    FOREIGN KEY (offering_id) REFERENCES course_offerings(id),
-    UNIQUE KEY uk_waitlist (student_id, offering_id)
+    FOREIGN KEY (offering_id) REFERENCES course_offerings(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_waitlist (student_id, offering_id),
+    INDEX idx_waitlist_offering (offering_id)
 );
 
--- 10. ROOMS (Updated: room_type varchar, no facilities)
+-- 9. ROOMS
 CREATE TABLE rooms (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     room_number VARCHAR(20) NOT NULL UNIQUE,
     building VARCHAR(100) NOT NULL,
     capacity INT NOT NULL,
-    room_type VARCHAR(50), -- 'LECTURE_HALL, LAB, SEMINAR, OTHER'
+    room_type VARCHAR(50), -- 'LECTURE_HALL', 'LAB', 'SEMINAR'
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 11. CLASS SCHEDULES
+-- 10. CLASS SCHEDULES
 CREATE TABLE class_schedules (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     offering_id BIGINT NOT NULL,
     room_id BIGINT NOT NULL,
-    day_of_week VARCHAR(10) NOT NULL,
+    day_of_week VARCHAR(10) NOT NULL, -- MON, TUE, ..., SUN
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (offering_id) REFERENCES course_offerings(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(id),
-    UNIQUE KEY uk_schedule (room_id, day_of_week, start_time, end_time)
+    UNIQUE KEY uk_schedule_room_time (room_id, day_of_week, start_time, end_time),
+    INDEX idx_schedules_offering (offering_id)
 );
 
--- 12. ATTENDANCE
+-- 11. ATTENDANCE
 CREATE TABLE attendance (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     enrollment_id BIGINT NOT NULL,
     schedule_id BIGINT NOT NULL,
     attendance_date DATE NOT NULL,
-    status VARCHAR(20) DEFAULT 'PRESENT',
-    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'PRESENT', -- PRESENT, ABSENT, LATE, EXCUSED
     recorded_by BIGINT,
     notes TEXT,
-    FOREIGN KEY (enrollment_id) REFERENCES enrollments(id),
-    FOREIGN KEY (schedule_id) REFERENCES class_schedules(id),
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
+    FOREIGN KEY (schedule_id) REFERENCES class_schedules(id) ON DELETE CASCADE,
     FOREIGN KEY (recorded_by) REFERENCES users(id),
-    UNIQUE KEY uk_attendance (enrollment_id, schedule_id, attendance_date)
+    UNIQUE KEY uk_attendance (enrollment_id, schedule_id, attendance_date),
+    INDEX idx_attendance_schedule (schedule_id)
 );
+
+-- 12. ATTENDANCE CODES
+CREATE TABLE attendance_codes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    schedule_id BIGINT NOT NULL,
+    code VARCHAR(50) NOT NULL,
+    issued_at BIGINT NOT NULL COMMENT 'Epoch seconds',
+    created_by BIGINT,
+    present_window_minutes INT DEFAULT 10,
+    late_window_minutes INT DEFAULT 20,
+    FOREIGN KEY (schedule_id) REFERENCES class_schedules(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE KEY uk_attendance_code (code),
+    INDEX idx_attendance_codes_schedule (schedule_id)
+);
+

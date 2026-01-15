@@ -1,11 +1,17 @@
 package com.cource.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@NoArgsConstructor
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
 @Table(name = "course_offerings", uniqueConstraints = {
@@ -27,15 +33,28 @@ public class CourseOffering {
     @JsonIgnoreProperties({ "offerings" })
     private AcademicTerm term;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "lecturer_id", nullable = false)
+    @JsonIgnoreProperties({ "enrollments", "password", "profile" })
+    private User lecturer;
+
     @Column(nullable = false)
     private int capacity = 30;
 
     @Column(name = "is_active")
     private boolean active = true;
 
-    @OneToMany(mappedBy = "offering", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties({ "offering" })
-    private List<CourseLecturer> lecturers = new ArrayList<>();
+    @OneToMany(mappedBy = "offering", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Enrollment> enrollments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "offering", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Waitlist> waitlistEntries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "offering", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ClassSchedule> schedules = new ArrayList<>();
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -45,80 +64,4 @@ public class CourseOffering {
 
     @Column(name = "enrollment_code_expires_at")
     private LocalDateTime enrollmentCodeExpiresAt;
-
-    public CourseOffering() {
-    }
-
-    public LocalDateTime getEnrollmentCodeExpiresAt() {
-        return enrollmentCodeExpiresAt;
-    }
-
-    public void setEnrollmentCodeExpiresAt(LocalDateTime enrollmentCodeExpiresAt) {
-        this.enrollmentCodeExpiresAt = enrollmentCodeExpiresAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Course getCourse() {
-        return course;
-    }
-
-    public void setCourse(Course course) {
-        this.course = course;
-    }
-
-    public AcademicTerm getTerm() {
-        return term;
-    }
-
-    public void setTerm(AcademicTerm term) {
-        this.term = term;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public List<CourseLecturer> getLecturers() {
-        return lecturers;
-    }
-
-    public void setLecturers(List<CourseLecturer> lecturers) {
-        this.lecturers = lecturers;
-    }
-
-    public String getEnrollmentCode() {
-        return enrollmentCode;
-    }
-
-    public void setEnrollmentCode(String enrollmentCode) {
-        this.enrollmentCode = enrollmentCode;
-    }
-
 }
