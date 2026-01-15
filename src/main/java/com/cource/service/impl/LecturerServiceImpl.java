@@ -33,7 +33,6 @@ public class LecturerServiceImpl implements LecturerService {
     private static final java.util.Set<String> PASSING_GRADES = java.util.Set.of("A", "B", "C", "D");
     private static final java.util.Set<String> GRADED_FOR_PASS_RATE = java.util.Set.of("A", "B", "C", "D", "F");
 
-    private final CourseLecturerRepository courseLecturerRepository;
     private final AttendanceRepository attendanceRepository;
     private final ClassScheduleRepository classScheduleRepository;
     private final EnrollmentRepository enrollmentRepository;
@@ -65,8 +64,10 @@ public class LecturerServiceImpl implements LecturerService {
 
     @Override
     public List<Course> getCoursesByLecturerId(long lecturerId) {
-        return courseLecturerRepository.findByLecturerId(lecturerId).stream()
-                .map(cl -> cl.getOffering().getCourse())
+        return courseOfferingRepository.findAll().stream()
+                .filter(offering -> offering.getLecturer() != null &&
+                        offering.getLecturer().getId().equals(lecturerId))
+                .map(offering -> offering.getCourse())
                 .distinct()
                 .collect(Collectors.toList());
     }

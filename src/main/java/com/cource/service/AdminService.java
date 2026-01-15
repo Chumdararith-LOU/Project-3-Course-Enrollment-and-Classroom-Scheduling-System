@@ -5,60 +5,41 @@ import java.util.List;
 import java.util.Map;
 
 public interface AdminService {
-        // User management
         List<User> getAllUsers();
-
         List<User> getUsersByRole(String roleName);
 
         long getTotalStudents();
-
+        long getTotalCourses();
         long getTotalLecturers();
 
-        // Course management
         List<Course> getAllCourses();
-
-        long getTotalCourses();
-
-        // Course offerings
         List<CourseOffering> getAllCourseOfferings();
-
         List<CourseOffering> getCourseOfferingsByTerm(Long termId);
 
         CourseOffering getOfferingById(Long id);
-
-        CourseOffering createOffering(Long courseId, Long termId, Integer capacity, Boolean isActive);
-
-        CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive);
-
-        CourseOffering regenerateOfferingEnrollmentCode(Long offeringId);
+        CourseOffering createOffering(Long courseId, Long termId, Long lecturerId, Integer capacity, Boolean isActive);
+        CourseOffering updateOffering(Long id, Long courseId, Long termId, Long lecturerId, Integer capacity, Boolean isActive);        CourseOffering regenerateOfferingEnrollmentCode(Long offeringId);
 
         void deleteOffering(Long id);
 
         CourseOffering toggleOfferingStatus(Long id);
 
-        // Enrollment management
         List<Enrollment> getAllEnrollments();
-
         List<Enrollment> getEnrollmentsByOffering(Long offeringId);
 
         long getTotalEnrollments();
 
         Enrollment getEnrollmentById(Long id);
-
         Enrollment createEnrollment(Long studentId, Long offeringId);
-
         Enrollment updateEnrollmentGrade(Long id, String grade);
-
         Enrollment updateEnrollmentStatus(Long id, String status);
 
         void deleteEnrollment(Long id);
 
         // Schedule management
         List<ClassSchedule> getAllSchedules();
-
         // Room management
         List<Room> getAllRooms();
-
         // Term management
         List<AcademicTerm> getAllTerms();
 
@@ -88,12 +69,9 @@ public interface AdminService {
 
         Room toggleRoomStatus(Long id);
 
-        // Schedule management - CRUD
         ClassSchedule getScheduleById(Long id);
-
         ClassSchedule createSchedule(Long offeringId, Long roomId, String dayOfWeek, java.time.LocalTime startTime,
                         java.time.LocalTime endTime);
-
         ClassSchedule updateSchedule(Long id, Long offeringId, Long roomId, String dayOfWeek,
                         java.time.LocalTime startTime,
                         java.time.LocalTime endTime);
@@ -101,22 +79,9 @@ public interface AdminService {
         void deleteSchedule(Long id);
 
         List<ClassSchedule> getSchedulesByOffering(Long offeringId);
-
         List<ClassSchedule> getSchedulesByRoom(Long roomId);
 
-        // Statistics
         Map<String, Object> getEnrollmentStatsByTerm();
-
         Map<String, Object> getCoursePopularity();
 
-        // Lecturer assignment for offerings
-        List<User> getLecturersForOffering(Long offeringId);
-
-        void assignLecturersToOffering(Long offeringId, List<Long> lecturerIds);
-
-        void removeLecturerFromOffering(Long offeringId, Long lecturerId);
-
-        // Bulk assign a lecturer to all existing offerings (safe, idempotent)
-        // Returns number of new assignments created
-        int bulkAssignLecturerToAllOfferings(Long lecturerId);
 }

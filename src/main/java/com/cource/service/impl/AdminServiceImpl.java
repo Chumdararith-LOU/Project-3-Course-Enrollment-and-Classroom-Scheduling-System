@@ -35,77 +35,7 @@ public class AdminServiceImpl implements AdminService {
     private final ClassScheduleRepository classScheduleRepository;
     private final RoomRepository roomRepository;
     private final AcademicTermRepository academicTermRepository;
-    private final CourseLecturerRepository courseLecturerRepository;
     private final EnrollmentService enrollmentService;
-
-    @Override
-    public List<User> getLecturersForOffering(Long offeringId) {
-        CourseOffering offering = getOfferingById(offeringId);
-        return offering.getLecturers().stream()
-                .map(cl -> cl.getLecturer())
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional
-    public void assignLecturersToOffering(Long offeringId, List<Long> lecturerIds) {
-        CourseOffering offering = getOfferingById(offeringId);
-        // Remove existing assignments
-        List<CourseLecturer> current = courseLecturerRepository.findAll().stream()
-                .filter(cl -> cl.getOffering().getId().equals(offeringId))
-                .collect(Collectors.toList());
-        for (CourseLecturer cl : current) {
-            courseLecturerRepository.delete(cl);
-        }
-        // Add new assignments (unique only, and check for existing)
-        List<Long> uniqueLecturerIds = lecturerIds == null ? List.of() : lecturerIds.stream().distinct().toList();
-        for (Long lecturerId : uniqueLecturerIds) {
-            if (courseLecturerRepository.existsByOfferingIdAndLecturerId(offeringId, lecturerId)) {
-                continue; // Defensive: skip if already exists
-            }
-            User lecturer = userRepository.findById(lecturerId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found with id: " + lecturerId));
-            CourseLecturer cl = new CourseLecturer();
-            cl.setOffering(offering);
-            cl.setLecturer(lecturer);
-            cl.setPrimary(false); // Admin assigns, not primary by default
-            courseLecturerRepository.save(cl);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void removeLecturerFromOffering(Long offeringId, Long lecturerId) {
-        List<CourseLecturer> matches = courseLecturerRepository.findAll().stream()
-                .filter(cl -> cl.getOffering().getId().equals(offeringId)
-                        && cl.getLecturer().getId().equals(lecturerId))
-                .collect(Collectors.toList());
-        for (CourseLecturer cl : matches) {
-            courseLecturerRepository.delete(cl);
-        }
-    }
-
-    @Override
-    @Transactional
-    public int bulkAssignLecturerToAllOfferings(Long lecturerId) {
-        var lecturer = userRepository.findById(lecturerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found with id: " + lecturerId));
-        List<CourseOffering> offerings = courseOfferingRepository.findAll();
-        int created = 0;
-        for (CourseOffering off : offerings) {
-            boolean exists = courseLecturerRepository.existsByOfferingIdAndLecturerId(off.getId(), lecturerId);
-            if (exists)
-                continue;
-            CourseLecturer cl = new CourseLecturer();
-            cl.setOffering(off);
-            cl.setLecturer(lecturer);
-            cl.setPrimary(false);
-            courseLecturerRepository.save(cl);
-            created++;
-        }
-        log.info("[ADMIN] bulkAssignLecturerToAllOfferings created={} for lecturerId={}", created, lecturerId);
-        return created;
-    }
 
     @Override
     public List<User> getAllUsers() {
@@ -155,7 +85,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public CourseOffering createOffering(Long courseId, Long termId, Integer capacity, Boolean isActive) {
+    public CourseOffering createOffering(Long courseId, Long termId, Long lecturerId, Integer capacity, Boolean isActive) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         if (!course.isActive()) {
@@ -163,13 +93,18 @@ public class AdminServiceImpl implements AdminService {
         }
         AcademicTerm term = academicTermRepository.findById(termId)
                 .orElseThrow(() -> new ResourceNotFoundException("Term not found with id: " + termId));
+        User lecturer = userRepository.findById(lecturerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found with id: " + lecturerId));
+        if (!"LECTURER".equals(lecturer.getRole().getRoleCode())) {
+            throw new IllegalArgumentException("User is not a lecturer");
+        }
 
         CourseOffering offering = new CourseOffering();
         offering.setCourse(course);
         offering.setTerm(term);
-        offering.setCapacity(capacity);
+        offering.setLecturer(lecturer);
+        offering.setCapacity(capacity != null ? capacity : 30);
         offering.setActive(isActive != null ? isActive : true);
-        // Ensure enrollment code is set (generate from course code)
         offering.setEnrollmentCode(courseService.generateEnrollmentCode(course.getCourseCode()));
 
         return courseOfferingRepository.save(offering);
@@ -177,32 +112,47 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public CourseOffering updateOffering(Long id, Long courseId, Long termId, Integer capacity, Boolean isActive) {
+    public CourseOffering updateOffering(Long id, Long courseId, Long termId, Long lecturerId, Integer capacity, Boolean isActive) {
         CourseOffering offering = getOfferingById(id);
 
-        Integer oldCapacity = offering.getCapacity();
-        boolean oldActive = offering.isActive();
-
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
-        if (!course.isActive()) {
-            throw new IllegalArgumentException("Cannot use inactive course for offering: " + course.getCourseCode());
+        if (courseId != null) {
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+            if (!course.isActive()) {
+                throw new IllegalArgumentException("Cannot use inactive course");
+            }
+            offering.setCourse(course);
         }
-        AcademicTerm term = academicTermRepository.findById(termId)
-                .orElseThrow(() -> new ResourceNotFoundException("Term not found with id: " + termId));
 
-        offering.setCourse(course);
-        offering.setTerm(term);
-        offering.setCapacity(capacity);
+        if (termId != null) {
+            AcademicTerm term = academicTermRepository.findById(termId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Term not found"));
+            offering.setTerm(term);
+        }
+
+        if (lecturerId != null) {
+            User lecturer = userRepository.findById(lecturerId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
+            if (!"LECTURER".equals(lecturer.getRole().getRoleCode())) {
+                throw new IllegalArgumentException("User is not a lecturer");
+            }
+            offering.setLecturer(lecturer);
+        }
+
+        if (capacity != null) {
+            offering.setCapacity(capacity);
+        }
+
         if (isActive != null) {
             offering.setActive(isActive);
         }
 
         CourseOffering saved = courseOfferingRepository.save(offering);
 
-        boolean capacityIncreased = capacity != null && (oldCapacity == null || capacity > oldCapacity);
-        boolean activated = isActive != null && isActive && !oldActive;
-        if (saved.isActive() && (capacityIncreased || activated)) {
+        // Process waitlist if reactivated or capacity increased
+        boolean wasInactive = !offering.isActive() && Boolean.TRUE.equals(isActive);
+        boolean capacityIncreased = capacity != null && capacity > offering.getCapacity();
+        if (saved.isActive() && (wasInactive || capacityIncreased)) {
             enrollmentService.processWaitlist(saved.getId());
         }
 
