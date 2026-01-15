@@ -7,6 +7,8 @@ import com.cource.repository.*;
 import com.cource.service.AdminService;
 import com.cource.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminServiceImpl implements AdminService {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminServiceImpl.class);
 
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
@@ -99,8 +103,7 @@ public class AdminServiceImpl implements AdminService {
             courseLecturerRepository.save(cl);
             created++;
         }
-        System.out.println(
-                "[ADMIN] bulkAssignLecturerToAllOfferings created=" + created + " for lecturerId=" + lecturerId);
+        log.info("[ADMIN] bulkAssignLecturerToAllOfferings created={} for lecturerId={}", created, lecturerId);
         return created;
     }
 
@@ -155,6 +158,9 @@ public class AdminServiceImpl implements AdminService {
     public CourseOffering createOffering(Long courseId, Long termId, Integer capacity, Boolean isActive) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+        if (!course.isActive()) {
+            throw new IllegalArgumentException("Cannot create offering for inactive course: " + course.getCourseCode());
+        }
         AcademicTerm term = academicTermRepository.findById(termId)
                 .orElseThrow(() -> new ResourceNotFoundException("Term not found with id: " + termId));
 
@@ -179,6 +185,9 @@ public class AdminServiceImpl implements AdminService {
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+        if (!course.isActive()) {
+            throw new IllegalArgumentException("Cannot use inactive course for offering: " + course.getCourseCode());
+        }
         AcademicTerm term = academicTermRepository.findById(termId)
                 .orElseThrow(() -> new ResourceNotFoundException("Term not found with id: " + termId));
 
@@ -293,7 +302,8 @@ public class AdminServiceImpl implements AdminService {
     public Enrollment updateEnrollmentGrade(Long id, String grade) {
         if (grade != null && !grade.isBlank() && !VALID_GRADES.contains(grade.toUpperCase())) {
             throw new IllegalArgumentException(
-                    "Invalid grade: " + grade + ". Valid grades are: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, F, W, I");
+                    "Invalid grade: " + grade
+                            + ". Valid grades are: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, F, W, I");
         }
         Enrollment enrollment = getEnrollmentById(id);
         enrollment.setGrade(grade != null ? grade.toUpperCase() : null);
@@ -308,10 +318,16 @@ public class AdminServiceImpl implements AdminService {
     public Enrollment updateEnrollmentStatus(Long id, String status) {
         if (status != null && !status.isBlank() && !VALID_STATUSES.contains(status.toUpperCase())) {
             throw new IllegalArgumentException(
-                    "Invalid status: " + status + ". Valid statuses are: ENROLLED, DROPPED, COMPLETED, FAILED, WAITLISTED");
+                    "Invalid status: " + status
+                            + ". Valid statuses are: ENROLLED, DROPPED, COMPLETED, FAILED, WAITLISTED");
         }
         Enrollment enrollment = getEnrollmentById(id);
-        enrollment.setStatus(status != null ? status.toUpperCase() : null);
+        String upperStatus = status != null ? status.toUpperCase() : null;
+        enrollment.setStatus(upperStatus);
+        // Auto-set grade to "W" (Withdrawal) when status is changed to DROPPED
+        if ("DROPPED".equals(upperStatus)) {
+            enrollment.setGrade("W");
+        }
         return enrollmentRepository.save(enrollment);
     }
 
@@ -349,7 +365,16 @@ public class AdminServiceImpl implements AdminService {
             startDate = java.time.LocalDate.now();
         }
         int year = startDate.getYear();
-        String prefix = String.valueOf(year);
+        int month = startDate.getMonthValue();
+        String season;
+        if (month >= 1 && month <= 5) {
+            season = "SPRING";
+        } else if (month >= 6 && month <= 8) {
+            season = "SUMMER";
+        } else {
+            season = "FALL";
+        }
+        String prefix = season + year;
 
         // Find existing codes with this prefix
         java.util.List<String> existingCodes = academicTermRepository.findTermCodesByPrefix(prefix);
@@ -505,10 +530,34 @@ public class AdminServiceImpl implements AdminService {
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
 
+        // Validate time order
+        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("Start time cannot be after end time");
+        }
+
+        // Check for room time conflicts (overlapping schedules)
+        // A conflict occurs when: existing.start < new.end AND existing.end > new.start
+        if (classScheduleRepository.existsOverlap(roomId, dayOfWeek.toUpperCase(), startTime, endTime)) {
+            // Find the conflicting schedule to provide detailed error message
+            List<ClassSchedule> conflicts = classScheduleRepository.findConflictingSchedules(
+                    roomId, dayOfWeek.toUpperCase(), startTime, endTime, null);
+            if (!conflicts.isEmpty()) {
+                ClassSchedule conflict = conflicts.get(0);
+                throw new ConflictException(String.format(
+                        "Room %s is already booked on %s from %s to %s. Your requested time %s - %s overlaps with this schedule.",
+                        room.getRoomNumber(), dayOfWeek,
+                        conflict.getStartTime(), conflict.getEndTime(),
+                        startTime, endTime));
+            }
+            throw new ConflictException(String.format(
+                    "Room %s is already booked on %s during the requested time slot %s - %s",
+                    room.getRoomNumber(), dayOfWeek, startTime, endTime));
+        }
+
         ClassSchedule schedule = new ClassSchedule();
         schedule.setOffering(offering);
         schedule.setRoom(room);
-        schedule.setDayOfWeek(dayOfWeek);
+        schedule.setDayOfWeek(dayOfWeek.toUpperCase());
         schedule.setStartTime(startTime);
         schedule.setEndTime(endTime);
 
@@ -523,9 +572,33 @@ public class AdminServiceImpl implements AdminService {
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
 
+        // Validate time order
+        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("Start time cannot be after end time");
+        }
+
+        // Check for room time conflicts (exclude current schedule from check)
+        // A conflict occurs when: existing.start < new.end AND existing.end > new.start
+        if (classScheduleRepository.existsOverlapWithId(roomId, dayOfWeek.toUpperCase(), startTime, endTime, id)) {
+            // Find the conflicting schedule to provide detailed error message
+            List<ClassSchedule> conflicts = classScheduleRepository.findConflictingSchedules(
+                    roomId, dayOfWeek.toUpperCase(), startTime, endTime, id);
+            if (!conflicts.isEmpty()) {
+                ClassSchedule conflict = conflicts.get(0);
+                throw new ConflictException(String.format(
+                        "Room %s is already booked on %s from %s to %s. Your requested time %s - %s overlaps with this schedule.",
+                        room.getRoomNumber(), dayOfWeek,
+                        conflict.getStartTime(), conflict.getEndTime(),
+                        startTime, endTime));
+            }
+            throw new ConflictException(String.format(
+                    "Room %s is already booked on %s during the requested time slot %s - %s",
+                    room.getRoomNumber(), dayOfWeek, startTime, endTime));
+        }
+
         schedule.setOffering(offering);
         schedule.setRoom(room);
-        schedule.setDayOfWeek(dayOfWeek);
+        schedule.setDayOfWeek(dayOfWeek.toUpperCase());
         schedule.setStartTime(startTime);
         schedule.setEndTime(endTime);
 

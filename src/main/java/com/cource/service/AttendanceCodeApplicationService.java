@@ -26,9 +26,15 @@ public class AttendanceCodeApplicationService {
     private final ClassScheduleRepository classScheduleRepository;
 
     public AttendanceCodeDetailsDTO generateDetails(Long scheduleId, Long lecturerId, Integer presentMinutes,
-            Integer lateMinutes) {
-        var info = attendanceCodeService.generate(scheduleId, lecturerId, presentMinutes, lateMinutes);
+            Integer lateMinutes, Long issuedAt) {
+        var info = attendanceCodeService.generate(scheduleId, lecturerId, presentMinutes, lateMinutes, issuedAt);
         return enrichDetails(scheduleId, info);
+    }
+
+    // Overload for backward compatibility
+    public AttendanceCodeDetailsDTO generateDetails(Long scheduleId, Long lecturerId, Integer presentMinutes,
+            Integer lateMinutes) {
+        return generateDetails(scheduleId, lecturerId, presentMinutes, lateMinutes, null);
     }
 
     public AttendanceCodeDetailsDTO currentDetails(Long scheduleId) {

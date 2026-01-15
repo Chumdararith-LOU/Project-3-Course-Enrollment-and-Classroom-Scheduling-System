@@ -247,13 +247,13 @@ public class StudentViewController {
             model.addAttribute("studentId", studentId);
             model.addAttribute("userId", studentId);
             model.addAttribute("role", "STUDENT");
-            // Only invoke StudentService methods when the current principal has the STUDENT
-            // role.
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean isStudent = auth != null && auth.getAuthorities().stream()
                     .anyMatch(a -> "ROLE_STUDENT".equals(a.getAuthority()));
+            java.util.List<com.cource.entity.Enrollment> enrollments = java.util.Collections.emptyList();
             if (isStudent) {
-                model.addAttribute("enrollments", studentService.getMyEnrollments(studentId));
+                enrollments = studentService.getMyEnrollments(studentId);
+                model.addAttribute("enrollments", enrollments);
                 if (offeringId != null) {
                     model.addAttribute("offeringId", offeringId);
                     model.addAttribute("attendance", studentService.getMyAttendance(studentId, offeringId));
@@ -264,9 +264,7 @@ public class StudentViewController {
                     model.addAttribute("schedules", schedules);
                 }
             } else {
-                // For non-student principals, avoid calling secured service methods to prevent
-                // AuthorizationDeniedException during view rendering. Provide safe defaults.
-                model.addAttribute("enrollments", java.util.Collections.emptyList());
+                model.addAttribute("enrollments", enrollments);
                 if (offeringId != null) {
                     model.addAttribute("offeringId", offeringId);
                     model.addAttribute("attendance", java.util.Collections.emptyList());
@@ -274,6 +272,9 @@ public class StudentViewController {
                     model.addAttribute("schedules", java.util.Collections.emptyList());
                 }
             }
+        } else {
+            // Always set enrollments to empty if studentId is missing
+            model.addAttribute("enrollments", java.util.Collections.emptyList());
         }
         return "student/attendance";
     }

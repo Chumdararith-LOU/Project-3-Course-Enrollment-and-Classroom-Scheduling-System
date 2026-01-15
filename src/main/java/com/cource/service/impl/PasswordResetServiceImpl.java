@@ -2,6 +2,8 @@ package com.cource.service.impl;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PasswordResetServiceImpl implements PasswordResetService {
+
+    private static final Logger log = LoggerFactory.getLogger(PasswordResetServiceImpl.class);
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
@@ -33,13 +37,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         PasswordResetToken resetToken = new PasswordResetToken(token, user);
         tokenRepository.save(resetToken);
 
-        // Print reset instructions to console for testing
-        String resetUrl = "http://localhost:8080/api/auth/reset-password";
-        System.out.println("\n\n✅ FORGOT PASSWORD - Use this token to reset:");
-        System.out.println("Token: " + token);
-        System.out.println("POST to: " + resetUrl);
-        System.out.println("Body: {\"token\": \"" + token + "\", \"password\": \"yourNewPassword\"}");
-        System.out.println("\n");
+        // Log token creation (do not log the actual token in production!)
+        log.info("Password reset token created for user: {}", email);
 
         return token;
     }

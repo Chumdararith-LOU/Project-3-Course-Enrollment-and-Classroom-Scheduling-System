@@ -153,9 +153,7 @@
       >
         <div class="overflow-x-auto">
           <table class="w-full">
-            <thead
-              class="bg-cyan-50 border-b-2 border-cyan-200"
-            >
+            <thead class="bg-cyan-50 border-b-2 border-cyan-200">
               <tr>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-cyan-900 uppercase tracking-wider"
@@ -451,9 +449,7 @@
         class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         style="animation: slideUp 0.3s ease-out"
       >
-        <div
-          class="bg-purple-600 p-6 rounded-t-2xl"
-        >
+        <div class="bg-purple-600 p-6 rounded-t-2xl">
           <h3 class="text-2xl font-bold text-white">Create New Room</h3>
           <p class="text-purple-100 mt-1">Add a new classroom to the system</p>
         </div>
@@ -480,9 +476,13 @@
                   type="text"
                   id="createRoomNumber"
                   required
-                  placeholder="e.g., 101"
+                  placeholder="e.g., A101 (prefix auto-filled from building)"
                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
+                <p class="text-xs text-gray-500 mt-1">
+                  Room number will start with building letter (e.g., Building F
+                  → F101)
+                </p>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
@@ -540,10 +540,7 @@
           </button>
           <button
             onclick="createRoom()"
-            style="
-              background: #a855f7 !important;
-              color: white !important;
-            "
+            style="background: #a855f7 !important; color: white !important"
             class="px-6 py-2.5 text-white rounded-lg font-semibold hover:opacity-90 hover:shadow-lg transition-all flex items-center gap-2"
           >
             <svg
@@ -575,9 +572,7 @@
         class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         style="animation: slideUp 0.3s ease-out"
       >
-        <div
-          class="bg-purple-600 p-6 rounded-t-2xl"
-        >
+        <div class="bg-purple-600 p-6 rounded-t-2xl">
           <h3 class="text-2xl font-bold text-white">Edit Room</h3>
           <p class="text-purple-100 mt-1">Update room information</p>
         </div>
@@ -661,10 +656,7 @@
           </button>
           <button
             onclick="updateRoom()"
-            style="
-              background: #a855f7 !important;
-              color: white !important;
-            "
+            style="background: #a855f7 !important; color: white !important"
             class="px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 hover:shadow-lg transition-all flex items-center gap-2"
           >
             <svg
@@ -696,9 +688,7 @@
         class="bg-white rounded-2xl shadow-2xl max-w-md w-full"
         style="animation: slideUp 0.3s ease-out"
       >
-        <div
-          class="bg-yellow-500 p-6 rounded-t-2xl"
-        >
+        <div class="bg-yellow-500 p-6 rounded-t-2xl">
           <div class="flex items-center gap-3">
             <div
               class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
@@ -932,6 +922,42 @@
         document.getElementById("createModal").classList.remove("hidden");
         document.getElementById("createForm").reset();
         document.getElementById("createIsActive").checked = true;
+        // Add event listener for building input to auto-generate room number prefix
+        setupBuildingPrefixListener("createBuilding", "createRoomNumber");
+      }
+
+      // Auto-generate room number prefix based on building name
+      function setupBuildingPrefixListener(buildingInputId, roomNumberInputId) {
+        const buildingInput = document.getElementById(buildingInputId);
+        const roomNumberInput = document.getElementById(roomNumberInputId);
+
+        buildingInput.addEventListener("input", function () {
+          const building = this.value.trim();
+          const currentRoomNumber = roomNumberInput.value.trim();
+
+          if (building) {
+            // Extract building letter (e.g., "Building F" -> "F", "F" -> "F", "Science Building" -> "S")
+            let prefix = "";
+            const words = building.split(/\s+/);
+            if (words.length > 1 && words[0].toLowerCase() === "building") {
+              // Format: "Building X" - use X
+              prefix = words[1].charAt(0).toUpperCase();
+            } else {
+              // Use first letter of the building name
+              prefix = building.charAt(0).toUpperCase();
+            }
+
+            // If room number is empty or only has a letter prefix, set the new prefix
+            if (!currentRoomNumber || /^[A-Z]$/.test(currentRoomNumber)) {
+              roomNumberInput.value = prefix;
+              roomNumberInput.placeholder = `e.g., ${prefix}101`;
+            } else if (currentRoomNumber.match(/^[A-Z]\d+$/)) {
+              // If room number already has a letter prefix with numbers, update the prefix
+              const numbers = currentRoomNumber.substring(1);
+              roomNumberInput.value = prefix + numbers;
+            }
+          }
+        });
       }
 
       // Wrapper functions that read from data attributes
@@ -973,6 +999,8 @@
         document.getElementById("editRoomType").value = roomType || "";
         document.getElementById("editCapacity").value = capacity;
         document.getElementById("editIsActive").checked = isActive;
+        // Add event listener for building input to auto-generate room number prefix
+        setupBuildingPrefixListener("editBuilding", "editRoomNumber");
       }
 
       function openToggleModal(id, isActive) {

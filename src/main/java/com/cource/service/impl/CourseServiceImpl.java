@@ -17,6 +17,8 @@ import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.CourseRepository;
 import com.cource.service.CourseService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
+
+    private static final Logger log = LoggerFactory.getLogger(CourseServiceImpl.class);
 
     private final CourseRepository courseRepository;
     private final CourseOfferingRepository courseOfferingRepository;
@@ -141,10 +145,12 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public void assignLecturersToCourse(Long courseId, List<Long> lecturerIds) {
         // Implementation Note: The 'Course' entity does not strictly possess lecturers.
-        // Lecturers are assigned to 'CourseOfferings'. 
-        // This method is left as a safe no-op to satisfy the interface without crashing.
-        System.out.println("Warning: assignLecturersToCourse called for courseId " + courseId 
-                + ". Lecturers are assigned to Course Offerings, not the Course definition.");
+        // Lecturers are assigned to 'CourseOfferings'.
+        // This method is left as a safe no-op to satisfy the interface without
+        // crashing.
+        log.warn(
+                "assignLecturersToCourse called for courseId {}. Lecturers are assigned to Course Offerings, not the Course definition.",
+                courseId);
     }
 
     @Override
