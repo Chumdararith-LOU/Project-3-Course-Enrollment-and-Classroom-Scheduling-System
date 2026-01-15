@@ -107,26 +107,21 @@
           </div>
 
           <div class="border-t pt-4 flex justify-between">
-            <button
-              th:onclick="|editTerm(${term.id})|"
-              class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              Edit
-            </button>
-            <button
-              th:onclick="|toggleTermStatus(${term.id})|"
-              class="text-yellow-600 hover:text-yellow-800 text-sm font-medium"
-            >
-              <span th:text="${term.isActive ? 'Deactivate' : 'Activate'}"
-                >Toggle</span
-              >
-            </button>
-            <button
-              th:onclick="|deleteTerm(${term.id})|"
-              class="text-red-600 hover:text-red-800 text-sm font-medium"
-            >
-              Delete
-            </button>
+            <div class="flex gap-2">
+              <button th:onclick="|editTerm(${term.id})|"
+                class="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                Edit
+              </button>
+              <button th:onclick="|toggleTermStatus(${term.id})|"
+                th:class="${term.isActive ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-green-700 bg-green-50 hover:bg-green-100'}"
+                class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors">
+                <span th:text="${term.isActive ? 'Deactivate' : 'Activate'}"></span>
+              </button>
+              <button th:onclick="|deleteTerm(${term.id})|"
+                class="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -181,12 +176,43 @@
     <div id="toast" class="fixed top-6 right-6 z-50 hidden px-4 py-2 rounded bg-slate-900 text-white shadow-lg"></div>
 
     <script>
-      function showToast(msg, color = 'bg-slate-900') {
+      function showToast(msg, type = 'info') {
         const toast = document.getElementById('toast');
+        const colors = {
+          success: 'bg-green-600 border-l-4 border-green-700',
+          error: 'bg-red-600 border-l-4 border-red-700',
+          warning: 'bg-amber-500 border-l-4 border-amber-600',
+          info: 'bg-blue-600 border-l-4 border-blue-700'
+        };
+
         toast.textContent = msg;
-        toast.className = `fixed top-6 right-6 z-50 px-4 py-2 rounded text-white shadow-lg ${color}`;
+        toast.className = `fixed top-6 right-6 z-50 px-4 py-3 rounded-r text-white shadow-lg ${colors[type] || colors.info} transition-all duration-300`;
         toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 2200);
+        toast.style.transform = 'translateX(0)';
+
+        setTimeout(() => {
+          toast.style.transform = 'translateX(100%)';
+          setTimeout(() => { toast.style.display = 'none'; }, 300);
+        }, 2200);
+      }
+
+      async function generateTermCode(date) {
+        try {
+          const res = await fetch(`/api/admin/terms/generate-code?startDate=${date}`);
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById('termCode').value = data.termCode;
+          }
+        } catch (error) {
+          console.error('Failed to generate term code:', error);
+        }
+      }
+
+      async function handleStartDateChange() {
+        const date = this.value;
+        if (date) {
+          await generateTermCode(date);
+        }
       }
 
       function showCreateModal() {
@@ -195,30 +221,39 @@
         document.getElementById('termId').value = '';
         document.getElementById('termCode').readOnly = true;
         document.getElementById('termModal').classList.remove('hidden');
-        // Auto-generate term code based on start date (or today if not set)
+
+        // Generate initial term code
         const startDateInput = document.getElementById('startDate');
-        let date = startDateInput.value;
-        if (!date) date = new Date().toISOString().slice(0, 10);
-        fetch(`/api/admin/terms/generate-code?startDate=${date}`)
-          .then(res => res.json())
-          .then(data => {
-            document.getElementById('termCode').value = data.termCode;
-          });
-        // When start date changes, regenerate code
-        startDateInput.onchange = async function() {
-          const date = startDateInput.value;
-          if (date) {
-            const res = await fetch(`/api/admin/terms/generate-code?startDate=${date}`);
-            if (res.ok) {
-              const data = await res.json();
-              document.getElementById('termCode').value = data.termCode;
-            }
-          }
-        };
+        const currentDate = startDateInput.value || new Date().toISOString().slice(0, 10);
+        generateTermCode(currentDate);
+
+        // Remove existing listeners first, then add new one
+        startDateInput.removeEventListener('change', handleStartDateChange);
+        startDateInput.addEventListener('change', handleStartDateChange);
       }
 
       function closeTermModal() {
         document.getElementById('termModal').classList.add('hidden');
+      }
+
+      function validateTermDates(startDate, endDate) {
+        if (!startDate || !endDate) {
+          return { valid: false, message: "Both dates are required" };
+        }
+
+        if (new Date(endDate) <= new Date(startDate)) {
+          return { valid: false, message: "End date must be after start date" };
+        }
+
+        const maxDuration = 365; // Max 1 year term
+        const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > maxDuration) {
+          return { valid: false, message: "Term duration cannot exceed 1 year" };
+        }
+
+        return { valid: true };
       }
 
       async function editTerm(id) {
@@ -235,19 +270,37 @@
           document.getElementById('endDate').value = term.endDate;
           document.getElementById('termModal').classList.remove('hidden');
         } catch (e) {
-          showToast('Failed to load term', 'bg-red-700');
+          showToast('Failed to load term', 'error');
         }
       }
 
       document.getElementById('termForm').onsubmit = async function (e) {
         e.preventDefault();
+
         const id = document.getElementById('termId').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        // Validate dates
+        const validation = validateTermDates(startDate, endDate);
+        if (!validation.valid) {
+          showToast(validation.message, 'error');
+          return;
+        }
+
         const term = {
-          termName: document.getElementById('termName').value,
-          termCode: document.getElementById('termCode').value,
-          startDate: document.getElementById('startDate').value,
-          endDate: document.getElementById('endDate').value
+          termName: document.getElementById('termName').value.trim(),
+          termCode: document.getElementById('termCode').value.trim(),
+          startDate: startDate,
+          endDate: endDate
         };
+
+        // Validate required fields
+        if (!term.termName || !term.termCode || !term.startDate || !term.endDate) {
+          showToast('Please fill all required fields', 'error');
+          return;
+        }
+
         try {
           let res;
           if (id) {
@@ -264,14 +317,14 @@
             });
           }
           if (res.ok) {
-            showToast('Term saved!', 'bg-green-700');
+            showToast('Term saved successfully!', 'success');
             setTimeout(() => location.reload(), 900);
           } else {
             const err = await res.json();
-            showToast(err.message || 'Failed to save term', 'bg-red-700');
+            showToast(err.message || 'Failed to save term', 'error');
           }
         } catch (e) {
-          showToast('Failed to save term', 'bg-red-700');
+          showToast('Failed to save term', 'error');
         }
       };
 
@@ -280,28 +333,28 @@
         try {
           const response = await fetch(`/api/admin/terms/${id}/toggle-status`, { method: 'PATCH' });
           if (response.ok) {
-            showToast('Status updated!', 'bg-green-700');
+            showToast('Status updated successfully!', 'success');
             setTimeout(() => location.reload(), 900);
           } else {
-            showToast('Failed to toggle status', 'bg-red-700');
+            showToast('Failed to toggle status', 'error');
           }
         } catch (error) {
-          showToast('Failed to toggle status', 'bg-red-700');
+          showToast('Failed to toggle status', 'error');
         }
       }
 
       async function deleteTerm(id) {
-        if (!confirm('Delete this term?')) return;
+        if (!confirm('Are you sure you want to delete this term? This action cannot be undone.')) return;
         try {
           const response = await fetch(`/api/admin/terms/${id}`, { method: 'DELETE' });
           if (response.ok) {
-            showToast('Term deleted!', 'bg-green-700');
+            showToast('Term deleted successfully!', 'success');
             setTimeout(() => location.reload(), 900);
           } else {
-            showToast('Failed to delete term', 'bg-red-700');
+            showToast('Failed to delete term', 'error');
           }
         } catch (error) {
-          showToast('Failed to delete term', 'bg-red-700');
+          showToast('Failed to delete term', 'error');
         }
       }
     </script>
