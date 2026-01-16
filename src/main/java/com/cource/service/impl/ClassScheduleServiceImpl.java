@@ -61,7 +61,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
             throw new IllegalArgumentException("room.id is required");
         }
 
-        // Validate time order
         if (schedule.getStartTime() != null && schedule.getEndTime() != null
                 && schedule.getStartTime().isAfter(schedule.getEndTime())) {
             throw new IllegalArgumentException("Start time cannot be after end time");
@@ -72,7 +71,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         Room room = roomRepository.findById(schedule.getRoom().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
 
-        // Check for room time conflicts
         if (classScheduleRepository.existsOverlap(
                 room.getId(),
                 schedule.getDayOfWeek(),
@@ -84,7 +82,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                     schedule.getStartTime(), schedule.getEndTime()));
         }
 
-        // Check room capacity vs enrolled students
         long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(offering.getId(), "ACTIVE");
         if (room.getCapacity() > 0 && enrolledCount > room.getCapacity()) {
             throw new ConflictException(String.format(
@@ -125,13 +122,11 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                 existing.setEndTime(schedule.getEndTime());
             }
 
-            // Validate time order
             if (existing.getStartTime() != null && existing.getEndTime() != null
                     && existing.getStartTime().isAfter(existing.getEndTime())) {
                 throw new IllegalArgumentException("Start time cannot be after end time");
             }
 
-            // Check for room time conflicts (exclude current schedule)
             if (classScheduleRepository.existsOverlapWithId(
                     existing.getRoom().getId(),
                     existing.getDayOfWeek(),
@@ -144,7 +139,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                         existing.getStartTime(), existing.getEndTime()));
             }
 
-            // Check room capacity vs enrolled students
             long enrolledCount = enrollmentRepository.countByOfferingIdAndStatus(existing.getOffering().getId(),
                     "ACTIVE");
             if (existing.getRoom().getCapacity() > 0 && enrolledCount > existing.getRoom().getCapacity()) {
@@ -185,7 +179,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
         Room room = upsertRoom(roomNumber, building, roomType);
 
-        // Check for room time conflict
         List<ClassSchedule> roomConflicts = classScheduleRepository.findConflictingSchedules(
                 room.getId(), dayOfWeek.toUpperCase(), start, end, null);
         if (!roomConflicts.isEmpty()) {
@@ -195,7 +188,6 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                     roomNumber, dayOfWeek, conflict.getStartTime(), conflict.getEndTime()));
         }
 
-        // Check for lecturer time conflict
         List<ClassSchedule> lecturerConflicts = classScheduleRepository.findLecturerConflictingSchedules(
                 lecturerId, dayOfWeek.toUpperCase(), start, end, null);
         if (!lecturerConflicts.isEmpty()) {

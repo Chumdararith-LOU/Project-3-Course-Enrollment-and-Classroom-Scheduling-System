@@ -530,15 +530,11 @@ public class AdminServiceImpl implements AdminService {
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
 
-        // Validate time order
         if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("Start time cannot be after end time");
         }
 
-        // Check for room time conflicts (overlapping schedules)
-        // A conflict occurs when: existing.start < new.end AND existing.end > new.start
         if (classScheduleRepository.existsOverlap(roomId, dayOfWeek.toUpperCase(), startTime, endTime)) {
-            // Find the conflicting schedule to provide detailed error message
             List<ClassSchedule> conflicts = classScheduleRepository.findConflictingSchedules(
                     roomId, dayOfWeek.toUpperCase(), startTime, endTime, null);
             if (!conflicts.isEmpty()) {
@@ -572,15 +568,11 @@ public class AdminServiceImpl implements AdminService {
         CourseOffering offering = getOfferingById(offeringId);
         Room room = getRoomById(roomId);
 
-        // Validate time order
         if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("Start time cannot be after end time");
         }
 
-        // Check for room time conflicts (exclude current schedule from check)
-        // A conflict occurs when: existing.start < new.end AND existing.end > new.start
         if (classScheduleRepository.existsOverlapWithId(roomId, dayOfWeek.toUpperCase(), startTime, endTime, id)) {
-            // Find the conflicting schedule to provide detailed error message
             List<ClassSchedule> conflicts = classScheduleRepository.findConflictingSchedules(
                     roomId, dayOfWeek.toUpperCase(), startTime, endTime, id);
             if (!conflicts.isEmpty()) {
