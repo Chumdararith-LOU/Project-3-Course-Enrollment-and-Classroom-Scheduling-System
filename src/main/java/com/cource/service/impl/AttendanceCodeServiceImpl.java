@@ -6,6 +6,7 @@ import com.cource.entity.User;
 import com.cource.exception.ResourceNotFoundException;
 import com.cource.repository.AttendanceCodeRepository;
 import com.cource.repository.ClassScheduleRepository;
+import com.cource.repository.UserRepository;
 import com.cource.service.AttendanceCodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,31 +25,41 @@ public class AttendanceCodeServiceImpl implements AttendanceCodeService {
 
     private final AttendanceCodeRepository attendanceCodeRepository;
     private final ClassScheduleRepository classScheduleRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public AttendanceCode generateAttendanceCode(Long scheduleId, Long lecturerId) {
+    public AttendanceCode generateAttendanceCode(Long scheduleId, Long lecturerId, Long issuedAt) {
         ClassSchedule schedule = classScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
-        attendanceCodeRepository.deleteByScheduleId(scheduleId);
+        AttendanceCode attendanceCode = attendanceCodeRepository.findBySchedule_Id(scheduleId)
+                .orElse(new AttendanceCode());
+
+        if (attendanceCode.getId() == null) {
+            attendanceCode.setSchedule(schedule);
+        }
 
         String code = generateCode(6);
         while (attendanceCodeRepository.findByCode(code).isPresent()) {
-            code = generateCode(6); // ensure uniqueness
+            code = generateCode(6);
+        }
+        attendanceCode.setCode(code);
+
+        if (issuedAt != null) {
+            attendanceCode.setIssuedAt(issuedAt);
+        } else {
+            attendanceCode.setIssuedAt(Instant.now().getEpochSecond());
         }
 
-        AttendanceCode attendanceCode = new AttendanceCode();
-        attendanceCode.setSchedule(schedule);
-        attendanceCode.setCode(code);
-        attendanceCode.setIssuedAt(Instant.now().getEpochSecond());
+        if (lecturerId != null) {
+            User createdBy = userRepository.findById(lecturerId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Lecturer not found"));
+            attendanceCode.setCreatedBy(createdBy);
+        }
 
-        User createdBy = new User();
-        createdBy.setId(lecturerId);
-        attendanceCode.setCreatedBy(createdBy);
-
-        attendanceCode.setPresentWindowMinutes(10);
-        attendanceCode.setLateWindowMinutes(20);
+        if (attendanceCode.getPresentWindowMinutes() == null) attendanceCode.setPresentWindowMinutes(10);
+        if (attendanceCode.getLateWindowMinutes() == null) attendanceCode.setLateWindowMinutes(20);
 
         return attendanceCodeRepository.save(attendanceCode);
     }

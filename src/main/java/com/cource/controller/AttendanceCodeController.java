@@ -34,16 +34,27 @@ public class AttendanceCodeController {
 
     @PostMapping("/generate")
     @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")
-        public ResponseEntity<?> generate(@RequestParam Long scheduleId,
+    public ResponseEntity<?> generate(
+            @RequestParam Long scheduleId,
             @RequestParam(required = false) Integer presentMinutes,
-            @RequestParam(required = false) Integer lateMinutes) {
+            @RequestParam(required = false) Integer lateMinutes,
+            @RequestParam(required = false) Long issuedAt) {
+
         Long lecturerId = securityHelper.getCurrentUserId();
-        AttendanceCodeDetailsDTO details = attendanceCodeApplicationService.generateDetails(scheduleId, lecturerId,
-            presentMinutes, lateMinutes);
-        return ResponseEntity.ok(Map.of("code", details.getCode(), "issuedAt", details.getIssuedAt(), "presentMinutes",
-            details.getPresentMinutes(), "lateMinutes", details.getLateMinutes(), "offeringId",
-            details.getOfferingId(), "enrolledCount", details.getEnrolledCount()));
-        }
+
+        // Pass the new issuedAt parameter to the service
+        AttendanceCodeDetailsDTO details = attendanceCodeApplicationService.generateDetails(
+                scheduleId, lecturerId, presentMinutes, lateMinutes, issuedAt);
+
+        return ResponseEntity.ok(Map.of(
+                "code", details.getCode(),
+                "issuedAt", details.getIssuedAt(),
+                "presentMinutes", details.getPresentMinutes(),
+                "lateMinutes", details.getLateMinutes(),
+                "offeringId", details.getOfferingId(),
+                "enrolledCount", details.getEnrolledCount()
+        ));
+    }
 
     @DeleteMapping("/delete")
     @PreAuthorize("hasAnyRole('LECTURER','ADMIN')")

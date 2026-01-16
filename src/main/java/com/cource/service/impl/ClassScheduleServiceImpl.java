@@ -65,7 +65,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         checkLecturerTimeConflict(offering.getLecturer().getId(), schedule.getDayOfWeek(),
                 schedule.getStartTime(), schedule.getEndTime(), null);
 
-        // CRITICAL: Check room capacity vs offering capacity
+        // Check room capacity vs offering capacity
         checkRoomCapacity(room, offering.getCapacity());
 
         schedule.setOffering(offering);

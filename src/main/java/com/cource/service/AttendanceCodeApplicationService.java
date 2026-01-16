@@ -26,8 +26,9 @@ public class AttendanceCodeApplicationService {
     private final ClassScheduleRepository classScheduleRepository;
 
     @Transactional
-    public AttendanceCodeDetailsDTO generateDetails(Long scheduleId, Long lecturerId, Integer presentMinutes, Integer lateMinutes) {
-        AttendanceCode code = attendanceCodeService.generateAttendanceCode(scheduleId, lecturerId);
+    public AttendanceCodeDetailsDTO generateDetails(Long scheduleId, Long lecturerId, Integer presentMinutes, Integer lateMinutes, Long issuedAt) {
+        // Pass issuedAt to the core service
+        AttendanceCode code = attendanceCodeService.generateAttendanceCode(scheduleId, lecturerId, issuedAt);
 
         boolean changed = false;
         if (presentMinutes != null && !presentMinutes.equals(code.getPresentWindowMinutes())) {

@@ -4,7 +4,7 @@ import java.util.Optional;
 import com.cource.entity.AttendanceCode;
 
 public interface AttendanceCodeService {
-    AttendanceCode generateAttendanceCode(Long scheduleId, Long lecturerId);
+    AttendanceCode generateAttendanceCode(Long scheduleId, Long lecturerId, Long issuedAt);
     AttendanceCode findByScheduleId(Long scheduleId);
     AttendanceCode findByCode(String code);
     AttendanceCode save(AttendanceCode code);
