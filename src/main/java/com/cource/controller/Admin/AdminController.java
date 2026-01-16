@@ -24,8 +24,6 @@ import java.time.LocalTime;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 
-import org.springframework.web.bind.annotation.RequestBody;
-
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -162,6 +160,12 @@ public class AdminController {
         return ResponseEntity.ok(java.util.Collections.singletonMap("status", "success"));
     }
 
+    @DeleteMapping("/courses/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+        courseService.deleteCourse(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/courses/stats/total")
     public ResponseEntity<Long> getTotalCourses() {
         return ResponseEntity.ok(adminService.getTotalCourses());
@@ -202,7 +206,7 @@ public class AdminController {
 
     @PutMapping("/offerings/{id}")
     public ResponseEntity<?> updateOffering(@PathVariable Long id,
-                                            @RequestBody Map<String, Object> request) {
+            @RequestBody Map<String, Object> request) {
         Long courseId = Long.valueOf(request.get("courseId").toString());
         Long termId = Long.valueOf(request.get("termId").toString());
         Long lecturerId = Long.valueOf(request.get("lecturerId").toString());
