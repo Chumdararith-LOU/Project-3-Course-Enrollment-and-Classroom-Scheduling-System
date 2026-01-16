@@ -144,7 +144,7 @@ public class AdminViewController {
 
     @GetMapping("/offerings")
     public String offerings(@RequestParam(required = false) Long termId,
-            @RequestParam(required = false) Long adminId, Model model) {
+                            @RequestParam(required = false) Long adminId, Model model) {
         Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
         if (userId != null) {
             model.addAttribute("adminId", userId);
@@ -157,19 +157,21 @@ public class AdminViewController {
         var activeTerms = allTerms.stream().filter(t -> t.isActive()).toList();
         model.addAttribute("terms", activeTerms);
 
-        // Filter only active courses for offering creation dropdown
+        // Filter active courses
         var allCourses = adminService.getAllCourses();
-        var activeCourses = allCourses.stream().filter(c -> c.isActive()).toList();
-        model.addAttribute("courses", activeCourses);
+        var activeCoursesStream = allCourses.stream().filter(c -> c.isActive());
 
-        var lecturers = new java.util.ArrayList<>(adminService.getUsersByRole("LECTURER"));
-        var admins = adminService.getUsersByRole("ADMIN");
-        for (var admin : admins) {
-            if (!lecturers.contains(admin)) {
-                lecturers.add(admin);
-            }
+        // If a term is selected, exclude courses that already have an offering in this term
+        if (termId != null) {
+            var existingOfferings = adminService.getCourseOfferingsByTerm(termId);
+            var offeredCourseIds = existingOfferings.stream()
+                    .map(o -> o.getCourse().getId())
+                    .collect(java.util.stream.Collectors.toSet());
+            activeCoursesStream = activeCoursesStream.filter(c -> !offeredCourseIds.contains(c.getId()));
         }
-        model.addAttribute("lecturers", lecturers);
+
+        model.addAttribute("courses", activeCoursesStream.toList());
+        model.addAttribute("lecturers", adminService.getUsersByRole("LECTURER"));
 
         if (termId != null) {
             model.addAttribute("offerings", adminService.getCourseOfferingsByTerm(termId));
