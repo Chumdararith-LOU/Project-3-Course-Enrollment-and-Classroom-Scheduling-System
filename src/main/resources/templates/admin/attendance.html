@@ -212,8 +212,8 @@
             <tr th:each="r : ${attendanceRows}" class="hover:bg-gray-50 transition-colors">
               <!-- Date -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900"
-                  th:text="${#dates.format(r.attendanceDate, 'dd MMM yyyy')}"></div>
+                  <div class="text-sm font-medium text-gray-900"
+                       th:text="${#temporals.format(r.attendanceDate, 'dd MMM yyyy')}"></div>
               </td>
 
               <!-- Course -->

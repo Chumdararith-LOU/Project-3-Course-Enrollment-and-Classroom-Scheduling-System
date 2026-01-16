@@ -1,10 +1,12 @@
 package com.cource.controller.Admin;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.cource.util.SecurityHelper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -28,20 +30,25 @@ public class AdminAttendanceController {
 
     private final AttendanceRepository attendanceRepository;
     private final AdminService adminService;
+    private final SecurityHelper securityHelper;
 
-    @GetMapping("/admin/attendance")
-    public String attendancePage(Model model) {
-        return attendancePage(null, null, null, null, model);
-    }
-
-    @GetMapping("/admin/attendance/list")
+    @GetMapping({"/admin/attendance", "/admin/attendance/list"})
     public String attendancePage(
             @RequestParam(required = false) Long offeringId,
             @RequestParam(required = false) Long scheduleId,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
+            @RequestParam(required = false) Long adminId,
             Model model) {
-        List<Attendance> rows = null;
+
+        Long userId = adminId != null ? adminId : securityHelper.getCurrentUserId();
+        if (userId != null) {
+            model.addAttribute("userId", userId);
+            model.addAttribute("adminId", userId);
+            model.addAttribute("role", "ADMIN");
+        }
+
+        List<Attendance> rows;
         try {
             if (offeringId != null && from != null && to != null) {
                 LocalDate f = LocalDate.parse(from);
@@ -53,30 +60,48 @@ public class AdminAttendanceController {
                 rows = attendanceRepository.findAll();
             }
         } catch (Exception ex) {
-            rows = attendanceRepository.findAll();
+            rows = Collections.emptyList();
+        }
+
+        long totalRecords = rows.size();
+        long presentCount = 0;
+        long absentCount = 0;
+        long lateCount = 0;
+
+        for (Attendance a : rows) {
+            if (a.getStatus() != null) {
+                switch (a.getStatus().toUpperCase()) {
+                    case "PRESENT":
+                        presentCount++;
+                        break;
+                    case "ABSENT":
+                        absentCount++;
+                        break;
+                    case "LATE":
+                        lateCount++;
+                        break;
+                }
+            }
         }
 
         model.addAttribute("attendanceRows", rows);
+        model.addAttribute("totalRecords", totalRecords);
+        model.addAttribute("presentCount", presentCount);
+        model.addAttribute("absentCount", absentCount);
+        model.addAttribute("lateCount", lateCount);
 
         try {
             model.addAttribute("offerings", adminService.getAllCourseOfferings());
-            if (offeringId != null) {
-                model.addAttribute("schedules", adminService.getSchedulesByOffering(offeringId));
-            } else {
-                model.addAttribute("schedules", adminService.getAllSchedules());
-            }
+            model.addAttribute("schedules", adminService.getAllSchedules());
         } catch (Exception ignored) {
-            model.addAttribute("offerings", new java.util.ArrayList<>());
-            model.addAttribute("schedules", new java.util.ArrayList<>());
+            model.addAttribute("offerings", Collections.emptyList());
+            model.addAttribute("schedules", Collections.emptyList());
         }
 
         model.addAttribute("offeringId", offeringId);
         model.addAttribute("scheduleId", scheduleId);
         model.addAttribute("from", from);
         model.addAttribute("to", to);
-
-        model.addAttribute("userId", 1);
-        model.addAttribute("role", "ADMIN");
 
         return "admin/attendance";
     }
